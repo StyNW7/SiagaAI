@@ -11,10 +11,10 @@ export const ALERT_LEVELS: Record<
   AlertLevel,
   { label: string; rank: number; color: string; soft: string; text: string }
 > = {
-  critical: { label: 'Kritis', rank: 0, color: '#991B1B', soft: '#FEF2F2', text: '#7F1D1D' },
-  warning: { label: 'Peringatan', rank: 1, color: '#F97316', soft: '#FFF7ED', text: '#9A3412' },
-  advisory: { label: 'Waspada', rank: 2, color: '#F59E0B', soft: '#FFFBEB', text: '#92400E' },
-  info: { label: 'Informasi', rank: 3, color: '#2563EB', soft: '#EFF6FF', text: '#1E40AF' },
+  critical: { label: 'Kritis', rank: 0, color: '#A51E22', soft: '#FBEDED', text: '#7A1418' },
+  warning: { label: 'Peringatan', rank: 1, color: '#E66B24', soft: '#FDF0E8', text: '#A4461A' },
+  advisory: { label: 'Waspada', rank: 2, color: '#D99A22', soft: '#FDF6E8', text: '#8A5A0B' },
+  info: { label: 'Informasi', rank: 3, color: '#3478C6', soft: '#EEF4FB', text: '#22579A' },
 };
 
 export function quakeLevel(q: Earthquake): AlertLevel {

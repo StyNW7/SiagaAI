@@ -1,59 +1,167 @@
 @import 'tailwindcss';
-@import '@fontsource-variable/inter';
+@import '@fontsource-variable/plus-jakarta-sans';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource/ibm-plex-mono/600.css';
 @import 'maplibre-gl/dist/maplibre-gl.css';
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   SiagaAI Design System — "Modern Indonesian Disaster Intelligence"
-   Red–white = brand · Semantic colours = risk · Indigo = AI
+   SiagaAI Design System — "Indonesian Civic Intelligence"
+   Calm on the surface, intelligent underneath.
+   Warm neutrals (≈70 %) · Siaga red used sparingly (≈8 %) · Indigo = AI only
    ───────────────────────────────────────────────────────────────────────── */
 
 @theme {
-  --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans:
+    'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 
-  /* Brand */
+  /* Brand — Siaga red */
   --color-brand: #d71920;
-  --color-brand-dark: #a61017;
-  --color-brand-soft: #fdecec;
+  --color-brand-dark: #a31319;
+  --color-brand-deep: #741116;
+  --color-brand-soft: #fcebec;
+  --color-brand-pale: #fff6f6;
 
-  /* Neutrals */
-  --color-canvas: #fafafa;
+  /* Neutral foundation (warm) */
+  --color-canvas: #f6f6f3;
   --color-surface: #ffffff;
+  --color-raised: #fafaf8;
+  --color-sidebar: #f3f2ef;
   --color-ink: #171717;
-  --color-muted: #6b7280;
-  --color-line: #e5e7eb;
+  --color-graphite: #292929;
+  --color-muted: #6b6b6b;
+  --color-subtle: #989898;
+  --color-line: #e6e5e1;
+  --color-line-strong: #d4d2cc;
 
-  /* AI */
-  --color-ai: #4f46e5;
-  --color-ai-soft: #eef2ff;
+  /* Warm neutral scale — overrides Tailwind's cool greys app-wide */
+  --color-neutral-50: #fafaf8;
+  --color-neutral-100: #f3f2ef;
+  --color-neutral-200: #e6e5e1;
+  --color-neutral-300: #d4d2cc;
+  --color-neutral-400: #a9a7a1;
+  --color-neutral-500: #85837d;
+  --color-neutral-600: #5f5e59;
+  --color-neutral-700: #43423e;
+  --color-neutral-800: #292929;
+  --color-neutral-900: #1d1d1c;
+  --color-neutral-950: #141413;
 
-  /* Risk semantics */
-  --color-risk-safe: #16a34a;
-  --color-risk-low: #2563eb;
-  --color-risk-moderate: #f59e0b;
-  --color-risk-high: #f97316;
-  --color-risk-critical: #991b1b;
+  /* AI intelligence */
+  --color-ai: #4e54d8;
+  --color-ai-deep: #3539a4;
+  --color-ai-soft: #eef0ff;
 
-  --radius-card: 16px;
+  /* Risk semantics (independent of brand red) */
+  --color-risk-safe: #208a61;
+  --color-risk-low: #3478c6;
+  --color-risk-moderate: #d99a22;
+  --color-risk-high: #e66b24;
+  --color-risk-critical: #a51e22;
 
-  --shadow-soft: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.06);
-  --shadow-lift: 0 4px 6px -2px rgb(16 24 40 / 0.05), 0 12px 24px -4px rgb(16 24 40 / 0.08);
-  --shadow-float: 0 12px 32px -8px rgb(16 24 40 / 0.18);
+  /* Hazard semantics */
+  --color-hz-smoke: #73717e;
+  --color-hz-flood: #397eb8;
+  --color-hz-fire: #d95332;
+  --color-hz-weather: #6f63b5;
+
+  --radius-card: 14px;
+  --radius-panel: 18px;
+  --radius-hero: 24px;
+
+  --shadow-soft: 0 1px 2px rgb(23 23 23 / 0.03);
+  --shadow-lift: 0 8px 30px rgb(25 25 25 / 0.08);
+  --shadow-float: 0 20px 70px rgb(20 20 20 / 0.12);
+  --shadow-map: 0 6px 24px rgb(0 0 0 / 0.1);
+
+  --ease-out-soft: cubic-bezier(0.2, 0.7, 0.3, 1);
 
   --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
-  --animate-fade-up: fade-up 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  --animate-fade-up: fade-up 0.28s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  --animate-fade-in: fade-in 0.2s ease-out both;
   --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-float: float 5s ease-in-out infinite;
+  --animate-sheet-up: sheet-up 0.28s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  --animate-sheet-right: sheet-right 0.28s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  --animate-marquee: marquee 38s linear infinite;
+  --animate-spin-slow: spin 60s linear infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
 
   @keyframes pulse-ring {
-    0% { transform: scale(0.6); opacity: 0.7; }
-    80%, 100% { transform: scale(2.4); opacity: 0; }
+    0% {
+      transform: scale(0.6);
+      opacity: 0.7;
+    }
+    80%,
+    100% {
+      transform: scale(2.4);
+      opacity: 0;
+    }
   }
   @keyframes fade-up {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
   @keyframes shimmer {
-    from { background-position: -400px 0; }
-    to { background-position: 400px 0; }
+    from {
+      background-position: -400px 0;
+    }
+    to {
+      background-position: 400px 0;
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+  @keyframes sheet-up {
+    from {
+      transform: translateY(24px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  @keyframes sheet-right {
+    from {
+      transform: translateX(24px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
   }
 }
 
@@ -62,27 +170,93 @@
     -webkit-tap-highlight-color: transparent;
     text-rendering: optimizeLegibility;
     font-size: calc(100% * var(--text-scale, 1));
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px;
   }
   body {
     @apply bg-canvas font-sans text-ink antialiased;
-    font-feature-settings: 'cv11', 'ss01', 'ss03';
+    font-size: 15px;
+    line-height: 1.6;
+    font-weight: 450;
   }
   :focus-visible {
-    outline: 2.5px solid var(--color-ai);
+    outline: 2px solid var(--color-brand);
     outline-offset: 2px;
     border-radius: 6px;
   }
   ::selection {
     background: var(--color-brand-soft);
-    color: var(--color-brand-dark);
+    color: var(--color-brand-deep);
   }
-  h1, h2, h3, h4 {
-    letter-spacing: -0.02em;
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.022em;
+    font-weight: 700;
+  }
+  button,
+  [role='button'] {
+    cursor: pointer;
+  }
+  img {
+    -webkit-user-drag: none;
   }
 }
 
 @layer components {
-  /* Batik-inspired kawung geometry — used at 2–6 % opacity only. */
+  /* ── Typographic primitives ─────────────────────────────── */
+  .data-label {
+    font-size: 11px;
+    line-height: 16px;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .telemetry {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 16px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .display-metric {
+    font-weight: 750;
+    letter-spacing: -0.045em;
+    line-height: 0.95;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Surfaces ───────────────────────────────────────────── */
+  .panel {
+    border-radius: var(--radius-card);
+    border: 1px solid var(--color-line);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-soft);
+  }
+  .glass {
+    background: rgb(255 255 255 / 0.78);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid rgb(255 255 255 / 0.65);
+    box-shadow: var(--shadow-map);
+  }
+  .hover-lift {
+    transition:
+      transform 0.2s var(--ease-out-soft),
+      box-shadow 0.2s var(--ease-out-soft),
+      border-color 0.2s;
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+    border-color: var(--color-line-strong);
+  }
+
+  /* Batik-inspired kawung geometry — used at 2–7 % opacity only. */
   .bg-batik {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23171717' stroke-width='1'%3E%3Cellipse cx='14' cy='14' rx='9' ry='5' transform='rotate(45 14 14)'/%3E%3Cellipse cx='14' cy='14' rx='9' ry='5' transform='rotate(-45 14 14)'/%3E%3Cellipse cx='42' cy='42' rx='9' ry='5' transform='rotate(45 42 42)'/%3E%3Cellipse cx='42' cy='42' rx='9' ry='5' transform='rotate(-45 42 42)'/%3E%3Ccircle cx='42' cy='14' r='2'/%3E%3Ccircle cx='14' cy='42' r='2'/%3E%3C/g%3E%3C/svg%3E");
     background-size: 56px 56px;
@@ -92,8 +266,13 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='%23171717' stroke-width='1'%3E%3Cpath d='M-20 120 C 80 60 160 180 280 120 S 480 40 620 110'/%3E%3Cpath d='M-20 160 C 90 100 170 220 290 160 S 490 80 620 150'/%3E%3Cpath d='M-20 205 C 100 145 180 265 300 205 S 500 125 620 195'/%3E%3Cpath d='M-20 330 C 70 290 150 390 260 340 S 470 270 620 330'/%3E%3Cpath d='M-20 372 C 80 332 160 432 270 382 S 480 312 620 372'/%3E%3Cpath d='M-20 418 C 90 378 170 478 280 428 S 490 358 620 418'/%3E%3Cpath d='M-20 520 C 110 470 200 560 320 520 S 500 470 620 515'/%3E%3Cellipse cx='450' cy='250' rx='60' ry='30'/%3E%3Cellipse cx='450' cy='250' rx='34' ry='16'/%3E%3Cellipse cx='130' cy='470' rx='44' ry='20'/%3E%3C/g%3E%3C/svg%3E");
     background-size: 600px 600px;
   }
+  /* Fine dot grid — map/command-center texture */
+  .bg-dots {
+    background-image: radial-gradient(rgb(23 23 23 / 0.09) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
   .skeleton {
-    background: linear-gradient(90deg, #f1f2f4 0px, #e7e9ec 80px, #f1f2f4 160px);
+    background: linear-gradient(90deg, #f1f0ec 0px, #e8e7e2 80px, #f1f0ec 160px);
     background-size: 800px 100%;
     animation: var(--animate-shimmer);
   }
@@ -103,8 +282,15 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
   .text-balance {
     text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
   }
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
@@ -112,23 +298,33 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+  .snap-row {
+    scroll-snap-type: x mandatory;
+  }
+  .snap-row > * {
+    scroll-snap-align: start;
+  }
 }
 
 /* MapLibre polish */
 .maplibregl-popup-content {
   border-radius: 14px !important;
   padding: 12px 14px !important;
-  box-shadow: var(--shadow-float) !important;
+  box-shadow: var(--shadow-lift) !important;
+  border: 1px solid var(--color-line);
   font-family: var(--font-sans);
 }
 .maplibregl-ctrl-group {
   border-radius: 12px !important;
-  box-shadow: var(--shadow-lift) !important;
+  box-shadow: var(--shadow-map) !important;
+  border: 1px solid rgb(255 255 255 / 0.65) !important;
+  background: rgb(255 255 255 / 0.85) !important;
+  backdrop-filter: blur(18px) saturate(140%);
   overflow: hidden;
 }
 .maplibregl-ctrl-group button {
-  width: 36px !important;
-  height: 36px !important;
+  width: 38px !important;
+  height: 38px !important;
 }
 .maplibregl-ctrl-attrib {
   font-size: 10px;
@@ -136,7 +332,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

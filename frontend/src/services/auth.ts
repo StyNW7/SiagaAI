@@ -11,7 +11,7 @@ import { supabase } from './supabase/client';
 export const DEMO_ACCOUNT = {
   email: 'demo@siagaai.id',
   password: 'SiagaAI2026!',
-  name: 'Juri IT RUSH',
+  name: 'Demo User',
 } as const;
 
 const LOCAL_KEY = 'siaga.accounts';
@@ -82,6 +82,18 @@ export async function signUp(name: string, email: string, password: string): Pro
   };
   writeAccounts([...accounts, acc]);
   return { id: acc.id, email: acc.email, name: acc.name, backend: 'local' };
+}
+
+/** Sends a password-reset email (Supabase only). */
+export async function requestPasswordReset(email: string) {
+  if (!supabase) throw new AuthError('Reset kata sandi hanya tersedia untuk akun cloud (Supabase).');
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    redirectTo: `${window.location.origin}/auth`,
+  });
+  if (error)
+    throw new AuthError(
+      error.status === 429 ? 'Terlalu banyak percobaan. Coba lagi nanti.' : 'Gagal mengirim email reset.',
+    );
 }
 
 export async function signOut(user: SessionUser | null) {

@@ -46,13 +46,13 @@ export function RiskBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full font-bold tracking-wide',
+        'inline-flex items-center gap-1 rounded-full font-bold uppercase tracking-[0.06em]',
         size === 'sm' && 'px-2 py-0.5 text-[10.5px]',
         size === 'md' && 'px-2.5 py-1 text-xs',
         size === 'lg' && 'px-3 py-1.5 text-sm',
         className,
       )}
-      style={{ background: m.soft, color: m.text, boxShadow: `inset 0 0 0 1px ${m.color}33` }}
+      style={{ background: m.soft, color: m.text, boxShadow: `inset 0 0 0 1px ${m.color}30` }}
     >
       <Icon className={cn(size === 'lg' ? 'size-4' : 'size-3')} aria-hidden />
       {label ?? m.short}
@@ -76,11 +76,15 @@ export function HazardIcon({
   return (
     <span
       className={cn(
-        'grid shrink-0 place-items-center rounded-xl',
+        'grid shrink-0 place-items-center rounded-full',
         size === 'sm' ? 'size-8' : size === 'md' ? 'size-10' : 'size-12',
         className,
       )}
-      style={{ background: m?.soft ?? '#F4F4F5', color: m?.color ?? '#52525B' }}
+      style={{
+        background: m?.soft ?? '#F3F2EF',
+        color: m?.color ?? '#5F5E59',
+        boxShadow: `inset 0 0 0 1px ${m ? m.color + '22' : '#E6E5E1'}`,
+      }}
       aria-label={HAZARDS[hazard].label}
     >
       <Icon className={size === 'sm' ? 'size-4' : 'size-5'} aria-hidden />
@@ -147,11 +151,11 @@ export function ScoreGauge({
         })()}
       </svg>
       <div className="absolute inset-x-0 bottom-0 text-center">
-        <div className="tabular text-[44px] font-extrabold leading-none tracking-tight text-ink">
+        <div className="display-metric text-[48px] text-ink">
           {value}
-          <span className="text-lg font-semibold text-muted">/100</span>
+          <span className="ml-0.5 text-[17px] font-semibold tracking-normal text-subtle">/100</span>
         </div>
-        {sublabel && <div className="mt-1 text-[11px] font-medium text-muted">{sublabel}</div>}
+        {sublabel && <div className="telemetry mt-1.5 normal-case tracking-normal">{sublabel}</div>}
       </div>
     </div>
   );
@@ -186,6 +190,46 @@ export function RiskScaleLegend({ className }: { className?: string }) {
           {RISK_LEVELS[l].range.join('–')}
         </span>
       ))}
+    </div>
+  );
+}
+
+/** Thin horizontal risk spectrum with a marker — editorial alternative to a radial gauge. */
+export function RiskSpectrum({
+  score,
+  className,
+  showLabels = true,
+}: {
+  score: number;
+  className?: string;
+  showLabels?: boolean;
+}) {
+  const order: RiskLevel[] = ['safe', 'low', 'moderate', 'high', 'critical'];
+  const pos = Math.max(0, Math.min(100, score));
+  return (
+    <div className={cn('w-full', className)}>
+      <div className="relative h-2" aria-hidden>
+        <div className="absolute inset-0 flex gap-[3px] overflow-hidden rounded-full">
+          {order.map((l) => (
+            <span
+              key={l}
+              className="h-full flex-1"
+              style={{ background: RISK_LEVELS[l].color, opacity: 0.85 }}
+            />
+          ))}
+        </div>
+        <span
+          className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white bg-ink shadow-[0_2px_8px_rgb(0_0_0/0.25)] transition-[left] duration-700 ease-out"
+          style={{ left: `${pos}%` }}
+        />
+      </div>
+      {showLabels && (
+        <div className="mt-2.5 flex justify-between font-mono text-[10px] uppercase tracking-[0.06em] text-subtle">
+          {order.map((l) => (
+            <span key={l}>{RISK_LEVELS[l].label}</span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

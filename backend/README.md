@@ -20,7 +20,7 @@ Backend SiagaAI bersifat **serverless**. Logikanya ditulis sekali di `core/` seb
 
 ## Database (Supabase)
 
-Skema ada di `supabase/migrations/20261122000000_siagaai_schema.sql`:
+Skema ada di `supabase/migrations/` (`…_siagaai_schema.sql` + `…_auth_profile_trigger.sql`):
 
 - **Tabel**: `profiles`, `family_members`, `saved_locations`, `risk_snapshots`, `action_plans`, `community_reports`, `ai_conversations`.
 - **RLS** aktif di semua tabel. Tabel milik pengguna hanya bisa diakses pemiliknya (`auth.uid() = user_id`).
@@ -28,10 +28,13 @@ Skema ada di `supabase/migrations/20261122000000_siagaai_schema.sql`:
 - **Storage**: bucket `community` (≤ 5 MB, JPEG/PNG/WebP). Unggahan hanya diizinkan ke folder `auth.uid()`.
 - **Realtime**: `community_reports` dipublikasikan, sehingga feed komunitas tampil live.
 - **Privasi**: koordinat riwayat dibulatkan ±1 km (`numeric(6,2)`), dan tidak ada kolom data medis.
+- **Profil otomatis**: trigger `on_auth_user_created` membuat baris `profiles` untuk setiap pengguna baru di server (`SECURITY DEFINER`). Klien tidak pernah mengirim `user_id`.
+- **Akun demo**: `supabase/seed.sql` (idempoten) membuat `demo@siagaai.id` di Supabase Auth beserta data contoh.
 
 ```bash
 supabase link --project-ref <ref>
 supabase db push
+# akun demo: jalankan supabase/seed.sql di SQL Editor (lokal: supabase db reset)
 supabase functions deploy siaga-ai hotspots
 supabase secrets set GEMINI_API_KEY=... GROQ_API_KEY=...
 ```

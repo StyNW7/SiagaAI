@@ -8,11 +8,12 @@ import {
   UserRound,
   Waves,
 } from 'lucide-react';
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { ErrorState, FreshnessBadge } from '@/components/common/data-state';
 import { AiPanel, AiThinking, PageHeader } from '@/components/common/layout-bits';
-import { HazardIcon, RiskBadge, ScoreBar, ScoreGauge } from '@/components/common/risk';
+import { Ara } from '@/components/common/ara';
+import { HazardIcon, RiskBadge, RiskSpectrum, ScoreBar, ScoreGauge } from '@/components/common/risk';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui/primitives';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/overlays';
@@ -93,7 +94,7 @@ export default function MyRiskPage() {
   const delta = assessment.personal.score - assessment.location.score;
 
   return (
-    <div className="animate-fade-up">
+    <div>
       <PageHeader
         eyebrow={
           <span className="inline-flex items-center gap-1.5">
@@ -101,56 +102,69 @@ export default function MyRiskPage() {
           </span>
         }
         title="Apa artinya bagi saya?"
-        description={`Bahaya yang sama berdampak berbeda pada setiap orang. SiagaAI menyesuaikan skor risiko ${location.name} dengan pekerjaan, transportasi & aktivitas Anda.`}
+        description={`Skor ${location.name} disesuaikan dengan pekerjaan, transportasi & aktivitasmu.`}
+        mascot="thinking"
       />
 
       <div className="grid gap-5 lg:grid-cols-12">
         {/* Scores */}
         <Card className="min-w-0 lg:col-span-5">
-          <CardContent className="p-5">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-neutral-50 p-4 text-center">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-muted">Skor lokasi</p>
-                <p className="tabular mt-1 text-[36px] font-extrabold leading-none">
+          <CardContent className="p-6 sm:p-7">
+            <p className="data-label">Ringkasan risiko</p>
+            <div className="mt-5 flex items-end justify-between gap-4">
+              <div>
+                <p className="telemetry">Lokasi</p>
+                <p className="display-metric mt-2 text-[44px] text-neutral-400">
                   {assessment.location.score}
                 </p>
-                <RiskBadge level={assessment.location.level} className="mt-2" />
+                <RiskBadge level={assessment.location.level} className="mt-2.5" />
               </div>
-              <div
-                className="rounded-2xl p-4 text-center ring-2"
-                style={
-                  {
-                    background: RISK_LEVELS[assessment.personal.level].soft,
-                    '--tw-ring-color': RISK_LEVELS[assessment.personal.level].color,
-                  } as CSSProperties
-                }
-              >
-                <p className="text-[11px] font-bold uppercase tracking-wider text-muted">Skor personal</p>
-                <p className="tabular mt-1 text-[36px] font-extrabold leading-none">
+              <div className="mb-10 flex flex-1 flex-col items-center">
+                <span
+                  className={cn(
+                    'font-mono text-[12px] font-semibold',
+                    delta > 0 ? 'text-risk-high' : delta < 0 ? 'text-risk-safe' : 'text-subtle',
+                  )}
+                >
+                  {delta > 0 ? `+${delta}` : delta}
+                </span>
+                <span className="relative mt-1 h-px w-full bg-line-strong">
+                  <ArrowRight className="absolute -right-1 -top-[7px] size-3.5 text-line-strong" />
+                </span>
+                <span className="mt-1 font-mono text-[10px] text-subtle">
+                  ×{assessment.personal.modifierAvg.toFixed(2)}
+                </span>
+              </div>
+              <div className="text-right">
+                <p className="telemetry">Personal</p>
+                <p
+                  className="display-metric mt-2 text-[64px]"
+                  style={{ color: RISK_LEVELS[assessment.personal.level].color }}
+                >
                   {assessment.personal.score}
                 </p>
-                <RiskBadge level={assessment.personal.level} className="mt-2" />
+                <RiskBadge level={assessment.personal.level} className="mt-2.5" />
               </div>
             </div>
-            <p className="mt-4 text-center text-[13px] text-neutral-600">
-              Profil Anda membuat paparan{' '}
-              <b className={cn(delta > 0 ? 'text-orange-700' : delta < 0 ? 'text-green-700' : 'text-ink')}>
+            <RiskSpectrum score={assessment.personal.score} className="mt-6" showLabels={false} />
+            <p className="mt-4 text-[13px] leading-relaxed text-neutral-600">
+              Profilmu membuat paparan{' '}
+              <b className={cn(delta > 0 ? 'text-[#A4461A]' : delta < 0 ? 'text-risk-safe' : 'text-ink')}>
                 {delta > 0
-                  ? `+${delta} poin lebih tinggi`
+                  ? `${delta} poin lebih tinggi`
                   : delta < 0
-                    ? `${delta} poin lebih rendah`
+                    ? `${-delta} poin lebih rendah`
                     : 'setara'}
               </b>{' '}
-              dibanding rata-rata (pengubah rata-rata ×{assessment.personal.modifierAvg.toFixed(2)}).
+              dari rata-rata.
             </p>
             <div className="mt-5 border-t border-line pt-5">
-              <p className="mb-3 flex items-center gap-1.5 text-[13px] font-semibold">
-                <SlidersHorizontal className="size-4 text-muted" /> Konteks personal — ubah untuk melihat
-                dampaknya
+              <p className="mb-3 flex items-center gap-1.5 text-[13.5px] font-bold">
+                <SlidersHorizontal className="size-4 text-brand" /> Ubah profil, lihat dampaknya
               </p>
               <ProfileQuickEdit compact />
-              <p className="mt-3 text-[11.5px] text-muted">
-                Tidak ada data medis yang diminta. Profil tersimpan di perangkat Anda.
+              <p className="telemetry mt-4 normal-case tracking-normal">
+                Tanpa data medis · tersimpan di perangkatmu
               </p>
             </div>
           </CardContent>
@@ -185,7 +199,7 @@ export default function MyRiskPage() {
                 </div>
                 <ul className="space-y-2.5">
                   {impact.data.output.impacts.map((i) => (
-                    <li key={i.hazard} className="flex gap-3 rounded-xl bg-white p-3 ring-1 ring-indigo-100">
+                    <li key={i.hazard} className="flex gap-3 rounded-xl border border-line bg-raised p-3.5">
                       <HazardIcon
                         hazard={i.hazard}
                         level={assessment.personal.hazards[i.hazard].level}
@@ -202,13 +216,13 @@ export default function MyRiskPage() {
                   ))}
                 </ul>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-xl bg-white p-3 ring-1 ring-indigo-100">
+                  <div className="rounded-xl border border-line bg-raised p-3.5">
                     <p className="flex items-center gap-1.5 text-[12px] font-bold text-muted">
                       <Clock className="size-3.5" /> Waktu
                     </p>
                     <p className="mt-1 text-[13px] text-neutral-700">{impact.data.output.timing}</p>
                   </div>
-                  <div className="rounded-xl bg-white p-3 ring-1 ring-indigo-100">
+                  <div className="rounded-xl border border-line bg-raised p-3.5">
                     <p className="flex items-center gap-1.5 text-[12px] font-bold text-muted">
                       <Eye className="size-3.5" /> Waspadai
                     </p>
@@ -239,20 +253,25 @@ export default function MyRiskPage() {
                 onRetry={() => context && impact.mutate({ context })}
               />
             ) : (
-              <div className="flex flex-col items-start gap-3">
-                <p className="text-[14px] leading-relaxed text-neutral-700">
-                  SiagaAI akan menerjemahkan skor <b>{assessment.personal.score}/100</b> menjadi dampak nyata
-                  pada aktivitas Anda sebagai <b>{context?.profile.occupation.toLowerCase()}</b> yang
-                  menggunakan <b>{context?.profile.transport.toLowerCase()}</b>.
-                </p>
-                <Button
-                  variant="ai"
-                  size="lg"
-                  onClick={() => context && impact.mutate({ context })}
-                  disabled={!context}
-                >
-                  <Sparkles /> Apa artinya bagi saya?
-                </Button>
+              <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-end">
+                <Ara pose="explain" size={130} />
+                <div className="flex-1 pb-2 text-center sm:text-left">
+                  <p className="text-[15px] font-bold leading-snug text-ink">
+                    Skor {assessment.personal.score}/100 — apa dampaknya untukmu?
+                  </p>
+                  <p className="mt-1 text-[13.5px] text-muted">
+                    Sebagai {context?.profile.occupation.toLowerCase()} ·{' '}
+                    {context?.profile.transport.toLowerCase()}
+                  </p>
+                  <Button
+                    variant="ai"
+                    className="mt-4"
+                    onClick={() => context && impact.mutate({ context })}
+                    disabled={!context}
+                  >
+                    <Sparkles /> Analisis dampak personal
+                  </Button>
+                </div>
               </div>
             )}
           </AiPanel>
@@ -262,9 +281,7 @@ export default function MyRiskPage() {
             <CardHeader>
               <div>
                 <CardTitle>Kapan aman beraktivitas di luar?</CardTitle>
-                <p className="mt-1 text-[12.5px] text-muted">
-                  Indeks per jam dari hujan, petir, panas & PM2.5 — makin rendah makin baik
-                </p>
+                <p className="mt-1 text-[12.5px] text-muted">Indeks per jam · makin rendah makin baik</p>
               </div>
             </CardHeader>
             <CardContent>
@@ -276,7 +293,7 @@ export default function MyRiskPage() {
                       windows.map((w) => (
                         <span
                           key={w.start}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-[12.5px] font-semibold text-green-800"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-[#EEF7F2] px-3 py-1.5 text-[12.5px] font-semibold text-[#17654A] ring-1 ring-inset ring-risk-safe/20"
                         >
                           <Clock className="size-3.5" /> {describeWindow(w)} WIB · {w.reason}
                         </span>
@@ -300,10 +317,8 @@ export default function MyRiskPage() {
       <Card className="mt-5">
         <CardHeader className="flex-col sm:flex-row sm:items-center">
           <div>
-            <CardTitle>Bagaimana skor dihitung</CardTitle>
-            <p className="mt-1 text-[12.5px] text-muted">
-              Algoritma menghitung — AI hanya menjelaskan. Pilih bahaya untuk melihat indikatornya.
-            </p>
+            <CardTitle>Kenapa skornya segini?</CardTitle>
+            <p className="mt-1 text-[12.5px] text-muted">Kontribusi tiap indikator · algoritma, bukan AI</p>
           </div>
           <Tabs
             value={hazard}
@@ -315,7 +330,7 @@ export default function MyRiskPage() {
             <TabsList className="flex-wrap">
               {HAZARD_ORDER.map((k) => (
                 <TabsTrigger key={k} value={k}>
-                  {HAZARDS[k].emoji} {HAZARDS[k].label}
+                  {HAZARDS[k].label}
                 </TabsTrigger>
               ))}
             </TabsList>
@@ -331,10 +346,8 @@ export default function MyRiskPage() {
               sublabel={`Bahaya ${h.score} × pengubah ${ph.modifier.value.toFixed(2)}`}
             />
             <p className="mt-3 text-center text-[13px] leading-relaxed text-neutral-600">{h.headline}</p>
-            <div className="mt-4 rounded-xl bg-neutral-50 p-3">
-              <p className="mb-2 text-[12px] font-bold text-muted">
-                Pengubah paparan ({HAZARDS[hazard].label})
-              </p>
+            <div className="mt-5 rounded-xl border border-line bg-raised p-4">
+              <p className="data-label mb-2.5">Pengubah paparan</p>
               {ph.modifier.contributions.length ? (
                 <ul className="space-y-1 text-[12.5px]">
                   {ph.modifier.contributions.map((c) => (
@@ -343,7 +356,7 @@ export default function MyRiskPage() {
                       <span
                         className={cn(
                           'tabular font-semibold',
-                          c.delta > 0 ? 'text-orange-700' : 'text-green-700',
+                          c.delta > 0 ? 'text-[#A4461A]' : 'text-risk-safe',
                         )}
                       >
                         {c.delta > 0 ? '+' : ''}
@@ -381,20 +394,16 @@ export default function MyRiskPage() {
         <CardHeader>
           <div>
             <CardTitle>Satu bahaya, dampak berbeda</CardTitle>
-            <p className="mt-1 text-[12.5px] text-muted">
-              Perbandingan deterministik di {location.name} untuk berbagai persona
-            </p>
+            <p className="mt-1 text-[12.5px] text-muted">Perbandingan persona di {location.name}</p>
           </div>
           <UserRound className="size-5 text-muted" />
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {personas.map((p) => (
-            <div key={p.key} className="rounded-xl border border-line p-4">
-              <p className="text-[13px] font-semibold">
-                <span aria-hidden>{p.emoji}</span> {p.label}
-              </p>
+            <div key={p.key} className="rounded-xl border border-line bg-raised p-4 sm:p-5">
+              <p className="text-[13px] font-semibold">{p.label}</p>
               <div className="mt-2 flex items-baseline justify-between">
-                <span className="tabular text-[26px] font-bold">{p.result.score}</span>
+                <span className="display-metric text-[32px]">{p.result.score}</span>
                 <RiskBadge level={p.result.level} />
               </div>
               <ScoreBar score={p.result.score} level={p.result.level} className="mt-2" />

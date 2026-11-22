@@ -26,7 +26,7 @@ export const ACTIVITIES: { value: DailyActivity; label: string }[] = [
   { value: 'outdoor', label: 'Dominan luar ruang' },
 ];
 
-function Row<T extends string>({
+export function ChoiceRow<T extends string>({
   label,
   options,
   value,
@@ -39,11 +39,10 @@ function Row<T extends string>({
 }) {
   return (
     <div role="group" aria-label={label}>
-      <p className="mb-1.5 text-[12px] font-semibold text-muted">{label}</p>
+      <p className="mb-2 text-[12.5px] font-semibold text-neutral-700">{label}</p>
       <div className="flex flex-wrap gap-1.5">
         {options.map((o) => (
           <Chip key={o.value} active={value === o.value} onClick={() => onChange(o.value)}>
-            {o.emoji && <span aria-hidden>{o.emoji}</span>}
             {o.label}
           </Chip>
         ))}
@@ -62,20 +61,25 @@ export function ProfileQuickEdit({ compact }: { compact?: boolean }) {
       update({ [k]: v } as Partial<PersonalProfile>);
   return (
     <div className={compact ? 'space-y-3' : 'space-y-4'}>
-      <Row label="Pekerjaan" options={OCCUPATIONS} value={profile.occupation} onChange={set('occupation')} />
-      <Row
+      <ChoiceRow
+        label="Pekerjaan"
+        options={OCCUPATIONS}
+        value={profile.occupation}
+        onChange={set('occupation')}
+      />
+      <ChoiceRow
         label="Transportasi harian"
         options={TRANSPORTS}
         value={profile.transport}
         onChange={set('transport')}
       />
-      <Row
+      <ChoiceRow
         label="Paparan luar ruang"
         options={EXPOSURES}
         value={profile.exposure}
         onChange={set('exposure')}
       />
-      <Row
+      <ChoiceRow
         label="Aktivitas harian"
         options={ACTIVITIES}
         value={profile.activity}

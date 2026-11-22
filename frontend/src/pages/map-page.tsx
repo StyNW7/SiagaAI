@@ -22,14 +22,14 @@ import { aggregateByProvince } from '@/services/hazards/hotspots';
 import { getMultiPointSnapshot } from '@/services/weather/open-meteo';
 
 const LAYER_META: { key: keyof MapLayers; label: string; hint: string; color: string }[] = [
-  { key: 'hotspots', label: 'Titik panas', hint: 'NASA FIRMS VIIRS · 7 hari', color: '#F97316' },
-  { key: 'heatmap', label: 'Kepadatan titik panas', hint: 'Heatmap skala nasional', color: '#DC2626' },
-  { key: 'risk', label: 'Aktivitas per provinsi', hint: 'Choropleth deteksi 24 jam', color: '#F59E0B' },
-  { key: 'warnings', label: 'Peringatan BMKG', hint: 'Garis putus-putus = aktif', color: '#F59E0B' },
-  { key: 'weather', label: 'Cuaca kota', hint: 'Suhu & kondisi · Open-Meteo', color: '#2563EB' },
-  { key: 'air', label: 'Kualitas udara', hint: 'PM2.5 model CAMS', color: '#16A34A' },
-  { key: 'quakes', label: 'Gempabumi', hint: 'BMKG · M5+ terkini', color: '#991B1B' },
-  { key: 'community', label: 'Laporan komunitas', hint: 'Belum terverifikasi', color: '#4F46E5' },
+  { key: 'hotspots', label: 'Titik panas', hint: 'NASA FIRMS VIIRS · 7 hari', color: '#E66B24' },
+  { key: 'heatmap', label: 'Kepadatan titik panas', hint: 'Heatmap skala nasional', color: '#C62A1F' },
+  { key: 'risk', label: 'Aktivitas per provinsi', hint: 'Choropleth deteksi 24 jam', color: '#D99A22' },
+  { key: 'warnings', label: 'Peringatan BMKG', hint: 'Garis putus-putus = aktif', color: '#D99A22' },
+  { key: 'weather', label: 'Cuaca kota', hint: 'Suhu & kondisi · Open-Meteo', color: '#3478C6' },
+  { key: 'air', label: 'Kualitas udara', hint: 'PM2.5 model CAMS', color: '#208A61' },
+  { key: 'quakes', label: 'Gempabumi', hint: 'BMKG · M5+ terkini', color: '#A51E22' },
+  { key: 'community', label: 'Laporan komunitas', hint: 'Belum terverifikasi', color: '#4E54D8' },
 ];
 
 export default function MapPage() {
@@ -143,33 +143,33 @@ export default function MapPage() {
 
         {/* Top-left: title + national stats */}
         <div className="pointer-events-none absolute left-3 right-14 top-3 flex flex-col gap-2 sm:left-4 sm:right-auto sm:w-[340px]">
-          <div className="pointer-events-auto rounded-2xl border border-line bg-white/95 p-4 shadow-lift backdrop-blur">
+          <div className="glass pointer-events-auto rounded-[16px] p-4 sm:p-5">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h1 className="text-[17px] font-bold">Siaga Map</h1>
-                <p className="text-[12px] text-muted">Klik provinsi untuk ringkasan regional</p>
+                <p className="telemetry !text-brand">Indonesia · live</p>
+                <h1 className="mt-0.5 text-[19px] font-bold tracking-[-0.02em]">Siaga Map</h1>
               </div>
               <FreshnessBadge provenance={hotspots.data?.provenance} kind="hotspots" />
             </div>
-            <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+            <div className="mt-4 grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-line bg-line">
               <MiniStat label="24 jam" value={total24} />
               <MiniStat label="7 hari" value={total7} />
               <MiniStat label="Peringatan" value={warningList.length} />
             </div>
             <div className="mt-3 hidden sm:block">
-              <p className="mb-1.5 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-muted">
-                <Flame className="size-3 text-orange-500" /> Provinsi teraktif
+              <p className="data-label mb-1.5 flex items-center gap-1.5">
+                <Flame className="size-3.5 text-hz-fire" /> Provinsi teraktif · klik untuk detail
               </p>
               <ul className="space-y-1">
                 {topProvinces.map((p) => (
                   <li key={p.code}>
                     <button
                       onClick={() => selectProvince(p.code)}
-                      className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-[13px] hover:bg-neutral-100"
+                      className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-white/80"
                     >
                       <span className="font-medium">{p.name}</span>
-                      <span className="tabular text-[12px] text-muted">
-                        <b className="text-ink">{p.last24h}</b> / {p.total7d}
+                      <span className="font-mono text-[11.5px] text-subtle">
+                        <b className="font-semibold text-ink">{p.last24h}</b> / {p.total7d}
                       </span>
                     </button>
                   </li>
@@ -183,7 +183,7 @@ export default function MapPage() {
         </div>
 
         {/* Camera journey controls */}
-        <div className="absolute bottom-24 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border border-line bg-white/95 p-1 shadow-lift backdrop-blur md:bottom-6">
+        <div className="glass absolute bottom-24 left-1/2 flex -translate-x-1/2 items-center gap-0.5 rounded-full p-1 md:bottom-6">
           <JourneyButton
             icon={<Globe2 />}
             label="Indonesia"
@@ -219,7 +219,7 @@ export default function MapPage() {
           <Button
             variant="secondary"
             size="icon"
-            className="ml-auto flex shadow-lift"
+            className="glass ml-auto flex !border-white/70 !bg-white/85"
             onClick={() => setLayersOpen((v) => !v)}
             aria-expanded={layersOpen}
             aria-label="Lapisan peta"
@@ -228,15 +228,15 @@ export default function MapPage() {
           </Button>
           <div
             className={cn(
-              'mt-2 w-64 rounded-2xl border border-line bg-white/95 p-3 shadow-lift backdrop-blur',
+              'glass mt-2 w-[272px] rounded-[16px] p-3',
               layersOpen ? 'block animate-fade-up' : 'hidden',
             )}
           >
-            <p className="mb-1 px-1 text-[11px] font-bold uppercase tracking-wider text-muted">Lapisan</p>
+            <p className="data-label mb-1.5 px-1.5">Lapisan peta</p>
             <ul>
               {LAYER_META.map((l) => (
                 <li key={l.key}>
-                  <label className="flex cursor-pointer items-center gap-3 rounded-lg px-1 py-1.5 hover:bg-neutral-50">
+                  <label className="flex cursor-pointer items-center gap-3 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-white/80">
                     <span
                       className="size-2.5 shrink-0 rounded-full"
                       style={{ background: l.color }}
@@ -244,7 +244,7 @@ export default function MapPage() {
                     />
                     <span className="min-w-0 flex-1">
                       <span className="block text-[13px] font-semibold">{l.label}</span>
-                      <span className="block truncate text-[11px] text-muted">{l.hint}</span>
+                      <span className="block truncate font-mono text-[10px] text-subtle">{l.hint}</span>
                     </span>
                     <Switch
                       checked={layers[l.key]}
@@ -260,18 +260,21 @@ export default function MapPage() {
         </div>
 
         {/* Legend */}
-        <div className="absolute bottom-40 left-3 hidden rounded-xl border border-line bg-white/95 px-3 py-2 text-[11px] shadow-soft sm:block md:bottom-6">
-          <p className="mb-1 font-bold text-muted">Usia deteksi</p>
+        <div className="glass absolute bottom-40 left-3 hidden rounded-xl px-3.5 py-2.5 text-[11.5px] sm:block md:bottom-6 md:left-4">
+          <p className="data-label mb-1.5">Usia deteksi</p>
           {[
-            ['#DC2626', '≤ 6 jam'],
-            ['#F97316', '6–24 jam'],
-            ['#F59E0B', '1–3 hari'],
+            ['#C62A1F', '≤ 6 jam'],
+            ['#E66B24', '6–24 jam'],
+            ['#D99A22', '1–3 hari'],
             ['#A8A29E', '> 3 hari'],
           ].map(([c, l]) => (
-            <p key={l} className="flex items-center gap-1.5">
+            <p key={l} className="flex items-center gap-2 py-0.5">
               <span className="size-2.5 rounded-full ring-2 ring-white" style={{ background: c }} /> {l}
             </p>
           ))}
+          <p className="mt-2 border-t border-line pt-2 font-mono text-[10.5px] text-muted">
+            {location.lat.toFixed(3)}°, {location.lon.toFixed(3)}°
+          </p>
         </div>
       </div>
 
@@ -309,9 +312,9 @@ export default function MapPage() {
 
 function MiniStat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-xl bg-neutral-50 py-2">
-      <p className="tabular text-[18px] font-bold leading-none">{value.toLocaleString('id-ID')}</p>
-      <p className="mt-1 text-[10.5px] font-medium text-muted">{label}</p>
+    <div className="bg-white/90 px-3 py-2.5">
+      <p className="display-metric text-[20px]">{value.toLocaleString('id-ID')}</p>
+      <p className="telemetry mt-1 !text-[10px]">{label}</p>
     </div>
   );
 }
@@ -320,7 +323,7 @@ function JourneyButton({ icon, label, onClick }: { icon: ReactNode; label: strin
   return (
     <button
       onClick={onClick}
-      className="flex h-10 items-center gap-1.5 rounded-full px-3 text-[12.5px] font-semibold text-neutral-700 hover:bg-neutral-100 [&_svg]:size-4"
+      className="flex h-10 items-center gap-1.5 rounded-full px-3.5 text-[12.5px] font-semibold text-neutral-700 transition-colors hover:bg-white hover:text-ink [&_svg]:size-4"
       aria-label={label}
     >
       {icon}

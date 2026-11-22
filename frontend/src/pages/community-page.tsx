@@ -8,7 +8,6 @@ import {
   Megaphone,
   ShieldQuestion,
   Trash2,
-  Users,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -16,6 +15,7 @@ import { Link } from 'react-router';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { EmptyState } from '@/components/common/data-state';
+import { HAZARD_ICONS } from '@/components/common/risk';
 import { PageHeader } from '@/components/common/layout-bits';
 import { Button } from '@/components/ui/button';
 import {
@@ -40,13 +40,13 @@ import { supabase } from '@/services/supabase/client';
 import { useAuthStore, useCommunityStore } from '@/stores';
 import type { CommunityHazard } from '@/types/domain';
 
-const HAZARD_OPTIONS: { value: CommunityHazard; label: string; emoji: string }[] = [
-  { value: 'fire', label: 'Kemungkinan api vegetasi', emoji: '🔥' },
-  { value: 'smoke', label: 'Asap', emoji: '💨' },
-  { value: 'flood', label: 'Jalan tergenang / banjir', emoji: '🌊' },
-  { value: 'weather', label: 'Cuaca ekstrem', emoji: '⛈️' },
+const HAZARD_OPTIONS: { value: CommunityHazard; label: string; color: string }[] = [
+  { value: 'fire', label: 'Api vegetasi', color: '#D95332' },
+  { value: 'smoke', label: 'Asap', color: '#73717E' },
+  { value: 'flood', label: 'Genangan / banjir', color: '#397EB8' },
+  { value: 'weather', label: 'Cuaca ekstrem', color: '#6F63B5' },
 ];
-const EMOJI = Object.fromEntries(HAZARD_OPTIONS.map((h) => [h.value, h.emoji]));
+const COLOR = Object.fromEntries(HAZARD_OPTIONS.map((h) => [h.value, h.color]));
 const LABEL = Object.fromEntries(HAZARD_OPTIONS.map((h) => [h.value, h.label]));
 
 const schema = z.object({
@@ -141,19 +141,20 @@ export default function CommunityPage() {
   const shown = filter === 'near' ? reports.filter((r) => haversineKm(location, r) <= 100) : reports;
 
   return (
-    <div className="animate-fade-up">
+    <div>
       <PageHeader
         eyebrow={
           <span className="inline-flex items-center gap-1.5">
             <Megaphone className="size-3.5" /> Community Signal
           </span>
         }
-        title="Laporan komunitas"
-        description="Warga berbagi kondisi lapangan secara real-time. Setiap laporan ditandai belum terverifikasi dan tidak pernah dianggap data resmi."
+        title="Laporan warga"
+        description="Kondisi lapangan dari sesama warga — selalu ditandai belum terverifikasi."
+        mascot="radio"
       />
 
-      <div className="grid gap-5 lg:grid-cols-12">
-        <div className="min-w-0 lg:col-span-5">
+      <div className="grid gap-5 lg:grid-cols-12 lg:gap-6">
+        <div className="order-2 min-w-0 lg:col-span-5">
           <Card className="lg:sticky lg:top-24">
             <CardHeader>
               <div>
@@ -167,9 +168,9 @@ export default function CommunityPage() {
             <CardContent>
               {!user ? (
                 <EmptyState
-                  icon={<Users className="size-5" />}
+                  pose="radio"
                   title="Masuk untuk mengirim laporan"
-                  description="Login diperlukan untuk mencegah spam. Gunakan akun demo juri bila tersedia."
+                  description="Login mencegah spam. Akun demo tersedia di halaman masuk."
                   action={
                     <Button asChild>
                       <Link to="/auth?next=/app/community">Masuk / Daftar</Link>
@@ -179,7 +180,7 @@ export default function CommunityPage() {
               ) : (
                 <form onSubmit={submit} className="space-y-4" noValidate>
                   <fieldset>
-                    <legend className="mb-2 text-[13px] font-semibold">Jenis kejadian</legend>
+                    <legend className="mb-2 text-[13px] font-semibold">Apa yang terjadi?</legend>
                     <div className="grid grid-cols-2 gap-2">
                       {HAZARD_OPTIONS.map((o) => (
                         <button
@@ -188,15 +189,22 @@ export default function CommunityPage() {
                           aria-pressed={hazard === o.value}
                           onClick={() => form.setValue('hazard', o.value, { shouldValidate: true })}
                           className={cn(
-                            'flex min-h-14 items-center gap-2 rounded-xl border px-3 py-2 text-left text-[13px] font-semibold transition-colors',
+                            'flex min-h-13 items-center gap-2.5 rounded-xl border px-3 py-2 text-left text-[13px] font-semibold transition-colors',
                             hazard === o.value
                               ? 'border-ink bg-ink text-white'
-                              : 'border-line hover:bg-neutral-50',
+                              : 'border-line bg-white hover:border-line-strong hover:bg-raised',
                           )}
                         >
-                          <span className="text-lg" aria-hidden>
-                            {o.emoji}
-                          </span>
+                          {(() => {
+                            const I = HAZARD_ICONS[o.value];
+                            return (
+                              <I
+                                className="size-[18px] shrink-0"
+                                style={{ color: hazard === o.value ? '#fff' : o.color }}
+                                aria-hidden
+                              />
+                            );
+                          })()}
                           {o.label}
                         </button>
                       ))}
@@ -214,7 +222,7 @@ export default function CommunityPage() {
                     <FieldError>{form.formState.errors.description?.message}</FieldError>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <label className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-line px-3 text-[13px] font-semibold hover:bg-neutral-50">
+                    <label className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-line-strong/80 bg-white px-3.5 text-[13px] font-semibold transition-colors hover:bg-raised">
                       <ImagePlus className="size-4" /> {image ? 'Ganti foto' : 'Tambah foto'}
                       <input
                         type="file"
@@ -252,9 +260,8 @@ export default function CommunityPage() {
                       </button>
                     </div>
                   )}
-                  <p className="text-[11.5px] leading-relaxed text-muted">
-                    Foto dikompres & metadata (termasuk GPS EXIF) dihapus di perangkat sebelum dikirim. Jangan
-                    memotret wajah orang tanpa izin.
+                  <p className="telemetry normal-case leading-relaxed tracking-normal">
+                    Metadata foto (EXIF/GPS) dihapus di perangkat · jangan potret wajah tanpa izin
                   </p>
                   <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
                     {form.formState.isSubmitting ? <Loader2 className="animate-spin" /> : <Camera />} Kirim
@@ -266,12 +273,12 @@ export default function CommunityPage() {
           </Card>
         </div>
 
-        <div className="min-w-0 lg:col-span-7">
-          <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="order-1 min-w-0 lg:col-span-7">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
               <TabsList>
                 <TabsTrigger value="all">Semua</TabsTrigger>
-                <TabsTrigger value="near">≤100 km dari {location.name}</TabsTrigger>
+                <TabsTrigger value="near">≤100 km</TabsTrigger>
               </TabsList>
             </Tabs>
             <Badge variant={isRemote ? 'success' : 'neutral'}>
@@ -280,42 +287,46 @@ export default function CommunityPage() {
           </div>
           {shown.length === 0 ? (
             <EmptyState
-              icon={<Megaphone className="size-5" />}
-              title="Belum ada laporan di sekitar Anda"
-              description="Jadilah yang pertama berbagi kondisi lapangan untuk membantu warga lain."
+              pose="explore"
+              title="Belum ada laporan di sekitar"
+              description="Jadilah yang pertama berbagi kondisi lapangan."
             />
           ) : (
             <ul className="space-y-3">
               {shown.map((r) => (
                 <li key={r.id}>
                   <Card className="overflow-hidden">
-                    <div className="flex items-center gap-2 border-b border-amber-100 bg-amber-50 px-4 py-1.5 text-[11px] font-bold text-amber-800">
-                      <ShieldQuestion className="size-3.5" /> LAPORAN KOMUNITAS — BELUM TERVERIFIKASI
+                    <div className="flex items-center gap-2 border-b border-line bg-raised px-5 py-2 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-[#8A5A0B]">
+                      <ShieldQuestion className="size-3.5" /> Laporan warga · belum terverifikasi
                       {r.isExample && (
-                        <span className="ml-auto rounded bg-white/70 px-1.5 py-0.5 font-semibold text-amber-700">
+                        <span className="ml-auto rounded-full bg-neutral-100 px-2 py-0.5 text-subtle">
                           contoh demo
                         </span>
                       )}
                     </div>
-                    <div className="flex gap-4 p-4">
+                    <div className="flex gap-4 p-5">
                       <span
-                        className="grid size-11 shrink-0 place-items-center rounded-xl bg-neutral-100 text-xl"
+                        className="grid size-10 shrink-0 place-items-center rounded-full"
+                        style={{ background: `${COLOR[r.hazard]}14`, color: COLOR[r.hazard] }}
                         aria-hidden
                       >
-                        {EMOJI[r.hazard]}
+                        {(() => {
+                          const I = HAZARD_ICONS[r.hazard];
+                          return <I className="size-[18px]" />;
+                        })()}
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                          <h3 className="text-[14px] font-semibold">{LABEL[r.hazard]}</h3>
+                          <h3 className="text-[15px] font-bold">{LABEL[r.hazard]}</h3>
                           <time
-                            className="text-[11.5px] text-muted"
+                            className="font-mono text-[11px] text-subtle"
                             dateTime={r.createdAt}
                             title={formatDateTime(r.createdAt)}
                           >
                             {timeAgo(r.createdAt)}
                           </time>
                         </div>
-                        <p className="mt-1 text-[13.5px] leading-relaxed text-neutral-700">{r.description}</p>
+                        <p className="mt-1 text-[14px] leading-relaxed text-neutral-700">{r.description}</p>
                         {r.imageUrl && (
                           <img
                             src={r.imageUrl}
@@ -324,7 +335,7 @@ export default function CommunityPage() {
                             loading="lazy"
                           />
                         )}
-                        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[12px] text-muted">
+                        <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-[12px] text-muted">
                           <span>{r.locationName}</span>
                           <span>· {formatDistance(haversineKm(location, r))} dari Anda</span>
                           <span>· oleh {r.author}</span>

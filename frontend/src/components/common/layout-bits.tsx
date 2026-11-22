@@ -24,6 +24,7 @@ import { FALLBACK_REASONS } from '@/services/ai/client';
 import { useSettings } from '@/stores';
 import { Button } from '../ui/button';
 import { Tip } from '../ui/overlays';
+import { Ara, type AraPose } from './ara';
 
 export function PageHeader({
   eyebrow,
@@ -31,27 +32,40 @@ export function PageHeader({
   description,
   actions,
   className,
+  mascot,
 }: {
   eyebrow?: ReactNode;
   title: ReactNode;
   description?: ReactNode;
   actions?: ReactNode;
   className?: string;
+  /** Optional Ara pose shown beside the title on larger screens. */
+  mascot?: AraPose;
 }) {
   return (
-    <header className={cn('mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between', className)}>
-      <div className="min-w-0">
-        {eyebrow && (
-          <div className="mb-2 flex flex-wrap items-center gap-2 text-[12px] font-semibold text-muted">
-            {eyebrow}
-          </div>
-        )}
-        <h1 className="text-balance text-[26px] font-bold leading-tight tracking-tight text-ink sm:text-[30px]">
-          {title}
-        </h1>
-        {description && (
-          <p className="mt-1.5 max-w-2xl text-[14px] leading-relaxed text-muted">{description}</p>
-        )}
+    <header
+      className={cn(
+        'mb-7 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between',
+        className,
+      )}
+    >
+      <div className="flex min-w-0 items-end gap-4">
+        {mascot && <Ara pose={mascot} size={84} className="-mb-1 hidden sm:block" />}
+        <div className="min-w-0">
+          {eyebrow && (
+            <div className="telemetry mb-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 normal-case [&>*]:normal-case">
+              {eyebrow}
+            </div>
+          )}
+          <h1 className="text-balance text-[27px] font-bold leading-[1.15] tracking-[-0.03em] text-ink sm:text-[34px]">
+            {title}
+          </h1>
+          {description && (
+            <p className="text-pretty mt-2 max-w-2xl text-[14.5px] leading-relaxed text-muted">
+              {description}
+            </p>
+          )}
+        </div>
       </div>
       {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
     </header>
@@ -74,7 +88,7 @@ export function WeatherIcon({ code, className }: { code: number | null | undefin
   return <Icon className={className} aria-hidden />;
 }
 
-/** Visual container for AI-generated content — always indigo + labelled with its provider. */
+/** Visual container for AI-generated content — white surface, one thin indigo accent, always labelled. */
 export function AiPanel({
   title,
   children,
@@ -97,24 +111,22 @@ export function AiPanel({
   return (
     <section
       className={cn(
-        'relative overflow-hidden rounded-card border border-indigo-100 bg-gradient-to-b from-ai-soft/80 to-white',
-        compact ? 'p-4' : 'p-5',
+        'relative overflow-hidden rounded-card border border-line bg-white shadow-soft',
+        compact ? 'p-4' : 'p-5 sm:p-6',
         className,
       )}
     >
-      <div className="absolute -right-10 -top-10 size-40 rounded-full bg-ai/5 blur-2xl" aria-hidden />
+      <span className="absolute inset-y-0 left-0 w-[3px] bg-ai" aria-hidden />
       <div className="relative mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h3 className="flex items-center gap-2 text-[15px] font-semibold text-ink">
-          <span className="grid size-7 place-items-center rounded-lg bg-ai text-white">
-            <Sparkles className="size-4" aria-hidden />
-          </span>
+        <h3 className="flex items-center gap-2 text-[15px] font-bold text-ink">
+          <Sparkles className="size-4 text-ai" aria-hidden />
           {title}
         </h3>
         {actions}
       </div>
       <div className="relative">{children}</div>
       {provider && (
-        <div className="relative mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted">
+        <div className="relative mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-line pt-3 font-mono text-[10.5px] uppercase tracking-[0.04em] text-subtle">
           <Tip
             content={
               fallbackReason
@@ -122,25 +134,30 @@ export function AiPanel({
                 : 'Dihasilkan LLM melalui gateway server yang aman, berlandaskan konteks data terstruktur.'
             }
           >
-            <span
-              tabIndex={0}
-              className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 font-semibold text-ai ring-1 ring-indigo-100"
-            >
-              <Sparkles className="size-3" aria-hidden /> {provider}
+            <span tabIndex={0} className="inline-flex items-center gap-1 font-semibold text-ai">
+              ✦ {provider}
             </span>
           </Tip>
           {generatedAt && <span>· {formatTime(generatedAt)}</span>}
-          <span>· AI menjelaskan, algoritma menghitung. Bukan peringatan resmi.</span>
+          <span className="normal-case tracking-normal">· AI menjelaskan, algoritma menghitung.</span>
         </div>
       )}
     </section>
   );
 }
 
-export function AiThinking({ steps }: { steps?: string[] }) {
+const DEFAULT_STEPS = [
+  'Memeriksa sinyal lingkungan',
+  'Menilai kedekatan bahaya',
+  'Memperkirakan paparan personal',
+  'Menyiapkan rekomendasi',
+];
+
+/** Structured, honest loading steps — no fake neural animations. */
+export function AiThinking({ steps = DEFAULT_STEPS }: { steps?: string[] }) {
   return (
     <div role="status" aria-live="polite" className="space-y-3">
-      <div className="flex items-center gap-2 text-sm font-medium text-ai">
+      <div className="flex items-center gap-2.5 text-[13px] font-semibold text-ai">
         <span className="flex gap-1" aria-hidden>
           {[0, 1, 2].map((i) => (
             <span
@@ -150,21 +167,22 @@ export function AiThinking({ steps }: { steps?: string[] }) {
             />
           ))}
         </span>
-        SiagaAI sedang menyusun…
+        Menganalisis wilayah Anda…
       </div>
-      {steps ? (
-        <ul className="space-y-1.5 text-[13px] text-muted">
-          {steps.map((s) => (
-            <li key={s}>· {s}</li>
-          ))}
-        </ul>
-      ) : (
-        <div className="space-y-2">
-          <div className="skeleton h-3 w-11/12 rounded" />
-          <div className="skeleton h-3 w-9/12 rounded" />
-          <div className="skeleton h-3 w-10/12 rounded" />
-        </div>
-      )}
+      <ol className="space-y-2">
+        {steps.map((s, i) => (
+          <li
+            key={s}
+            className="flex animate-fade-up items-center gap-3 text-[13px] text-muted"
+            style={{ animationDelay: `${i * 0.35}s` }}
+          >
+            <span className="font-mono text-[11px] font-semibold text-ai/70">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            {s}
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }
@@ -190,7 +208,7 @@ export function RichText({ text, className }: { text: string; className?: string
         <ul key={`ul-${blocks.length}`} className="my-1.5 space-y-1 pl-1">
           {list.map((l, i) => (
             <li key={i} className="flex gap-2">
-              <span className="mt-2 size-1.5 shrink-0 rounded-full bg-ai/60" aria-hidden />
+              <span className="mt-[9px] size-1.5 shrink-0 rounded-full bg-neutral-400" aria-hidden />
               <span>{inline(l)}</span>
             </li>
           ))}
@@ -211,7 +229,7 @@ export function RichText({ text, className }: { text: string; className?: string
     }
   }
   flush();
-  return <div className={cn('text-[14px] leading-relaxed text-neutral-700', className)}>{blocks}</div>;
+  return <div className={cn('text-[14.5px] leading-[1.7] text-neutral-700', className)}>{blocks}</div>;
 }
 
 export function Disclaimer({ className, compact }: { className?: string; compact?: boolean }) {
@@ -236,7 +254,7 @@ export function ScenarioBanner() {
   return (
     <div
       role="status"
-      className="sticky top-0 z-40 flex items-center gap-3 border-b border-indigo-200 bg-[repeating-linear-gradient(135deg,#EEF2FF,#EEF2FF_12px,#E0E7FF_12px,#E0E7FF_24px)] px-4 py-2 text-[13px] text-indigo-950"
+      className="sticky top-0 z-40 flex items-center gap-3 border-b border-ai/15 bg-[repeating-linear-gradient(135deg,#EEF0FF,#EEF0FF_12px,#E6E9FF_12px,#E6E9FF_24px)] px-4 py-2 text-[13px] text-ai-deep"
     >
       <FlaskConical className="size-4 shrink-0 text-ai" aria-hidden />
       <p className="min-w-0 flex-1 truncate">
@@ -273,14 +291,19 @@ export function SectionTitle({
   children,
   action,
   className,
+  eyebrow,
 }: {
   children: ReactNode;
   action?: ReactNode;
   className?: string;
+  eyebrow?: ReactNode;
 }) {
   return (
-    <div className={cn('mb-3 flex items-center justify-between gap-3', className)}>
-      <h2 className="text-[15px] font-semibold text-ink">{children}</h2>
+    <div className={cn('mb-4 flex items-end justify-between gap-3', className)}>
+      <div className="min-w-0">
+        {eyebrow && <p className="data-label mb-1">{eyebrow}</p>}
+        <h2 className="text-[17px] font-bold tracking-[-0.02em] text-ink">{children}</h2>
+      </div>
       {action}
     </div>
   );
@@ -288,7 +311,10 @@ export function SectionTitle({
 
 export function TextLink({ to, children }: { to: string; children: ReactNode }) {
   return (
-    <Link to={to} className="text-[13px] font-semibold text-brand hover:text-brand-dark hover:underline">
+    <Link
+      to={to}
+      className="inline-flex items-center gap-1 text-[13px] font-semibold text-ink underline decoration-line-strong underline-offset-4 transition-colors hover:text-brand hover:decoration-brand"
+    >
       {children}
     </Link>
   );

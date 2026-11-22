@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import type { DataMode, FreshnessStatus, Provenance } from '@/types/domain';
 import { Button } from '../ui/button';
 import { Tip } from '../ui/overlays';
+import { Ara, type AraPose } from './ara';
 
 /** Freshness thresholds (hours) per data family. */
 const THRESHOLDS: Record<string, [number, number]> = { default: [1, 6], hotspots: [6, 24], river: [12, 48] };
@@ -28,9 +29,9 @@ export function freshnessOf(p: Provenance | undefined, kind = 'default', now = D
 }
 
 const FRESH_META: Record<FreshnessStatus, { label: string; dot: string; text: string }> = {
-  fresh: { label: 'Terkini', dot: 'bg-green-500', text: 'text-green-700' },
-  aging: { label: 'Menua', dot: 'bg-amber-500', text: 'text-amber-700' },
-  stale: { label: 'Usang', dot: 'bg-orange-600', text: 'text-orange-700' },
+  fresh: { label: 'Terkini', dot: 'bg-risk-safe', text: 'text-[#17654A]' },
+  aging: { label: 'Menua', dot: 'bg-risk-moderate', text: 'text-[#8A5A0B]' },
+  stale: { label: 'Usang', dot: 'bg-risk-high', text: 'text-[#A4461A]' },
   unavailable: { label: 'Tidak tersedia', dot: 'bg-neutral-300', text: 'text-neutral-500' },
 };
 
@@ -78,7 +79,10 @@ export function FreshnessBadge({
     >
       <span
         tabIndex={0}
-        className={cn('inline-flex items-center gap-1.5 text-[11px] font-medium text-muted', className)}
+        className={cn(
+          'inline-flex items-center gap-1.5 font-mono text-[10.5px] font-medium uppercase tracking-[0.04em] text-muted',
+          className,
+        )}
       >
         <span
           className={cn('size-1.5 rounded-full', meta.dot, status === 'fresh' && 'animate-pulse')}
@@ -103,9 +107,25 @@ export function FreshnessBadge({
 
 export function LoadingState({ label = 'Memuat data…', className }: { label?: string; className?: string }) {
   return (
-    <div role="status" className={cn('flex items-center gap-2 py-6 text-sm text-muted', className)}>
-      <Loader2 className="size-4 animate-spin" aria-hidden />
+    <div role="status" className={cn('flex items-center gap-2.5 py-6 text-[13px] text-muted', className)}>
+      <span className="relative grid size-4 place-items-center" aria-hidden>
+        <span className="absolute inset-0 animate-ping rounded-full bg-brand/25" />
+        <span className="size-2 rounded-full bg-brand" />
+      </span>
       {label}
+    </div>
+  );
+}
+
+/** Branded full-area loader with Ara — for route-level suspense. */
+export function PageLoader({ label = 'Memuat SiagaAI…', className }: { label?: string; className?: string }) {
+  return (
+    <div role="status" className={cn('flex flex-col items-center justify-center gap-4 py-24', className)}>
+      <Ara pose="radio" size={110} float priority />
+      <div className="flex items-center gap-2.5">
+        <Loader2 className="size-4 animate-spin text-brand" aria-hidden />
+        <span className="telemetry">{label}</span>
+      </div>
     </div>
   );
 }
@@ -125,17 +145,17 @@ export function ErrorState({
     <div
       role="alert"
       className={cn(
-        'flex flex-col items-start gap-2 rounded-xl border border-dashed border-amber-300 bg-amber-50/60 p-4',
+        'flex flex-col items-start gap-2 rounded-xl border border-[#D99A22]/30 bg-[#FDF6E8]/70 p-4',
         className,
       )}
     >
-      <div className="flex items-center gap-2 text-sm font-semibold text-amber-900">
+      <div className="flex items-center gap-2 text-[14px] font-semibold text-[#6E4708]">
         <AlertCircle className="size-4" aria-hidden />
         {title}
       </div>
-      {description && <p className="text-[13px] leading-relaxed text-amber-900/80">{description}</p>}
+      {description && <p className="text-[13px] leading-relaxed text-[#6E4708]/80">{description}</p>}
       {onRetry && (
-        <Button size="sm" variant="secondary" onClick={onRetry}>
+        <Button size="sm" variant="secondary" onClick={onRetry} className="mt-1">
           <RefreshCw /> Coba lagi
         </Button>
       )}
@@ -145,12 +165,15 @@ export function ErrorState({
 
 export function EmptyState({
   icon,
+  pose,
   title,
   description,
   action,
   className,
 }: {
-  icon: ReactNode;
+  icon?: ReactNode;
+  /** Show Ara instead of an icon. */
+  pose?: AraPose;
   title: string;
   description?: string;
   action?: ReactNode;
@@ -159,19 +182,27 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        'relative flex flex-col items-center overflow-hidden rounded-2xl border border-dashed border-line bg-neutral-50/60 px-6 py-10 text-center',
+        'relative flex flex-col items-center overflow-hidden rounded-[14px] border border-dashed border-line-strong bg-raised px-6 py-10 text-center',
         className,
       )}
     >
-      <div className="bg-batik absolute inset-0 opacity-[0.035]" aria-hidden />
-      <div className="relative mb-3 grid size-12 place-items-center rounded-2xl bg-white text-muted shadow-soft">
-        {icon}
-      </div>
-      <h3 className="relative text-[15px] font-semibold text-ink">{title}</h3>
-      {description && (
-        <p className="relative mt-1 max-w-sm text-[13px] leading-relaxed text-muted">{description}</p>
+      <div className="bg-topo absolute inset-0 opacity-[0.045]" aria-hidden />
+      {pose ? (
+        <Ara pose={pose} size={120} className="relative mb-3" />
+      ) : (
+        icon && (
+          <div className="relative mb-3 grid size-12 place-items-center rounded-full border border-line bg-white text-muted">
+            {icon}
+          </div>
+        )
       )}
-      {action && <div className="relative mt-4">{action}</div>}
+      <h3 className="relative text-[16px] font-bold text-ink">{title}</h3>
+      {description && (
+        <p className="text-pretty relative mt-1 max-w-sm text-[13.5px] leading-relaxed text-muted">
+          {description}
+        </p>
+      )}
+      {action && <div className="relative mt-5">{action}</div>}
     </div>
   );
 }

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
+import { AraSays } from '@/components/common/ara';
 import { EmptyState } from '@/components/common/data-state';
 import { PageHeader } from '@/components/common/layout-bits';
 import { RiskBadge } from '@/components/common/risk';
@@ -46,26 +47,30 @@ export default function ProfilePage() {
     .map((s) => ({ time: s.time, score: s.personalScore }));
 
   return (
-    <div className="animate-fade-up">
+    <div>
       <PageHeader
         title="Profil & riwayat"
-        description="Konteks personal untuk analisis risiko, lokasi tersimpan, dan riwayat Siaga Score Anda."
+        mascot="tablet"
+        description="Profil, lokasi tersimpan & riwayat skormu."
       />
 
       <div className="grid gap-5 lg:grid-cols-12">
         <div className="min-w-0 space-y-5 lg:col-span-5">
-          <Card>
-            <CardContent className="flex items-center gap-4 p-5">
-              <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-ink text-xl font-bold text-white">
+          <Card className="relative overflow-hidden">
+            <div className="bg-topo absolute inset-0 opacity-[0.04]" aria-hidden />
+            <CardContent className="relative flex items-center gap-4 p-5 sm:p-6">
+              <span className="grid size-14 shrink-0 place-items-center rounded-full bg-ink text-xl font-bold text-white ring-4 ring-white">
                 {(user?.name ?? profile.displayName ?? 'T').charAt(0).toUpperCase() || 'T'}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[16px] font-bold">{user?.name ?? 'Mode tamu'}</p>
+                <p className="truncate text-[17px] font-bold tracking-[-0.01em]">
+                  {user?.name ?? 'Mode tamu'}
+                </p>
                 <p className="truncate text-[13px] text-muted">
-                  {user ? user.email : 'Semua fitur inti tersedia tanpa login'}
+                  {user ? user.email : 'Fitur inti tetap bisa dipakai'}
                 </p>
                 {user && (
-                  <Badge className="mt-1" variant={user.backend === 'supabase' ? 'success' : 'neutral'}>
+                  <Badge className="mt-1.5" variant={user.backend === 'supabase' ? 'success' : 'neutral'}>
                     {user.backend === 'supabase' ? 'Tersinkron Supabase' : 'Akun perangkat'}
                   </Badge>
                 )}
@@ -95,7 +100,7 @@ export default function ProfilePage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <UserRound className="size-4 text-muted" /> Konteks personal
+                <UserRound className="size-4 text-brand" /> Konteks personal
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -124,7 +129,7 @@ export default function ProfilePage() {
                 <Link
                   key={l.to}
                   to={l.to}
-                  className="flex items-center gap-3 px-3 py-3.5 text-[14px] font-semibold"
+                  className="flex items-center gap-3 rounded-lg px-3 py-3.5 text-[14px] font-semibold transition-colors hover:bg-raised"
                 >
                   <l.icon className="size-4 text-muted" /> {l.label}
                   <ChevronRight className="ml-auto size-4 text-muted" />
@@ -139,9 +144,9 @@ export default function ProfilePage() {
             <CardHeader>
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  <Bookmark className="size-4 text-muted" /> Lokasi tersimpan
+                  <Bookmark className="size-4 text-brand" /> Lokasi tersimpan
                 </CardTitle>
-                <p className="mt-1 text-[12.5px] text-muted">Disimpan hanya atas pilihan Anda</p>
+                <p className="mt-1 text-[12.5px] text-muted">Hanya atas pilihanmu</p>
               </div>
               {active.source !== 'saved' && !active.id.startsWith('scenario') && (
                 <Button
@@ -152,7 +157,7 @@ export default function ProfilePage() {
                     toast.success(`${active.name} disimpan`);
                   }}
                 >
-                  <Bookmark /> Simpan {active.name}
+                  <Bookmark /> <span className="max-w-32 truncate">Simpan {active.name}</span>
                 </Button>
               )}
             </CardHeader>
@@ -160,7 +165,7 @@ export default function ProfilePage() {
               {saved.length ? (
                 <ul className="divide-y divide-line">
                   {saved.map((s) => (
-                    <li key={s.id} className="flex items-center gap-3 py-2.5">
+                    <li key={s.id} className="flex items-center gap-3 py-3">
                       <MapPin className="size-4 shrink-0 text-brand" />
                       <button
                         className="min-w-0 flex-1 text-left"
@@ -179,7 +184,9 @@ export default function ProfilePage() {
                         }}
                       >
                         <span className="block truncate text-[14px] font-semibold">{s.name}</span>
-                        <span className="block text-[12px] text-muted">{s.region}</span>
+                        <span className="block font-mono text-[10.5px] uppercase tracking-[0.04em] text-subtle">
+                          {s.region}
+                        </span>
                       </button>
                       <Button
                         variant="ghost"
@@ -193,9 +200,9 @@ export default function ProfilePage() {
                   ))}
                 </ul>
               ) : (
-                <p className="text-[13px] text-muted">
-                  Belum ada lokasi tersimpan. Simpan rumah, kampus, atau tempat kerja untuk akses cepat.
-                </p>
+                <AraSays pose="map" size={80} title="Belum ada lokasi tersimpan">
+                  Simpan rumah, kampus, atau kantor untuk akses cepat.
+                </AraSays>
               )}
             </CardContent>
           </Card>
@@ -204,8 +211,8 @@ export default function ProfilePage() {
             <CardHeader>
               <div>
                 <CardTitle>Riwayat Siaga Score</CardTitle>
-                <p className="mt-1 text-[12.5px] text-muted">
-                  Satu catatan per lokasi per jam · koordinat dibulatkan ±1 km
+                <p className="telemetry mt-1 normal-case tracking-normal">
+                  1 catatan/lokasi/jam · koordinat ±1 km
                 </p>
               </div>
               {real.length > 0 && (
@@ -222,12 +229,12 @@ export default function ProfilePage() {
                     <li key={s.id} className="flex items-center justify-between gap-3 py-2.5 text-[13px]">
                       <span className="min-w-0">
                         <span className="block truncate font-semibold">{s.locationName}</span>
-                        <span className="text-[12px] text-muted">
+                        <span className="font-mono text-[11px] text-subtle">
                           {formatDateTime(s.time)} · utama {HAZARDS[s.primaryHazard].label.toLowerCase()}
                         </span>
                       </span>
                       <span className="flex items-center gap-2">
-                        <span className="tabular font-semibold">{s.personalScore}</span>
+                        <span className="display-metric text-[20px]">{s.personalScore}</span>
                         <RiskBadge level={s.level} />
                       </span>
                     </li>
@@ -235,9 +242,9 @@ export default function ProfilePage() {
                 </ul>
               ) : (
                 <EmptyState
-                  icon={<UserRound className="size-5" />}
+                  pose="thinking"
                   title="Riwayat masih kosong"
-                  description="Riwayat terbentuk otomatis saat Anda memantau lokasi dari waktu ke waktu."
+                  description="Terbentuk otomatis saat kamu memantau lokasi dari waktu ke waktu."
                 />
               )}
             </CardContent>

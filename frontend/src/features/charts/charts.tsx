@@ -68,8 +68,8 @@ export function HourlyWeatherCharts({ hourly, height = 92 }: { hourly: HourlyWea
       <TipBox
         title={`${payload[0].payload.label} WIB`}
         rows={[
-          { label: 'Suhu', value: `${Math.round(Number(payload[0].payload.temp))}°C`, color: '#F97316' },
-          { label: 'Hujan', value: `${Number(payload[0].payload.rain).toFixed(1)} mm`, color: '#2563EB' },
+          { label: 'Suhu', value: `${Math.round(Number(payload[0].payload.temp))}°C`, color: '#E66B24' },
+          { label: 'Hujan', value: `${Number(payload[0].payload.rain).toFixed(1)} mm`, color: '#3478C6' },
           { label: 'Peluang', value: `${payload[0].payload.prob}%` },
         ]}
       />
@@ -84,8 +84,8 @@ export function HourlyWeatherCharts({ hourly, height = 92 }: { hourly: HourlyWea
         <AreaChart data={data} margin={{ top: 6, right: 6, left: -22, bottom: 0 }} syncId="wx">
           <defs>
             <linearGradient id="tempFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#F97316" stopOpacity={0.22} />
-              <stop offset="1" stopColor="#F97316" stopOpacity={0} />
+              <stop offset="0" stopColor="#E66B24" stopOpacity={0.22} />
+              <stop offset="1" stopColor="#E66B24" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid vertical={false} stroke={GRID} />
@@ -102,7 +102,7 @@ export function HourlyWeatherCharts({ hourly, height = 92 }: { hourly: HourlyWea
           <Area
             type="monotone"
             dataKey="temp"
-            stroke="#F97316"
+            stroke="#E66B24"
             strokeWidth={2}
             fill="url(#tempFill)"
             dot={false}
@@ -138,7 +138,7 @@ export function HourlyWeatherCharts({ hourly, height = 92 }: { hourly: HourlyWea
             domain={[0, (max: number) => Math.max(2, Math.ceil(max))]}
           />
           <Tooltip content={tip} cursor={{ fill: '#171717', fillOpacity: 0.04 }} />
-          <Bar dataKey="rain" fill="#2563EB" radius={[4, 4, 0, 0]} maxBarSize={14} />
+          <Bar dataKey="rain" fill="#3478C6" radius={[4, 4, 0, 0]} maxBarSize={14} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -164,7 +164,7 @@ export function OutdoorIndexChart({
           <CartesianGrid vertical={false} stroke={GRID} />
           <XAxis dataKey="label" tick={AXIS} axisLine={false} tickLine={false} interval={3} />
           <YAxis tick={AXIS} axisLine={false} tickLine={false} domain={[0, 100]} ticks={[0, 50, 100]} />
-          <ReferenceLine y={40} stroke="#F59E0B" strokeDasharray="3 3" strokeOpacity={0.6} />
+          <ReferenceLine y={40} stroke="#D99A22" strokeDasharray="3 3" strokeOpacity={0.6} />
           <Tooltip
             cursor={{ fill: '#171717', fillOpacity: 0.04 }}
             content={({ active, payload }: Tp) =>
@@ -211,7 +211,7 @@ export function OutdoorIndexChart({
 export function DailyCountChart({
   daily,
   height = 110,
-  color = '#F97316',
+  color = '#E66B24',
   unit = 'titik',
 }: {
   daily: { date: string; count: number }[];

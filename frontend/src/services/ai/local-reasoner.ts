@@ -212,8 +212,12 @@ function actionPlan(c: AiContext): ActionPlanOutput {
   const now = pickText(c, 'now', 4);
   const hours = pickText(c, 'hours', 4);
   const worsen = pickText(c, 'worsen', 4);
-  const ensure = (arr: string[], fallback: string[]) =>
-    arr.length >= 2 ? arr : [...arr, ...fallback].slice(0, Math.max(2, arr.length));
+  // Top up to at least two steps from the fallback list, never repeating a step.
+  const ensure = (arr: string[], fallback: string[]) => {
+    const unique = [...new Set(arr)];
+    if (unique.length >= 2) return unique;
+    return [...new Set([...unique, ...fallback])].slice(0, 2);
+  };
   return {
     title:
       RANK[p.level] >= 2

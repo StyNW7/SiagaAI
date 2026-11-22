@@ -24,16 +24,18 @@ export function DialogContent({
 }: ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { title: string; description?: string }) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-neutral-950/40 backdrop-blur-[2px] data-[state=open]:animate-fade-up" />
+      <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-neutral-950/35 backdrop-blur-[3px] data-[state=open]:animate-fade-in" />
       <DialogPrimitive.Content
         className={cn(
-          'fixed left-1/2 top-1/2 z-[61] max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-line bg-white p-6 shadow-float focus:outline-none',
+          'fixed left-1/2 top-1/2 z-[61] max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 scrollbar-thin overflow-y-auto rounded-[18px] border border-line bg-white p-6 shadow-float focus:outline-none data-[state=open]:animate-fade-up sm:p-7',
           className,
         )}
         {...p}
       >
-        <div className="mb-4 pr-8">
-          <DialogPrimitive.Title className="text-lg font-bold text-ink">{title}</DialogPrimitive.Title>
+        <div className="mb-5 pr-8">
+          <DialogPrimitive.Title className="text-[19px] font-bold tracking-[-0.02em] text-ink">
+            {title}
+          </DialogPrimitive.Title>
           {description ? (
             <DialogPrimitive.Description className="mt-1 text-sm text-muted">
               {description}
@@ -73,19 +75,22 @@ export function SheetContent({
       ? 'inset-y-0 right-0 h-full w-full sm:max-w-md border-l'
       : side === 'left'
         ? 'inset-y-0 left-0 h-full w-[85%] max-w-xs border-r'
-        : 'inset-x-0 bottom-0 max-h-[88dvh] rounded-t-3xl border-t';
+        : 'inset-x-0 bottom-0 max-h-[88dvh] rounded-t-[22px] border-t';
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-neutral-950/35 backdrop-blur-[2px]" />
+      <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-neutral-950/30 backdrop-blur-[3px] data-[state=open]:animate-fade-in" />
       <DialogPrimitive.Content
         className={cn(
-          'fixed z-[61] flex flex-col border-line bg-white shadow-float focus:outline-none animate-fade-up',
+          'fixed z-[61] flex flex-col border-line bg-white shadow-float focus:outline-none',
+          side === 'bottom' ? 'animate-sheet-up' : 'animate-sheet-right',
           pos,
           className,
         )}
         {...p}
       >
-        <DialogPrimitive.Title className={hideTitle ? 'sr-only' : 'px-5 pt-5 text-lg font-bold'}>
+        <DialogPrimitive.Title
+          className={hideTitle ? 'sr-only' : 'px-6 pt-6 text-[19px] font-bold tracking-[-0.02em]'}
+        >
           {title}
         </DialogPrimitive.Title>
         <DialogPrimitive.Description className="sr-only">{title}</DialogPrimitive.Description>
@@ -103,7 +108,10 @@ export const TabsContent = TabsPrimitive.Content;
 export function TabsList({ className, ...p }: ComponentPropsWithoutRef<typeof TabsPrimitive.List>) {
   return (
     <TabsPrimitive.List
-      className={cn('inline-flex items-center gap-1 rounded-xl bg-neutral-100 p-1', className)}
+      className={cn(
+        'inline-flex items-center gap-0.5 rounded-[11px] border border-line bg-neutral-100/80 p-[3px]',
+        className,
+      )}
       {...p}
     />
   );
@@ -113,7 +121,7 @@ export function TabsTrigger({ className, ...p }: ComponentPropsWithoutRef<typeof
   return (
     <TabsPrimitive.Trigger
       className={cn(
-        'inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-3 text-[13px] font-semibold text-muted transition-all hover:text-ink data-[state=active]:bg-white data-[state=active]:text-ink data-[state=active]:shadow-soft [&_svg]:size-4 cursor-pointer',
+        'inline-flex h-8.5 items-center justify-center gap-1.5 rounded-lg px-3 text-[13px] font-semibold text-muted transition-all hover:text-ink data-[state=active]:bg-white data-[state=active]:text-ink data-[state=active]:shadow-[0_1px_3px_rgb(0_0_0/0.08)] [&_svg]:size-4 cursor-pointer',
         className,
       )}
       {...p}
@@ -127,7 +135,7 @@ export function Switch({ className, ...p }: ComponentPropsWithoutRef<typeof Swit
   return (
     <SwitchPrimitive.Root
       className={cn(
-        'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full bg-neutral-200 transition-colors data-[state=checked]:bg-ink',
+        'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full bg-neutral-200 transition-colors data-[state=checked]:bg-brand',
         className,
       )}
       {...p}
@@ -157,7 +165,7 @@ export function Tip({
         <TooltipPrimitive.Content
           side={side}
           sideOffset={6}
-          className="z-[70] max-w-64 rounded-lg bg-ink px-2.5 py-1.5 text-xs font-medium leading-snug text-white shadow-float"
+          className="z-[70] max-w-64 rounded-lg bg-ink px-2.5 py-1.5 text-[12px] font-medium leading-snug text-white shadow-lift animate-fade-in"
         >
           {content}
           <TooltipPrimitive.Arrow className="fill-ink" />

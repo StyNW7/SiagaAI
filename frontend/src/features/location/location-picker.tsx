@@ -73,7 +73,7 @@ export function LocationPicker({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         title="Pilih lokasi"
-        description="Gunakan GPS, cari kota/kabupaten, atau jelajahi wilayah dengan aktivitas bahaya."
+        description="GPS, cari kota, atau jelajahi wilayah rawan."
         className="max-w-xl"
       >
         <Button
@@ -96,7 +96,7 @@ export function LocationPicker({
               : 'Gunakan lokasi saya (GPS)'}
         </Button>
         <p className="mt-2 text-[12px] text-muted">
-          GPS hanya dipakai sementara untuk analisis; tidak disimpan kecuali Anda memilih "Simpan lokasi".
+          GPS hanya dipakai untuk analisis — tidak disimpan kecuali kamu pilih "Simpan".
         </p>
 
         <div className="relative mt-5">
@@ -211,7 +211,7 @@ export function LocationPicker({
               <button
                 key={s.id}
                 onClick={() => startScenario(s.id)}
-                className="rounded-xl border border-indigo-100 bg-ai-soft/50 px-3 py-2.5 text-left transition-colors hover:bg-ai-soft"
+                className="rounded-xl border border-ai/15 bg-ai-soft/50 px-3 py-2.5 text-left transition-colors hover:bg-ai-soft"
               >
                 <span className="block text-sm font-semibold">
                   {s.emoji} {s.title}

@@ -107,7 +107,7 @@ function hotspotGeoJSON(list: Hotspot[]): FeatureCollection {
   };
 }
 
-const FIRE_RAMP = ['step', ['get', 'age'], '#DC2626', 6, '#F97316', 24, '#F59E0B', 72, '#A8A29E'];
+const FIRE_RAMP = ['step', ['get', 'age'], '#C62A1F', 6, '#E66B24', 24, '#D99A22', 72, '#A8A29E'];
 
 const WX_EMOJI: Record<string, string> = {
   sun: '☀️',
@@ -120,8 +120,26 @@ const WX_EMOJI: Record<string, string> = {
   storm: '⛈️',
 };
 const pmColor = (v: number) =>
-  v <= 15 ? '#16A34A' : v <= 35 ? '#2563EB' : v <= 55 ? '#F59E0B' : v <= 150 ? '#F97316' : '#991B1B';
-const REPORT_EMOJI: Record<string, string> = { fire: '🔥', smoke: '💨', flood: '🌊', weather: '⛈️' };
+  v <= 15 ? '#208A61' : v <= 35 ? '#3478C6' : v <= 55 ? '#D99A22' : v <= 150 ? '#E66B24' : '#A51E22';
+/** Inline SVG hazard glyphs (Lucide paths) — consistent with the in-app hazard icons, no emoji. */
+const svg = (d: string, color: string, size = 15) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const REPORT_COLOR: Record<string, string> = {
+  fire: '#D95332',
+  smoke: '#73717E',
+  flood: '#397EB8',
+  weather: '#6F63B5',
+};
+const REPORT_PATH: Record<string, string> = {
+  fire: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  smoke:
+    '<path d="M12.8 19.6A2 2 0 1 0 14 16H2"/><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/><path d="M9.8 4.4A2 2 0 1 1 11 8H2"/>',
+  flood:
+    '<path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>',
+  weather: '<path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .5 8.973"/><path d="m13 12-3 5h4l-3 5"/>',
+};
+const reportIcon = (h: string, size?: number) =>
+  svg(REPORT_PATH[h] ?? REPORT_PATH.weather, REPORT_COLOR[h] ?? '#4E54D8', size);
 const REPORT_LABEL: Record<string, string> = {
   fire: 'Kemungkinan api vegetasi',
   smoke: 'Asap',
@@ -224,13 +242,13 @@ export function SiagaMap({
               'match',
               ['coalesce', ['feature-state', 'level'], 0],
               1,
-              '#2563EB',
+              '#3478C6',
               2,
-              '#F59E0B',
+              '#D99A22',
               3,
-              '#F97316',
+              '#E66B24',
               4,
-              '#991B1B',
+              '#A51E22',
               '#94A3B8',
             ],
             'fill-opacity': [
@@ -260,7 +278,7 @@ export function SiagaMap({
           type: 'line',
           source: 'provinces',
           filter: ['==', ['get', 'code'], '__none__'],
-          paint: { 'line-color': '#F59E0B', 'line-width': 2.4, 'line-dasharray': [2, 1.5] },
+          paint: { 'line-color': '#D99A22', 'line-width': 2.4, 'line-dasharray': [2, 1.5] },
         });
         map.addLayer({
           id: 'hotspot-heat',
@@ -297,7 +315,7 @@ export function SiagaMap({
           source: 'hotspots',
           filter: ['has', 'point_count'],
           paint: {
-            'circle-color': ['step', ['get', 'point_count'], '#FDBA74', 20, '#F97316', 100, '#DC2626'],
+            'circle-color': ['step', ['get', 'point_count'], '#FDBA74', 20, '#E66B24', 100, '#C62A1F'],
             'circle-radius': ['step', ['get', 'point_count'], 12, 20, 16, 100, 21, 500, 27],
             'circle-opacity': 0.88,
             'circle-stroke-width': 2,
@@ -334,11 +352,11 @@ export function SiagaMap({
           type: 'circle',
           source: 'quakes',
           paint: {
-            'circle-color': ['step', ['get', 'mag'], '#F59E0B', 6, '#F97316', 7, '#991B1B'],
+            'circle-color': ['step', ['get', 'mag'], '#D99A22', 6, '#E66B24', 7, '#A51E22'],
             'circle-radius': ['interpolate', ['linear'], ['get', 'mag'], 4, 6, 6, 11, 8, 20],
             'circle-opacity': 0.35,
             'circle-stroke-width': 2,
-            'circle-stroke-color': ['step', ['get', 'mag'], '#F59E0B', 6, '#F97316', 7, '#991B1B'],
+            'circle-stroke-color': ['step', ['get', 'mag'], '#D99A22', 6, '#E66B24', 7, '#A51E22'],
           },
         });
 
@@ -393,11 +411,11 @@ export function SiagaMap({
             .setHTML(
               `<div style="font-size:13px;line-height:1.45">
                 <div style="font-weight:700;color:#171717">🔥 Titik Panas Satelit</div>
-                <div style="color:#6B7280;font-size:11px;margin-bottom:6px">Deteksi termal — bukan konfirmasi kebakaran</div>
+                <div style="color:#6B6B6B;font-size:11px;margin-bottom:6px">Deteksi termal — bukan konfirmasi kebakaran</div>
                 <div><b>${esc(timeAgo(p.time))}</b> · ${esc(formatDateTime(p.time))}</div>
                 <div>Satelit ${esc(p.sat)} (VIIRS) · ${p.dn === 'N' ? 'malam' : 'siang'}</div>
                 <div>Keyakinan: ${p.conf === 'high' ? 'tinggi' : p.conf === 'low' ? 'rendah' : 'nominal'} · FRP ${p.frp} MW</div>
-                <div style="margin-top:6px;color:#6B7280;font-size:11px">Sumber: NASA FIRMS</div>
+                <div style="margin-top:6px;color:#6B6B6B;font-size:11px">Sumber: NASA FIRMS</div>
               </div>`,
             )
             .addTo(map);
@@ -415,7 +433,7 @@ export function SiagaMap({
           new maplibregl.Popup({ offset: 10, maxWidth: '260px' })
             .setLngLat((f.geometry as Point).coordinates as [number, number])
             .setHTML(
-              `<div style="font-size:13px;line-height:1.45"><div style="font-weight:700">Gempa M${p.mag}</div><div>${esc(p.region)}</div><div style="color:#6B7280">${esc(formatDateTime(p.time))} · kedalaman ${p.depth} km</div><div style="margin-top:4px">${esc(p.potential)}</div><div style="margin-top:6px;color:#6B7280;font-size:11px">Sumber: BMKG</div></div>`,
+              `<div style="font-size:13px;line-height:1.45"><div style="font-weight:700">Gempa M${p.mag}</div><div>${esc(p.region)}</div><div style="color:#6B6B6B">${esc(formatDateTime(p.time))} · kedalaman ${p.depth} km</div><div style="margin-top:4px">${esc(p.potential)}</div><div style="margin-top:6px;color:#6B6B6B;font-size:11px">Sumber: BMKG</div></div>`,
             )
             .addTo(map);
         });
@@ -524,12 +542,12 @@ export function SiagaMap({
     el.className = 'relative grid size-5 place-items-center';
     el.setAttribute('aria-label', `Lokasi Anda: ${user.name}`);
     el.innerHTML =
-      '<span class="absolute inset-0 rounded-full bg-[#4F46E5]/40 animate-pulse-ring"></span><span class="relative size-4 rounded-full border-[3px] border-white bg-[#4F46E5] shadow-lg"></span>';
+      '<span class="absolute inset-0 rounded-full bg-[#4E54D8]/40 animate-pulse-ring"></span><span class="relative size-4 rounded-full border-[3px] border-white bg-[#4E54D8] shadow-lg"></span>';
     markers.current.user = new maplibregl.Marker({ element: el })
       .setLngLat([user.lon, user.lat])
       .setPopup(
         new maplibregl.Popup({ offset: 14 }).setHTML(
-          `<b>${esc(user.name)}</b><br/><span style="color:#6B7280">${esc(user.region ?? '')}</span>`,
+          `<b>${esc(user.name)}</b><br/><span style="color:#6B6B6B">${esc(user.region ?? '')}</span>`,
         ),
       )
       .addTo(map);
@@ -549,16 +567,16 @@ export function SiagaMap({
         );
       if (layers.air && s.pm25 != null)
         parts.push(
-          `<span style="display:inline-flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:9px;background:${pmColor(s.pm25)}"></span><b>${Math.round(s.pm25)}</b><span style="color:#6B7280;font-size:9px">PM2.5</span></span>`,
+          `<span style="display:inline-flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:9px;background:${pmColor(s.pm25)}"></span><b>${Math.round(s.pm25)}</b><span style="color:#6B6B6B;font-size:9px">PM2.5</span></span>`,
         );
       if (!parts.length) continue;
       const el = document.createElement('div');
       el.style.cssText =
-        'display:flex;gap:6px;align-items:center;background:#fff;border:1px solid #E5E7EB;border-radius:999px;padding:3px 8px;font:600 11px Inter,sans-serif;color:#171717;box-shadow:0 2px 6px rgba(0,0,0,.08);white-space:nowrap';
+        'display:flex;gap:6px;align-items:center;background:#fff;border:1px solid #E6E5E1;border-radius:999px;padding:4px 9px;font:600 11px var(--font-sans);color:#171717;box-shadow:0 2px 6px rgba(0,0,0,.08);white-space:nowrap';
       el.innerHTML = parts.join('<span style="width:1px;height:12px;background:#E5E7EB"></span>');
       el.title = city.name;
       const popup = new maplibregl.Popup({ offset: 12 }).setHTML(
-        `<div style="font-size:13px;line-height:1.5"><b>${esc(city.name)}</b><div style="color:#6B7280;font-size:11px">${esc(city.province)}</div>${s.temperature != null ? `<div>Suhu ${Math.round(s.temperature)}°C · RH ${s.humidity ?? '–'}%</div>` : ''}${s.windSpeed != null ? `<div>Angin ${Math.round(s.windSpeed)} km/jam</div>` : ''}${s.pm25 != null ? `<div>PM2.5 ${Math.round(s.pm25)} µg/m³ (model CAMS)</div>` : ''}<div style="color:#6B7280;font-size:11px;margin-top:4px">Sumber: Open-Meteo</div></div>`,
+        `<div style="font-size:13px;line-height:1.5"><b>${esc(city.name)}</b><div style="color:#6B6B6B;font-size:11px">${esc(city.province)}</div>${s.temperature != null ? `<div>Suhu ${Math.round(s.temperature)}°C · RH ${s.humidity ?? '–'}%</div>` : ''}${s.windSpeed != null ? `<div>Angin ${Math.round(s.windSpeed)} km/jam</div>` : ''}${s.pm25 != null ? `<div>PM2.5 ${Math.round(s.pm25)} µg/m³ (model CAMS)</div>` : ''}<div style="color:#6B6B6B;font-size:11px;margin-top:4px">Sumber: Open-Meteo</div></div>`,
       );
       markers.current.cities.push(
         new maplibregl.Marker({ element: el }).setLngLat([city.lon, city.lat]).setPopup(popup).addTo(map),
@@ -574,12 +592,11 @@ export function SiagaMap({
     if (!layers.community || !reports) return;
     for (const r of reports) {
       const el = document.createElement('button');
-      el.style.cssText =
-        'width:30px;height:30px;border-radius:999px;background:#fff;border:2px solid #4F46E5;display:grid;place-items:center;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.15);cursor:pointer';
-      el.textContent = REPORT_EMOJI[r.hazard];
+      el.style.cssText = `width:32px;height:32px;border-radius:999px;background:#fff;border:2px solid ${REPORT_COLOR[r.hazard] ?? '#4E54D8'};display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.14);cursor:pointer`;
+      el.innerHTML = reportIcon(r.hazard);
       el.setAttribute('aria-label', `Laporan komunitas: ${REPORT_LABEL[r.hazard]}`);
       const popup = new maplibregl.Popup({ offset: 16, maxWidth: '260px' }).setHTML(
-        `<div style="font-size:13px;line-height:1.45"><div style="display:inline-block;background:#FEF3C7;color:#92400E;font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;margin-bottom:4px">LAPORAN KOMUNITAS — BELUM TERVERIFIKASI</div><div style="font-weight:700">${REPORT_EMOJI[r.hazard]} ${esc(REPORT_LABEL[r.hazard])}</div><div>${esc(r.description)}</div><div style="color:#6B7280;font-size:11px;margin-top:4px">${esc(r.locationName)} · ${esc(timeAgo(r.createdAt))}${r.isExample ? ' · contoh demo' : ''}</div></div>`,
+        `<div style="font-size:13px;line-height:1.45"><div style="display:inline-block;background:#FDF6E8;color:#8A5A0B;font:500 9.5px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;margin-bottom:6px">Laporan warga · belum terverifikasi</div><div style="font-weight:700;display:flex;align-items:center;gap:6px">${reportIcon(r.hazard, 14)} ${esc(REPORT_LABEL[r.hazard])}</div><div>${esc(r.description)}</div><div style="color:#6B6B6B;font-size:11px;margin-top:4px">${esc(r.locationName)} · ${esc(timeAgo(r.createdAt))}${r.isExample ? ' · contoh demo' : ''}</div></div>`,
       );
       markers.current.reports.push(
         new maplibregl.Marker({ element: el }).setLngLat([r.lon, r.lat]).setPopup(popup).addTo(map),

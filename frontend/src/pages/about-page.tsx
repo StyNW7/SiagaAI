@@ -95,7 +95,7 @@ const FACTOR_LABELS: Record<string, string> = {
 export default function AboutPage() {
   useDocumentTitle('Data & Metodologi');
   return (
-    <div className="animate-fade-up">
+    <div>
       <PageHeader
         eyebrow={
           <span className="inline-flex items-center gap-1.5">
@@ -103,21 +103,25 @@ export default function AboutPage() {
           </span>
         }
         title="Data & Metodologi"
-        description="Dari mana data berasal, bagaimana Siaga Score dihitung, peran AI, privasi, dan batasan SiagaAI. Kepercayaan dibangun dari keterbukaan."
+        mascot="explain"
+        description="Sumber data, cara skor dihitung, peran AI, privasi & batasan."
       />
 
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid gap-px overflow-hidden rounded-[16px] border border-line bg-line shadow-soft lg:grid-cols-3">
         <Principle
+          n="01"
           icon={<Cpu className="size-5" />}
           title="Algoritma menghitung"
           text="Semua skor berasal dari Siaga Risk Engine yang deterministik, teruji (unit test) & terdokumentasi."
         />
         <Principle
+          n="02"
           icon={<Sparkles className="size-5" />}
           title="AI menjelaskan"
           text="LLM hanya menerima konteks terstruktur untuk menjelaskan & merekomendasikan — dilarang mengarang angka."
         />
         <Principle
+          n="03"
           icon={<ShieldAlert className="size-5" />}
           title="Resmi diutamakan"
           text="SiagaAI pendukung keputusan, bukan otoritas. Peringatan BMKG/BNPB/BPBD selalu diprioritaskan."
@@ -131,7 +135,7 @@ export default function AboutPage() {
         <CardContent className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-left text-[13px]">
             <thead>
-              <tr className="border-b border-line text-[11.5px] uppercase tracking-wider text-muted">
+              <tr className="border-b border-line font-mono text-[10.5px] uppercase tracking-[0.08em] text-subtle">
                 <th className="py-2 pr-4 font-semibold">Sumber</th>
                 <th className="py-2 pr-4 font-semibold">Digunakan untuk</th>
                 <th className="py-2 font-semibold">Pembaruan</th>
@@ -179,9 +183,7 @@ export default function AboutPage() {
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {(Object.keys(WEIGHTS) as (keyof typeof WEIGHTS)[]).map((k) => (
               <div key={k} className="rounded-xl border border-line p-4">
-                <p className="text-[14px] font-bold">
-                  {HAZARDS[k].emoji} {HAZARDS[k].longLabel}
-                </p>
+                <p className="text-[14px] font-bold">{HAZARDS[k].longLabel}</p>
                 <ul className="mt-3 space-y-2">
                   {Object.entries(WEIGHTS[k]).map(([f, w]) => (
                     <li key={f} className="text-[12.5px]">
@@ -349,22 +351,23 @@ export default function AboutPage() {
   );
 }
 
-function Principle({ icon, title, text }: { icon: ReactNode; title: string; text: string }) {
+function Principle({ n, icon, title, text }: { n: string; icon: ReactNode; title: string; text: string }) {
   return (
-    <Card className="p-5">
-      <span className="grid size-10 place-items-center rounded-xl bg-neutral-100 text-ink">{icon}</span>
-      <h3 className="mt-3 text-[15px] font-bold">{title}</h3>
-      <p className="mt-1 text-[13px] leading-relaxed text-muted">{text}</p>
-    </Card>
+    <div className="bg-white p-6">
+      <div className="flex items-center justify-between">
+        <span className="text-brand [&_svg]:size-5">{icon}</span>
+        <span className="font-mono text-[12px] text-line-strong">{n}</span>
+      </div>
+      <h3 className="mt-4 text-[16px] font-bold tracking-[-0.01em]">{title}</h3>
+      <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted">{text}</p>
+    </div>
   );
 }
 
 function Step({ n, title, children }: { n: number; title: string; children: ReactNode }) {
   return (
-    <li className="flex gap-3 rounded-xl bg-neutral-50 p-4">
-      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-ink text-[12px] font-bold text-white">
-        {n}
-      </span>
+    <li className="flex gap-4 rounded-xl border border-line bg-raised p-4">
+      <span className="font-mono text-[13px] font-semibold text-brand">{String(n).padStart(2, '0')}</span>
       <div>
         <p className="font-semibold text-ink">{title}</p>
         <div className="mt-0.5">{children}</div>

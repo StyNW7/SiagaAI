@@ -4,9 +4,10 @@ import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { Ara, AraSays } from '@/components/common/ara';
 import { EmptyState } from '@/components/common/data-state';
 import { AiPanel, AiThinking, PageHeader } from '@/components/common/layout-bits';
-import { HazardIcon, RiskBadge, ScoreBar } from '@/components/common/risk';
+import { HazardIcon, ScoreBar } from '@/components/common/risk';
 import { Button } from '@/components/ui/button';
 import {
   Badge,
@@ -26,7 +27,7 @@ import { useAiContext, useAiMutation } from '@/hooks/use-ai';
 import { useDocumentTitle } from '@/hooks/use-misc';
 import { useRiskAssessment } from '@/hooks/use-siaga-data';
 import { HAZARDS } from '@/lib/risk-levels';
-import { sanitizeText } from '@/lib/utils';
+import { cn, sanitizeText } from '@/lib/utils';
 import { useFamilyStore, useProfileStore } from '@/stores';
 import type { AgeGroup, FamilyMember } from '@/types/domain';
 
@@ -37,7 +38,9 @@ const AGE: { value: AgeGroup; label: string; emoji: string }[] = [
   { value: 'adult', label: 'Dewasa', emoji: '🧑‍💼' },
   { value: 'elderly', label: 'Lansia (60+)', emoji: '👵' },
 ];
-const AGE_EMOJI = Object.fromEntries(AGE.map((a) => [a.value, a.emoji]));
+const AGE_LABEL: Record<string, string> = Object.fromEntries(
+  AGE.map((a) => [a.value, a.label.split(' (')[0]]),
+);
 const RELATIONS = ['Ayah', 'Ibu', 'Anak', 'Kakek', 'Nenek', 'Pasangan', 'Saudara', 'Lainnya'];
 
 const schema = z.object({
@@ -50,9 +53,9 @@ const schema = z.object({
 type Values = z.infer<typeof schema>;
 
 const PRIORITY = {
-  high: { label: 'PRIORITAS TINGGI', variant: 'danger' as const },
-  watch: { label: 'PANTAU', variant: 'warning' as const },
-  normal: { label: 'NORMAL', variant: 'success' as const },
+  high: { label: 'Prioritas', variant: 'danger' as const },
+  watch: { label: 'Pantau', variant: 'warning' as const },
+  normal: { label: 'Normal', variant: 'success' as const },
 };
 
 export default function FamilyPage() {
@@ -70,6 +73,9 @@ export default function FamilyPage() {
     [assessment, profile, members],
   );
 
+  const attention = rows.filter((r) => r.priority !== 'normal').length;
+  const highest = rows.length ? rows.reduce((a, b) => (b.score > a.score ? b : a)) : null;
+
   const generate = () => {
     if (!context) return;
     plan.mutate(
@@ -79,7 +85,7 @@ export default function FamilyPage() {
   };
 
   return (
-    <div className="animate-fade-up">
+    <div>
       <PageHeader
         eyebrow={
           <span className="inline-flex items-center gap-1.5">
@@ -87,32 +93,58 @@ export default function FamilyPage() {
           </span>
         }
         title="Keselamatan keluarga"
-        description={`Anak, lansia & anggota dengan paparan tinggi bisa terdampak lebih besar. Lihat prioritas setiap anggota keluarga di ${location.name}.`}
+        description={`Prioritas tiap anggota keluarga di ${location.name}.`}
         actions={
           <>
             <Button variant="secondary" onClick={() => setEditing('new')}>
               <Plus /> Tambah anggota
             </Button>
-            <Button
-              variant="ai"
-              onClick={generate}
-              disabled={!context || members.length === 0 || plan.isPending}
-            >
-              <Sparkles /> Buat Rencana Keluarga
+            <Button onClick={generate} disabled={!context || members.length === 0 || plan.isPending}>
+              <Sparkles /> Rencana Keluarga
             </Button>
           </>
         }
       />
+
+      {/* Status strip */}
+      <section className="relative mb-6 overflow-hidden rounded-[18px] border border-line bg-white shadow-soft">
+        <div className="bg-topo absolute inset-0 opacity-[0.04]" aria-hidden />
+        <div className="relative grid items-center gap-6 p-6 sm:grid-cols-[1fr_auto] sm:px-8 sm:py-6">
+          <div>
+            <p className="data-label">Status kesiapsiagaan keluarga</p>
+            <dl className="mt-4 flex flex-wrap gap-x-12 gap-y-4">
+              <div>
+                <dd className="display-metric text-[52px]">{rows.length || members.length + 1}</dd>
+                <dt className="telemetry mt-2">Anggota</dt>
+              </div>
+              <div>
+                <dd
+                  className={cn(
+                    'display-metric text-[52px]',
+                    attention > 0 ? 'text-risk-high' : 'text-risk-safe',
+                  )}
+                >
+                  {attention}
+                </dd>
+                <dt className="telemetry mt-2">Perlu perhatian</dt>
+              </div>
+              <div>
+                <dd className="display-metric text-[52px]">{highest ? highest.score : '–'}</dd>
+                <dt className="telemetry mt-2">Skor tertinggi</dt>
+              </div>
+            </dl>
+          </div>
+          <Ara pose="family" size={150} className="hidden sm:block" />
+        </div>
+      </section>
 
       <div className="grid gap-5 lg:grid-cols-12">
         <div className="min-w-0 lg:col-span-7">
           <Card>
             <CardHeader>
               <div>
-                <CardTitle>Ikhtisar risiko keluarga</CardTitle>
-                <p className="mt-1 text-[12.5px] text-muted">
-                  Dihitung deterministik dari bahaya lokasi × kelompok usia & paparan
-                </p>
+                <CardTitle>Papan pemantauan</CardTitle>
+                <p className="mt-1 text-[12.5px] text-muted">Bahaya lokasi × usia & paparan</p>
               </div>
               <Badge variant="outline">
                 <Users /> {members.length + 1} orang
@@ -122,7 +154,7 @@ export default function FamilyPage() {
               {!assessment ? (
                 <Skeleton className="h-40" />
               ) : (
-                <ul className="space-y-2">
+                <ul className="divide-y divide-line">
                   {rows.map((r) => (
                     <MemberRow
                       key={r.member.id}
@@ -136,9 +168,9 @@ export default function FamilyPage() {
               {members.length === 0 && (
                 <EmptyState
                   className="mt-4"
-                  icon={<Users className="size-5" />}
+                  pose="family"
                   title="Tambahkan anggota keluarga"
-                  description="Cukup label, hubungan, kelompok usia & paparan luar ruang — tanpa data medis."
+                  description="Cukup label, usia & paparan — tanpa data medis."
                   action={
                     <Button onClick={() => setEditing('new')}>
                       <Plus /> Tambah anggota
@@ -146,9 +178,8 @@ export default function FamilyPage() {
                   }
                 />
               )}
-              <p className="mt-4 flex items-center gap-1.5 text-[11.5px] text-muted">
-                <Lock className="size-3" /> Data keluarga disimpan di perangkat Anda (dan di akun Anda bila
-                masuk dengan Supabase).
+              <p className="telemetry mt-5 flex items-center gap-1.5 normal-case tracking-normal">
+                <Lock className="size-3" /> Tersimpan di perangkatmu (dan akun Supabase bila masuk)
               </p>
             </CardContent>
           </Card>
@@ -174,7 +205,7 @@ export default function FamilyPage() {
               <p className="text-[14px] leading-relaxed text-neutral-700">{lastPlan.plan.summary}</p>
               <div className="mt-4 space-y-3">
                 {lastPlan.plan.members.map((m) => (
-                  <div key={m.name} className="rounded-xl bg-white p-3 ring-1 ring-indigo-100">
+                  <div key={m.name} className="rounded-xl border border-line bg-raised p-3.5">
                     <p className="text-[13px] font-bold">{m.name}</p>
                     <ul className="mt-1 space-y-1 text-[13px] text-neutral-700">
                       {m.advice.map((a) => (
@@ -184,17 +215,13 @@ export default function FamilyPage() {
                   </div>
                 ))}
               </div>
-              <h4 className="mt-4 text-[12px] font-bold uppercase tracking-wider text-muted">
-                Persiapan rumah tangga
-              </h4>
+              <h4 className="data-label mt-5">Persiapan rumah tangga</h4>
               <ul className="mt-1.5 space-y-1 text-[13px] text-neutral-700">
                 {lastPlan.plan.household.map((a) => (
                   <li key={a}>✓ {a}</li>
                 ))}
               </ul>
-              <h4 className="mt-4 text-[12px] font-bold uppercase tracking-wider text-red-700">
-                Jika kondisi memburuk
-              </h4>
+              <h4 className="data-label mt-5 !text-risk-critical">Jika kondisi memburuk</h4>
               <ul className="mt-1.5 space-y-1 text-[13px] text-neutral-700">
                 {lastPlan.plan.ifWorsens.map((a) => (
                   <li key={a}>! {a}</li>
@@ -203,14 +230,14 @@ export default function FamilyPage() {
             </AiPanel>
           ) : (
             <AiPanel title="Rencana aksi keluarga">
-              <p className="text-[14px] leading-relaxed text-neutral-700">
+              <AraSays pose="kit" size={96}>
                 {members.length
-                  ? 'SiagaAI akan menyusun saran per anggota dan persiapan rumah tangga berdasarkan prioritas di samping.'
-                  : 'Tambahkan minimal satu anggota keluarga untuk membuat rencana keluarga.'}
-              </p>
+                  ? 'Aku bisa susun saran per anggota & persiapan rumah.'
+                  : 'Tambahkan minimal satu anggota keluarga dulu, ya.'}
+              </AraSays>
               <Button
                 variant="ai"
-                className="mt-4"
+                className="mt-4 w-full"
                 onClick={generate}
                 disabled={!context || members.length === 0}
               >
@@ -246,39 +273,48 @@ function MemberRow({
   onRemove?: () => void;
 }) {
   const p = PRIORITY[row.priority];
+  const tone =
+    row.priority === 'high'
+      ? 'bg-brand text-white'
+      : row.priority === 'watch'
+        ? 'bg-[#FAEBCC] text-[#8A5A0B]'
+        : 'bg-neutral-100 text-neutral-700';
   return (
-    <li className="flex items-center gap-3 rounded-xl border border-line p-3">
+    <li className="flex items-center gap-4 py-4">
       <span
-        className="grid size-11 shrink-0 place-items-center rounded-xl bg-neutral-100 text-xl"
+        className={cn('grid size-11 shrink-0 place-items-center rounded-full text-[15px] font-bold', tone)}
         aria-hidden
       >
-        {row.member.id === 'self' ? '🙋' : AGE_EMOJI[row.member.ageGroup]}
+        {row.member.name.trim().charAt(0).toUpperCase() || '?'}
       </span>
       <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="truncate text-[14px] font-semibold">{row.member.name}</p>
-          <span className="text-[12px] text-muted">{row.member.relation}</span>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <p className="truncate text-[15px] font-bold">{row.member.name}</p>
+          <span className="font-mono text-[10.5px] uppercase tracking-[0.06em] text-subtle">
+            {row.member.relation} · {AGE_LABEL[row.member.ageGroup] ?? ''}
+          </span>
+        </div>
+        <div className="mt-2 flex items-center gap-2.5">
           <Badge variant={p.variant}>{p.label}</Badge>
+          <ScoreBar score={row.score} level={row.level} className="max-w-32" />
+          <span className="font-mono text-[12px] font-semibold">{row.score}</span>
         </div>
-        <div className="mt-1.5 flex items-center gap-2">
-          <ScoreBar score={row.score} level={row.level} className="max-w-40" />
-          <span className="tabular text-[12px] font-semibold">{row.score}</span>
-          <RiskBadge level={row.level} />
-        </div>
-        {row.reasons.length > 0 && <p className="mt-1 text-[11.5px] text-muted">{row.reasons.join(' · ')}</p>}
+        {row.reasons.length > 0 && <p className="mt-1.5 text-[12px] text-muted">{row.reasons.join(' · ')}</p>}
       </div>
       <HazardIcon hazard={row.primaryHazard} level={row.level} size="sm" className="hidden sm:grid" />
       <span className="sr-only">Bahaya utama: {HAZARDS[row.primaryHazard].label}</span>
-      {onEdit && (
-        <Button variant="ghost" size="icon-sm" onClick={onEdit} aria-label={`Ubah ${row.member.name}`}>
-          <Pencil />
-        </Button>
-      )}
-      {onRemove && (
-        <Button variant="ghost" size="icon-sm" onClick={onRemove} aria-label={`Hapus ${row.member.name}`}>
-          <Trash2 />
-        </Button>
-      )}
+      <div className="flex shrink-0">
+        {onEdit && (
+          <Button variant="ghost" size="icon-sm" onClick={onEdit} aria-label={`Ubah ${row.member.name}`}>
+            <Pencil />
+          </Button>
+        )}
+        {onRemove && (
+          <Button variant="ghost" size="icon-sm" onClick={onRemove} aria-label={`Hapus ${row.member.name}`}>
+            <Trash2 />
+          </Button>
+        )}
+      </div>
     </li>
   );
 }
@@ -324,7 +360,7 @@ function MemberDialog({
                 active={v.ageGroup === a.value}
                 onClick={() => form.setValue('ageGroup', a.value)}
               >
-                {a.emoji} {a.label}
+                {a.label}
               </Chip>
             ))}
           </Group>
@@ -369,7 +405,7 @@ function MemberDialog({
 function Group({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div role="group" aria-label={label}>
-      <p className="mb-1.5 text-[13px] font-semibold">{label}</p>
+      <p className="mb-2 text-[13px] font-semibold">{label}</p>
       <div className="flex flex-wrap gap-1.5">{children}</div>
     </div>
   );

@@ -19,16 +19,34 @@ export function LogoMark({ className }: { className?: string }) {
   );
 }
 
-export function Logo({ className, compact }: { className?: string; compact?: boolean }) {
+export function Logo({
+  className,
+  compact,
+  inverted,
+}: {
+  className?: string;
+  compact?: boolean;
+  inverted?: boolean;
+}) {
   return (
     <span className={cn('inline-flex items-center gap-2.5', className)}>
-      <LogoMark />
+      <LogoMark className="size-9" />
       {!compact && (
         <span className="leading-none">
-          <span className="block text-[17px] font-extrabold tracking-tight text-ink">
-            Siaga<span className="text-brand">AI</span>
+          <span
+            className={cn(
+              'block text-[18px] font-extrabold tracking-[-0.03em]',
+              inverted ? 'text-white' : 'text-ink',
+            )}
+          >
+            Siaga<span className={inverted ? 'text-white/70' : 'text-brand'}>AI</span>
           </span>
-          <span className="mt-0.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-muted">
+          <span
+            className={cn(
+              'mt-1 block font-mono text-[9px] font-medium uppercase tracking-[0.16em]',
+              inverted ? 'text-white/60' : 'text-subtle',
+            )}
+          >
             Disaster Intelligence
           </span>
         </span>
@@ -74,25 +92,41 @@ export function projectToSilhouette(lon: number, lat: number) {
   return { x: (lon - v.minLon) * sc, y: (v.maxLat - lat) * sc };
 }
 
-/** Subtle batik + topographic backdrop (2–6 % opacity). */
+/**
+ * NusantaraPattern — the single reusable motif layer (kawung geometry + contour lines).
+ * Kept at 2–7 % opacity so identity is felt before it is noticed.
+ */
 export function NusantaraBackdrop({
   className,
   batik = true,
   topo = true,
+  variant = 'light',
 }: {
   className?: string;
   batik?: boolean;
   topo?: boolean;
+  variant?: 'light' | 'red' | 'dark';
 }) {
+  const invert = variant !== 'light';
   return (
     <div aria-hidden className={cn('pointer-events-none absolute inset-0 overflow-hidden', className)}>
-      {topo && <div className="bg-topo absolute inset-0 opacity-[0.05]" />}
+      {topo && (
+        <div
+          className={cn('bg-topo absolute inset-0', invert ? 'opacity-[0.045] invert' : 'opacity-[0.05]')}
+        />
+      )}
       {batik && (
-        <div className="bg-batik absolute inset-0 opacity-[0.03] [mask-image:radial-gradient(ellipse_at_top_right,black,transparent_70%)]" />
+        <div
+          className={cn(
+            'bg-batik absolute inset-0 [mask-image:radial-gradient(ellipse_at_top_right,black,transparent_70%)]',
+            invert ? 'opacity-[0.035] invert' : 'opacity-[0.035]',
+          )}
+        />
       )}
     </div>
   );
 }
+export const NusantaraPattern = NusantaraBackdrop;
 
 /** Red–white ribbon accent. */
 export function MerahPutih({ className }: { className?: string }) {

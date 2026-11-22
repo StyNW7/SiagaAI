@@ -2,6 +2,7 @@ import { ArrowUp, Gauge, MapPin, RotateCcw, Sparkles, ThermometerSun, UserRound,
 import { Dialog as DialogPrimitive } from 'radix-ui';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useLocation } from 'react-router';
+import { Ara } from '@/components/common/ara';
 import { AiThinking, RichText } from '@/components/common/layout-bits';
 import { Button } from '@/components/ui/button';
 import { SheetContent } from '@/components/ui/overlays';
@@ -21,6 +22,26 @@ const SUGGESTIONS = [
   'Apakah anak dan orang tua saya perlu waspada?',
 ];
 
+/** Ara's face, cropped from the waving pose — used as the assistant avatar. */
+export function AraAvatar({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        'relative block shrink-0 overflow-hidden rounded-full bg-gradient-to-b from-brand-pale to-brand-soft ring-1 ring-brand/15',
+        className,
+      )}
+      aria-hidden
+    >
+      <img
+        src="/mascot/ara-hero-wave.webp"
+        alt=""
+        className="absolute left-1/2 top-[6%] w-[175%] max-w-none -translate-x-[46%]"
+        draggable={false}
+      />
+    </span>
+  );
+}
+
 export function AssistantLauncher() {
   const { open, setOpen, offsetRight } = useAssistantStore();
   const { pathname } = useLocation();
@@ -31,17 +52,19 @@ export function AssistantLauncher() {
       <DialogPrimitive.Trigger asChild>
         <button
           className={cn(
-            'group fixed right-4 z-40 flex items-center gap-2 rounded-full bg-ai py-3 pl-3.5 pr-4 text-sm font-semibold text-white shadow-float transition-all hover:bg-indigo-700 hover:pr-5 sm:right-6',
-            onMap ? 'bottom-24 md:bottom-6' : 'bottom-20 md:bottom-6',
+            'group fixed right-4 z-40 flex items-center gap-2.5 rounded-full border border-line bg-white py-1.5 pl-1.5 pr-4 text-[14px] font-semibold text-ink shadow-lift transition-all duration-200 hover:-translate-y-0.5 hover:border-ai/30 hover:shadow-float sm:right-6',
+            onMap ? 'bottom-40 md:bottom-6' : 'bottom-20 md:bottom-6',
           )}
           style={desktop && offsetRight ? { right: offsetRight + 24 } : undefined}
-          aria-label="Tanya SiagaAI"
+          aria-label="Tanya Ara, asisten SiagaAI"
         >
-          <span className="relative grid size-6 place-items-center">
-            <span className="absolute inset-0 animate-pulse-ring rounded-full bg-white/40" aria-hidden />
-            <Sparkles className="relative size-5" aria-hidden />
+          <AraAvatar className="size-10" />
+          <span className={cn('hidden flex-col items-start leading-tight', !onMap && 'sm:flex')}>
+            Tanya Ara
+            <span className="flex items-center gap-1 font-mono text-[9.5px] font-medium uppercase tracking-[0.08em] text-ai">
+              <Sparkles className="size-2.5" aria-hidden /> AI Assistant
+            </span>
           </span>
-          <span className={cn(onMap && 'hidden sm:inline')}>Tanya SiagaAI</span>
         </button>
       </DialogPrimitive.Trigger>
       {open && (
@@ -117,13 +140,12 @@ function AssistantPanel() {
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center justify-between border-b border-line px-5 py-4">
         <div className="flex items-center gap-3">
-          <span className="grid size-10 place-items-center rounded-xl bg-ai text-white">
-            <Sparkles className="size-5" aria-hidden />
-          </span>
+          <AraAvatar className="size-11" />
           <div>
-            <h2 className="text-[15px] font-bold">Tanya SiagaAI</h2>
-            <p className="text-[12px] text-muted">
-              Asisten kontekstual — memahami lokasi, skor & profil Anda
+            <h2 className="text-[16px] font-bold tracking-[-0.02em]">Ara · Asisten SiagaAI</h2>
+            <p className="flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-muted">
+              <span className="size-1.5 rounded-full bg-risk-safe" aria-hidden /> Paham lokasi, skor & profil
+              Anda
             </p>
           </div>
         </div>
@@ -141,7 +163,7 @@ function AssistantPanel() {
 
       {context && (
         <div
-          className="flex gap-1.5 overflow-x-auto border-b border-line bg-neutral-50/70 px-5 py-2.5 scrollbar-none"
+          className="flex gap-1.5 overflow-x-auto border-b border-line bg-raised px-5 py-2.5 scrollbar-none"
           aria-label="Konteks yang dipahami AI"
         >
           <Ctx icon={<MapPin />} text={context.location.name} />
@@ -159,21 +181,26 @@ function AssistantPanel() {
       <div ref={scroller} className="flex-1 space-y-4 overflow-y-auto px-5 py-5" aria-live="polite">
         {messages.length === 0 && (
           <div className="animate-fade-up">
-            <p className="text-[15px] font-semibold">
-              Halo! Ada yang ingin Anda ketahui tentang kondisi di {context?.location.name ?? 'lokasi Anda'}?
-            </p>
-            <p className="mt-1 text-[13px] text-muted">
-              Jawaban berlandaskan data BMKG, NASA FIRMS & Open-Meteo yang sudah dihitung Siaga Risk Engine.
-            </p>
-            <div className="mt-4 flex flex-col gap-2">
+            <div className="flex items-end gap-3">
+              <Ara pose="wave" size={92} />
+              <div className="mb-2 rounded-2xl rounded-bl-md border border-line bg-raised px-4 py-3">
+                <p className="text-[15px] font-bold leading-snug">Halo, aku Ara! 👋</p>
+                <p className="mt-0.5 text-[13px] leading-relaxed text-muted">
+                  Mau tahu kondisi di {context?.location.name ?? 'lokasimu'}? Tanya saja.
+                </p>
+              </div>
+            </div>
+            <p className="data-label mb-2 mt-6">Coba tanyakan</p>
+            <div className="flex flex-col gap-2">
               {SUGGESTIONS.map((s) => (
                 <button
                   key={s}
                   onClick={() => ask(s)}
                   disabled={!context}
-                  className="rounded-xl border border-indigo-100 bg-ai-soft/40 px-3.5 py-2.5 text-left text-[13px] font-medium text-indigo-950 transition-colors hover:bg-ai-soft"
+                  className="group flex items-center justify-between gap-3 rounded-xl border border-line bg-white px-3.5 py-2.5 text-left text-[13.5px] font-medium text-ink transition-colors hover:border-ai/30 hover:bg-ai-soft/40"
                 >
                   {s}
+                  <ArrowUp className="size-3.5 shrink-0 rotate-45 text-subtle transition-colors group-hover:text-ai" />
                 </button>
               ))}
             </div>
@@ -192,17 +219,21 @@ function AssistantPanel() {
               <div
                 className={cn(
                   'rounded-2xl rounded-bl-md border px-4 py-3',
-                  m.error ? 'border-amber-200 bg-amber-50' : 'border-indigo-100 bg-white',
+                  m.error ? 'border-[#D99A22]/30 bg-[#FDF6E8]' : 'border-line bg-white',
                 )}
               >
                 <RichText text={m.content} />
               </div>
-              {m.provider && <p className="mt-1 pl-1 text-[11px] text-muted">✦ {m.provider}</p>}
+              {m.provider && (
+                <p className="mt-1.5 pl-1 font-mono text-[10px] uppercase tracking-[0.06em] text-ai">
+                  ✦ {m.provider}
+                </p>
+              )}
             </div>
           ),
         )}
         {busy && (
-          <div className="mr-4 rounded-2xl border border-indigo-100 bg-white px-4 py-3">
+          <div className="mr-4 rounded-2xl rounded-bl-md border border-line bg-white px-4 py-3">
             <AiThinking />
           </div>
         )}
@@ -212,7 +243,7 @@ function AssistantPanel() {
               <button
                 key={f}
                 onClick={() => ask(f)}
-                className="rounded-full border border-indigo-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-ai hover:bg-ai-soft"
+                className="rounded-full border border-ai/20 bg-white px-3 py-1.5 text-[12px] font-semibold text-ai-deep transition-colors hover:bg-ai-soft"
               >
                 {f}
               </button>
@@ -222,7 +253,7 @@ function AssistantPanel() {
       </div>
 
       <form onSubmit={submit} className="safe-bottom border-t border-line bg-white p-3">
-        <div className="flex items-end gap-2 rounded-2xl border border-line bg-white p-1.5 focus-within:border-ai focus-within:ring-4 focus-within:ring-ai/10">
+        <div className="flex items-end gap-2 rounded-2xl border border-line bg-white p-1.5 focus-within:border-ai/50 focus-within:ring-4 focus-within:ring-ai/10">
           <label htmlFor="assistant-input" className="sr-only">
             Pertanyaan untuk SiagaAI
           </label>

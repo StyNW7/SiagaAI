@@ -243,7 +243,7 @@ supabase functions deploy siaga-ai hotspots       # gateway alternatif
 supabase secrets set GEMINI_API_KEY=...
 ```
 
-Setelah itu isi `VITE_SUPABASE_URL` & `VITE_SUPABASE_ANON_KEY` di Vercel, lalu buat akun demo `demo@siagaai.id` di *Authentication → Users*.
+Setelah itu isi `VITE_SUPABASE_URL` & `VITE_SUPABASE_ANON_KEY` di Vercel, lalu jalankan `backend/supabase/seed.sql` sekali di *SQL Editor* Supabase. Seed ini membuat akun demo `demo@siagaai.id` / `SiagaAI2026!` beserta profil (Palangka Raya, mahasiswa, motor), 3 anggota keluarga, dan lokasi tersimpan. Di lokal, `supabase db reset` menjalankannya otomatis.
 
 Akun demo tetap bisa masuk walaupun belum dibuat di Supabase. Dalam kondisi itu, aplikasi otomatis memakai sesi perangkat.
 

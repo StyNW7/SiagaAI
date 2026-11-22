@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Outlet } from 'react-router';
-import { LoadingState } from '@/components/common/data-state';
+import { PageLoader } from '@/components/common/data-state';
 import { AppLayout } from '@/layouts/app-layout';
 import { RouteError } from './error-boundary';
 
@@ -19,7 +19,7 @@ const AuthPage = lazy(() => import('@/pages/auth-page'));
 const NotFoundPage = lazy(() => import('@/pages/not-found-page'));
 
 const Standalone = () => (
-  <Suspense fallback={<LoadingState label="Memuat SiagaAI…" className="min-h-dvh justify-center" />}>
+  <Suspense fallback={<PageLoader className="min-h-dvh" />}>
     <Outlet />
   </Suspense>
 );

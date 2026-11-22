@@ -1,5 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
-import { BellRing, Database, FlaskConical, Server, Sparkles, Trash2, Type } from 'lucide-react';
+import {
+  BellRing,
+  Database,
+  Download,
+  FlaskConical,
+  Server,
+  Smartphone,
+  Sparkles,
+  Trash2,
+  Type,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/common/layout-bits';
 import { Button } from '@/components/ui/button';
@@ -7,6 +17,7 @@ import { Badge, Card, CardContent, CardHeader, CardTitle } from '@/components/ui
 import { Switch } from '@/components/ui/overlays';
 import { SCENARIOS } from '@/data/scenarios';
 import { Chip } from '@/features/location/location-picker';
+import { useInstallPrompt } from '@/features/pwa/install-prompt';
 import { useDocumentTitle } from '@/hooks/use-misc';
 import { isSupabaseEnabled } from '@/services/supabase/client';
 import { useSettings } from '@/stores';
@@ -14,6 +25,9 @@ import { useSettings } from '@/stores';
 export default function SettingsPage() {
   useDocumentTitle('Pengaturan');
   const s = useSettings();
+  const pwa = useInstallPrompt();
+  const standalone =
+    typeof window !== 'undefined' && window.matchMedia?.('(display-mode: standalone)').matches;
   const health = useQuery({
     queryKey: ['health'],
     queryFn: async () => {
@@ -41,16 +55,17 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="animate-fade-up">
+    <div>
       <PageHeader
         title="Pengaturan"
-        description="Aksesibilitas, notifikasi, mode demonstrasi, dan status integrasi."
+        mascot="kit"
+        description="Aksesibilitas, notifikasi, simulasi & status sistem."
       />
       <div className="grid gap-5 lg:grid-cols-2 [&>*]:min-w-0">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Type className="size-4 text-muted" /> Ukuran teks
+              <Type className="size-4 text-brand" /> Ukuran teks
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -65,8 +80,8 @@ export default function SettingsPage() {
                 </Chip>
               ))}
             </div>
-            <p className="mt-3 text-[12.5px] text-muted">
-              Membantu pengguna lansia & pengguna dengan gangguan penglihatan.
+            <p className="mt-4 text-[12.5px] text-muted">
+              Untuk lansia & pengguna dengan gangguan penglihatan.
             </p>
           </CardContent>
         </Card>
@@ -74,23 +89,20 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BellRing className="size-4 text-muted" /> Notifikasi peringatan
+              <BellRing className="size-4 text-brand" /> Notifikasi peringatan
             </CardTitle>
           </CardHeader>
           <CardContent>
             <label className="flex items-center justify-between gap-4">
-              <span className="text-[13.5px]">
-                Beri tahu saya untuk peringatan Kritis & Peringatan di lokasi aktif
-              </span>
+              <span className="text-[13.5px]">Kabari saya saat ada peringatan penting di lokasi aktif</span>
               <Switch
                 checked={s.notifications}
                 onCheckedChange={toggleNotifications}
                 aria-label="Notifikasi peringatan"
               />
             </label>
-            <p className="mt-3 text-[12.5px] text-muted">
-              Notifikasi lokal PWA saat aplikasi terbuka/di latar. Push server (web push) adalah pengembangan
-              berikutnya.
+            <p className="mt-4 text-[12.5px] text-muted">
+              Notifikasi lokal PWA saat aplikasi terbuka atau di latar.
             </p>
           </CardContent>
         </Card>
@@ -103,8 +115,7 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             <p className="text-[13px] text-muted">
-              Data simulasi untuk menguji perilaku risiko tinggi dari mana saja. Selalu ditandai jelas sebagai
-              simulasi.
+              Uji kondisi risiko tinggi dari mana saja — selalu ditandai simulasi.
             </p>
             <div className="flex flex-wrap gap-2">
               <Chip active={!s.scenario} onClick={() => s.setScenario(null)}>
@@ -122,7 +133,34 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Server className="size-4 text-muted" /> Status integrasi
+              <Smartphone className="size-4 text-brand" /> Aplikasi (PWA)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-[13px] text-muted">
+              {standalone
+                ? 'SiagaAI sudah terpasang di perangkat ini.'
+                : 'Pasang ke layar utama — rencana aksi & tas siaga tetap tersedia offline.'}
+            </p>
+            {!standalone && (
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={!pwa.available}
+                onClick={async () => {
+                  if (await pwa.install()) toast.success('SiagaAI terpasang');
+                }}
+              >
+                <Download /> {pwa.available ? 'Instal aplikasi' : 'Gunakan menu browser'}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Server className="size-4 text-brand" /> Status integrasi
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2.5 text-[13px]">
