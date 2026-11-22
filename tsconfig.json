@@ -1,0 +1,18 @@
+{
+  // Dibaca oleh builder Vercel (@vercel/node) untuk meng-compile Edge Functions di /api.
+  // JANGAN dihapus: tanpa file ini Vercel memakai default (strict: false, import ".ts" tidak
+  // di-rewrite) sehingga deploy gagal dengan "Edge Function is referencing unsupported modules".
+  // Frontend memakai frontend/tsconfig.json sendiri; Supabase (Deno) tidak membaca file ini.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "rewriteRelativeImportExtensions": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "types": []
+  },
+  "include": ["api/**/*.ts", "backend/core/**/*.ts", "ai/**/*.ts", "backend/env.d.ts"],
+  "exclude": ["backend/core/**/*.test.ts"]
+}
