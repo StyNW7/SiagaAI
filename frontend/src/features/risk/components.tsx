@@ -8,6 +8,7 @@ import { Tip } from '@/components/ui/overlays';
 import type { SourceState } from '@/hooks/use-siaga-data';
 import { HAZARDS, RISK_LEVELS } from '@/lib/risk-levels';
 import { cn } from '@/lib/utils';
+import { localizeSource, t } from '@/lib/i18n';
 import type { Provenance } from '@/types/domain';
 import type { HazardScore, PersonalHazardScore } from './engine/types';
 
@@ -25,7 +26,7 @@ export function HazardCard({
   const meta = HAZARDS[hazard.hazard];
   const score = personal?.score ?? hazard.score;
   const level = personal?.level ?? hazard.level;
-  const color = hazard.available ? RISK_LEVELS[level].color : '#D4D2CC';
+  const color = hazard.available ? RISK_LEVELS[level].color : 'var(--color-line-strong)';
   const Icon = HAZARD_ICONS[hazard.hazard];
   const Comp = onClick ? 'button' : 'div';
   return (
@@ -33,7 +34,7 @@ export function HazardCard({
       onClick={onClick}
       aria-pressed={onClick ? active : undefined}
       className={cn(
-        'group relative flex h-full flex-col overflow-hidden rounded-card border bg-white p-4 text-left shadow-soft transition-all duration-200 sm:p-5',
+        'group relative flex h-full flex-col overflow-hidden rounded-card border bg-surface p-4 text-left shadow-soft transition-all duration-200 sm:p-5',
         onClick && 'cursor-pointer hover:-translate-y-0.5 hover:shadow-lift',
         active ? 'border-ink ring-1 ring-ink' : 'border-line',
       )}
@@ -59,8 +60,9 @@ export function HazardCard({
       <ScoreBar score={hazard.available ? score : 0} level={level} className="mt-2.5" />
       <p className="mt-3 line-clamp-2 text-[12.5px] leading-snug text-muted">{hazard.headline}</p>
       {hazard.available && hazard.confidence !== 'high' && (
-        <p className="mt-auto pt-2 font-mono text-[10px] uppercase tracking-[0.04em] text-[#8A5A0B]">
-          Keyakinan {hazard.confidence === 'medium' ? 'sedang' : 'rendah'}
+        <p className="mt-auto pt-2 font-mono text-[10px] uppercase tracking-[0.04em] text-[var(--risk-moderate-text)]">
+          {t('Keyakinan', 'Confidence')}{' '}
+          {hazard.confidence === 'medium' ? t('sedang', 'medium') : t('rendah', 'low')}
         </p>
       )}
     </Comp>
@@ -80,7 +82,7 @@ export function HazardRow({
   const meta = HAZARDS[hazard.hazard];
   const score = personal?.score ?? hazard.score;
   const level = personal?.level ?? hazard.level;
-  const color = hazard.available ? RISK_LEVELS[level].color : '#D4D2CC';
+  const color = hazard.available ? RISK_LEVELS[level].color : 'var(--color-line-strong)';
   const Icon = HAZARD_ICONS[hazard.hazard];
   return (
     <button
@@ -124,10 +126,16 @@ export function FactorBreakdown({ hazard }: { hazard: HazardScore }) {
           <div className="flex items-baseline justify-between gap-3 text-[13px]">
             <span className="font-medium text-ink">{f.label}</span>
             <Tip
-              content={`Bobot nominal ${Math.round(f.weight * 100)}%${f.available ? `, efektif ${Math.round(f.effectiveWeight * 100)}%` : ' — dialihkan karena data tidak tersedia'}. Sumber: ${f.source}`}
+              content={t(
+                `Bobot nominal ${Math.round(f.weight * 100)}%${f.available ? `, efektif ${Math.round(f.effectiveWeight * 100)}%` : ' — dialihkan karena data tidak tersedia'}. Sumber: ${f.source}`,
+                `Nominal weight ${Math.round(f.weight * 100)}%${f.available ? `, effective ${Math.round(f.effectiveWeight * 100)}%` : ' — redistributed because data is unavailable'}. Source: ${f.source}`,
+              )}
             >
               <span tabIndex={0} className="shrink-0 font-mono text-[11px] font-medium text-muted tabular">
-                {f.available ? `+${f.contribution.toFixed(1)} poin` : 'tidak tersedia'} ·{' '}
+                {f.available
+                  ? `+${f.contribution.toFixed(1)} ${t('poin', 'pts')}`
+                  : t('tidak tersedia', 'unavailable')}{' '}
+                ·{' '}
                 {Math.round(f.weight * 100)}%
               </span>
             </Tip>
@@ -144,7 +152,7 @@ export function FactorBreakdown({ hazard }: { hazard: HazardScore }) {
                   }}
                 />
               ) : (
-                <div className="h-full w-full bg-[repeating-linear-gradient(135deg,#E6E5E1,#E6E5E1_4px,transparent_4px,transparent_8px)]" />
+                <div className="h-full w-full bg-[repeating-linear-gradient(135deg,var(--color-line),var(--color-line)_4px,transparent_4px,transparent_8px)]" />
               )}
             </div>
             <span
@@ -160,18 +168,22 @@ export function FactorBreakdown({ hazard }: { hazard: HazardScore }) {
         <p className="rounded-lg bg-neutral-50 px-3 py-2 text-[12px] text-muted">{hazard.note}</p>
       )}
       <p className="text-[11.5px] text-muted">
-        Cakupan data {Math.round(hazard.coverage * 100)}% · keyakinan{' '}
-        {hazard.confidence === 'high' ? 'tinggi' : hazard.confidence === 'medium' ? 'sedang' : 'rendah'}
+        {t('Cakupan data', 'Data coverage')} {Math.round(hazard.coverage * 100)}% · {t('keyakinan', 'confidence')}{' '}
+        {hazard.confidence === 'high'
+          ? t('tinggi', 'high')
+          : hazard.confidence === 'medium'
+            ? t('sedang', 'medium')
+            : t('rendah', 'low')}
       </p>
     </div>
   );
 }
 
-const STEPS = [
-  { key: 'weather', label: 'Memeriksa cuaca (BMKG & Open-Meteo)' },
-  { key: 'hotspots', label: 'Memeriksa titik panas sekitar (NASA FIRMS)' },
-  { key: 'air', label: 'Mengevaluasi kualitas udara & paparan' },
-  { key: 'personal', label: 'Mempersonalisasi rekomendasi' },
+const analysisSteps = () => [
+  { key: 'weather', label: t('Memeriksa cuaca (BMKG & Open-Meteo)', 'Checking weather (BMKG & Open-Meteo)') },
+  { key: 'hotspots', label: t('Memeriksa titik panas sekitar (NASA FIRMS)', 'Checking nearby hotspots (NASA FIRMS)') },
+  { key: 'air', label: t('Mengevaluasi kualitas udara & paparan', 'Evaluating air quality & exposure') },
+  { key: 'personal', label: t('Mempersonalisasi rekomendasi', 'Personalising recommendations') },
 ];
 
 /** Polished analysis sequence tied to the real loading state of each source. */
@@ -188,7 +200,7 @@ export function AnalysisSequence({
 }) {
   const [tick, setTick] = useState(0);
   useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 380);
+    const id = setInterval(() => setTick((n) => n + 1), 380);
     return () => clearInterval(id);
   }, []);
   const stateOf = (key: string, i: number): SourceState | 'pending' => {
@@ -199,8 +211,8 @@ export function AnalysisSequence({
   const done = ready && tick >= 9;
   useEffect(() => {
     if (done) {
-      const t = setTimeout(onDone, 350);
-      return () => clearTimeout(t);
+      const timer = setTimeout(onDone, 350);
+      return () => clearTimeout(timer);
     }
   }, [done, onDone]);
   return (
@@ -210,9 +222,11 @@ export function AnalysisSequence({
         <Ara pose="thinking" size={170} float priority />
         <div className="w-full flex-1">
           <p className="telemetry !text-brand">Siaga Risk Engine</p>
-          <h2 className="mt-1.5 text-[24px] font-bold tracking-[-0.025em]">Menganalisis {locationName}…</h2>
+          <h2 className="mt-1.5 text-[24px] font-bold tracking-[-0.025em]">
+            {t(`Menganalisis ${locationName}…`, `Analysing ${locationName}…`)}
+          </h2>
           <ol className="mt-6 space-y-3.5">
-            {STEPS.map((s, i) => {
+            {analysisSteps().map((s, i) => {
               const st = stateOf(s.key, i);
               return (
                 <li
@@ -229,9 +243,9 @@ export function AnalysisSequence({
                     className={cn(
                       'grid size-6 shrink-0 place-items-center rounded-full',
                       st === 'success'
-                        ? 'bg-[#EEF7F2] text-risk-safe'
+                        ? 'bg-[var(--risk-safe-soft)] text-risk-safe'
                         : st === 'error'
-                          ? 'bg-[#FDF6E8] text-[#8A5A0B]'
+                          ? 'bg-[var(--risk-moderate-soft)] text-[var(--risk-moderate-text)]'
                           : 'bg-neutral-100 text-muted',
                     )}
                   >
@@ -247,7 +261,9 @@ export function AnalysisSequence({
                   </span>
                   <span className="font-medium">{s.label}</span>
                   {st === 'error' && (
-                    <span className="font-mono text-[10.5px] uppercase text-[#8A5A0B]">tidak tersedia</span>
+                    <span className="font-mono text-[10.5px] uppercase text-[var(--risk-moderate-text)]">
+                      {t('tidak tersedia', 'unavailable')}
+                    </span>
                   )}
                 </li>
               );
@@ -273,7 +289,11 @@ export function SourcesPanel({
           <div className="min-w-0">
             <p className="text-[13.5px] font-semibold text-ink">{s.label}</p>
             <p className="truncate text-[12px] text-muted">
-              {s.provenance?.source ?? (s.state === 'loading' ? 'Memuat…' : 'Sumber tidak tersedia saat ini')}
+              {s.provenance?.source
+                ? localizeSource(s.provenance.source)
+                : s.state === 'loading'
+                  ? t('Memuat…', 'Loading…')
+                  : t('Sumber tidak tersedia saat ini', 'Source currently unavailable')}
             </p>
           </div>
           {s.state === 'loading' ? (

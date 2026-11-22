@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 /**
  * Curated Indonesian cities used for instant search, nearest-city lookup and
  * the national weather/air-quality layer. `adm4` codes were verified against the
@@ -466,13 +467,20 @@ export const PROVINCE_CAPITAL: Record<string, City> = Object.fromEntries(
 );
 
 /** Regions highlighted in "Explore Regions" so judges can evaluate data-rich areas from anywhere. */
+const preset = (slug: string, id: string, en: string) => ({
+  slug,
+  get reason() {
+    return t(id, en);
+  },
+});
+
 export const EXPLORE_PRESETS = [
-  { slug: 'palangka-raya', reason: 'Lahan gambut — fokus karhutla & asap' },
-  { slug: 'pekanbaru', reason: 'Riau — riwayat kabut asap lintas batas' },
-  { slug: 'palembang', reason: 'Sumatera Selatan — gambut & musim kemarau' },
-  { slug: 'jakarta-utara', reason: 'Pesisir — banjir rob & hujan ekstrem' },
-  { slug: 'bengkulu', reason: 'Tuan rumah IT RUSH — gempa & cuaca pesisir' },
-  { slug: 'samarinda', reason: 'Kalimantan Timur — titik panas aktif' },
-] as const;
+  preset('palangka-raya', 'Lahan gambut — fokus karhutla & asap', 'Peatland — wildfire & smoke focus'),
+  preset('pekanbaru', 'Riau — riwayat kabut asap lintas batas', 'Riau — history of transboundary haze'),
+  preset('palembang', 'Sumatera Selatan — gambut & musim kemarau', 'South Sumatra — peat & dry season'),
+  preset('jakarta-utara', 'Pesisir — banjir rob & hujan ekstrem', 'Coastal — tidal flooding & extreme rain'),
+  preset('bengkulu', 'Tuan rumah IT RUSH — gempa & cuaca pesisir', 'IT RUSH host — earthquakes & coastal weather'),
+  preset('samarinda', 'Kalimantan Timur — titik panas aktif', 'East Kalimantan — active hotspots'),
+];
 
 export const DEFAULT_CITY = CITY_BY_SLUG['jakarta-pusat'];

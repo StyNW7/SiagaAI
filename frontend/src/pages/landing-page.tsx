@@ -34,70 +34,74 @@ import { useEarthquakesQuery, useHotspotsQuery, useWarningsQuery } from '@/hooks
 import { timeAgo } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { useSettings } from '@/stores';
+import { locale, t } from '@/lib/i18n';
+import { PreferenceToggles } from '@/features/preferences/toggles';
 
-const NAV = [
-  ['#cara-kerja', 'Cara kerja'],
-  ['#fitur', 'Fitur'],
-  ['#teknologi', 'Teknologi'],
-  ['#dampak', 'Dampak'],
-] as const;
+const nav = () =>
+  [
+    ['#cara-kerja', t('Cara kerja', 'How it works')],
+    ['#fitur', t('Fitur', 'Features')],
+    ['#teknologi', t('Teknologi', 'Technology')],
+    ['#dampak', t('Dampak', 'Impact')],
+  ] as const;
 
-const STEPS: { n: string; en: string; id: string; text: string; pose: AraPose }[] = [
+/** Each step shows the active-language name with the other language as a subtle tag. */
+const steps = (): { n: string; title: string; tag: string; text: string; pose: AraPose }[] => [
   {
     n: '01',
-    en: 'Detect',
-    id: 'Deteksi',
-    text: 'Satelit NASA, cuaca BMKG & kualitas udara digabung.',
+    title: t('Deteksi', 'Detect'),
+    tag: t('Detect', 'Deteksi'),
+    text: t('Satelit NASA, cuaca BMKG & kualitas udara digabung.', 'NASA satellites, BMKG weather & air quality combined.'),
     pose: 'explore',
   },
   {
     n: '02',
-    en: 'Understand',
-    id: 'Pahami',
-    text: 'Risk Engine mengubah sinyal jadi skor 0–100.',
+    title: t('Pahami', 'Understand'),
+    tag: t('Understand', 'Pahami'),
+    text: t('Risk Engine mengubah sinyal jadi skor 0–100.', 'The Risk Engine turns signals into a 0–100 score.'),
     pose: 'thinking',
   },
   {
     n: '03',
-    en: 'Personalize',
-    id: 'Personal',
-    text: 'Disesuaikan pekerjaan, transportasi & keluarga.',
+    title: t('Personal', 'Personalize'),
+    tag: t('Personalize', 'Personal'),
+    text: t('Disesuaikan pekerjaan, transportasi & keluarga.', 'Tailored to your occupation, transport & family.'),
     pose: 'tablet',
   },
   {
     n: '04',
-    en: 'Act',
-    id: 'Bertindak',
-    text: 'Rencana aksi konkret yang bisa langsung dicentang.',
+    title: t('Bertindak', 'Act'),
+    tag: t('Act', 'Bertindak'),
+    text: t('Rencana aksi konkret yang bisa langsung dicentang.', 'A concrete action plan you can tick off right away.'),
     pose: 'checklist',
   },
 ];
 
-const PERSONAS = [
+const personas = () => [
   {
     name: 'Raka',
-    role: 'Mahasiswa · naik motor',
-    q: 'Aman berangkat kampus pagi ini?',
-    a: 'Berangkat sebelum 07.00 — hujan & asap paling rendah.',
+    role: t('Mahasiswa · naik motor', 'Student · rides a motorcycle'),
+    q: t('Aman berangkat kampus pagi ini?', 'Is it safe to head to campus this morning?'),
+    a: t('Berangkat sebelum 07.00 — hujan & asap paling rendah.', 'Leave before 07:00 — rain & smoke are lowest.'),
   },
   {
     name: 'Sari',
-    role: 'Ibu · anak & lansia di rumah',
-    q: 'Asap hari ini berbahaya untuk keluarga?',
-    a: 'Anak & lansia diprioritaskan, tutup ventilasi siang hari.',
+    role: t('Ibu · anak & lansia di rumah', 'Mother · kids & older adults at home'),
+    q: t('Asap hari ini berbahaya untuk keluarga?', 'Is today’s smoke dangerous for my family?'),
+    a: t('Anak & lansia diprioritaskan, tutup ventilasi siang hari.', 'Prioritise kids & older adults, close vents at midday.'),
   },
   {
     name: 'Budi',
-    role: 'Pekerja lapangan · 8 jam di luar',
-    q: 'Kapan waktu kerja luar paling aman?',
-    a: 'Istirahat 13.00–15.00 — potensi petir & panas tertinggi.',
+    role: t('Pekerja lapangan · 8 jam di luar', 'Field worker · 8 hours outdoors'),
+    q: t('Kapan waktu kerja luar paling aman?', 'When is the safest time to work outdoors?'),
+    a: t('Istirahat 13.00–15.00 — potensi petir & panas tertinggi.', 'Rest 13:00–15:00 — lightning & heat risk peak.'),
   },
 ];
 
-const MARQUEE = [
-  'Kenali Risiko',
-  'Pahami Dampaknya',
-  'Ambil Tindakan',
+const marquee = () => [
+  t('Kenali Risiko', 'Know the Risk'),
+  t('Pahami Dampaknya', 'Understand the Impact'),
+  t('Ambil Tindakan', 'Take Action'),
   'BMKG',
   'NASA FIRMS',
   'Copernicus CAMS',
@@ -106,7 +110,7 @@ const MARQUEE = [
 ];
 
 export default function LandingPage() {
-  useDocumentTitle('Kenali Risiko. Pahami Dampaknya. Ambil Tindakan.');
+  useDocumentTitle(t('Kenali Risiko. Pahami Dampaknya. Ambil Tindakan.', 'Know the Risk. Understand the Impact. Take Action.'));
   const navigate = useNavigate();
   const { locate, busy } = useGeolocation();
   const setScenario = useSettings((s) => s.setScenario);
@@ -129,7 +133,8 @@ export default function LandingPage() {
     navigate('/app', { state: { from: 'landing', located: !!l } });
   };
 
-  const h24 = hotspots.data ? stats.h24.toLocaleString('id-ID') : '…';
+  const h24 = hotspots.data ? stats.h24.toLocaleString(locale()) : '…';
+  const MARQUEE = marquee();
   const warnCount = warnings.data ? String(warnings.data.warnings.length) : warnings.isError ? '–' : '…';
   const quake = quakes.data?.latest;
 
@@ -137,9 +142,9 @@ export default function LandingPage() {
     <div className="overflow-x-clip bg-canvas">
       <a
         href="#hero"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-lg focus:bg-ink focus:px-3 focus:py-2 focus:text-white"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-lg focus:bg-inverse focus:px-3 focus:py-2 focus:text-on-inverse"
       >
-        Lewati ke konten
+        {t('Lewati ke konten', 'Skip to content')}
       </a>
       <LandingNav />
 
@@ -152,38 +157,39 @@ export default function LandingPage() {
         />
         <div className="relative mx-auto grid max-w-[1360px] items-center gap-6 px-5 pb-10 pt-28 sm:px-8 lg:grid-cols-12 lg:gap-8 lg:pb-14 lg:pt-32">
           <div className="animate-fade-up lg:col-span-7">
-            <p className="inline-flex items-center gap-2 rounded-full border border-line bg-white/80 py-1 pl-1 pr-3 text-[12px] font-semibold text-neutral-700 shadow-soft backdrop-blur">
+            <p className="inline-flex items-center gap-2 rounded-full border border-line bg-surface/80 py-1 pl-1 pr-3 text-[12px] font-semibold text-neutral-700 shadow-soft backdrop-blur">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-brand-dark">
                 <span className="size-1.5 animate-pulse rounded-full bg-brand" /> Live
               </span>
               Personal Disaster Intelligence · Indonesia
             </p>
             <h1 className="text-balance mt-7 text-[44px] font-extrabold leading-[1.02] tracking-[-0.045em] text-ink sm:text-[60px] xl:text-[68px]">
-              Kenali Risiko.
+              {t('Kenali Risiko.', 'Know the Risk.')}
               <br />
-              <span className="text-neutral-400">Pahami Dampaknya.</span>
+              <span className="text-neutral-400 dark:text-neutral-500">{t('Pahami Dampaknya.', 'Understand the Impact.')}</span>
               <br />
-              <span className="text-brand">Ambil Tindakan.</span>
+              <span className="text-brand">{t('Ambil Tindakan.', 'Take Action.')}</span>
             </h1>
             <p className="text-pretty mt-6 max-w-lg text-[17px] leading-relaxed text-neutral-600">
-              Data bencana Indonesia, diterjemahkan menjadi{' '}
-              <b className="font-semibold text-ink">risiko personal</b> dan{' '}
-              <b className="font-semibold text-ink">langkah nyata</b> — untuk lokasimu, hari ini.
+              {t('Data bencana Indonesia, diterjemahkan menjadi', "Indonesia's disaster data, translated into")}{' '}
+              <b className="font-semibold text-ink">{t('risiko personal', 'personal risk')}</b> {t('dan', 'and')}{' '}
+              <b className="font-semibold text-ink">{t('langkah nyata', 'real actions')}</b>{' '}
+              {t('— untuk lokasimu, hari ini.', '— for your location, today.')}
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Button size="lg" onClick={checkLocation} disabled={busy} className="h-[52px] px-7 text-[15px]">
-                {busy ? <Loader2 className="animate-spin" /> : <LocateFixed />} Cek Lokasi Saya
+                {busy ? <Loader2 className="animate-spin" /> : <LocateFixed />} {t('Cek Lokasi Saya', 'Check My Location')}
               </Button>
               <Button asChild size="lg" variant="secondary" className="h-[52px] px-7 text-[15px]">
                 <Link to="/app/map">
-                  <MapIcon /> Jelajahi Siaga Map
+                  <MapIcon /> {t('Jelajahi Siaga Map', 'Explore Siaga Map')}
                 </Link>
               </Button>
             </div>
             <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[11px] uppercase tracking-[0.06em] text-muted">
-              {['Tanpa login', 'GPS tidak disimpan', 'Gratis'].map((t) => (
-                <li key={t} className="flex items-center gap-1.5">
-                  <Check className="size-3.5 text-risk-safe" strokeWidth={2.6} /> {t}
+              {[t('Tanpa login', 'No login'), t('GPS tidak disimpan', 'GPS not stored'), t('Gratis', 'Free')].map((item) => (
+                <li key={item} className="flex items-center gap-1.5">
+                  <Check className="size-3.5 text-risk-safe" strokeWidth={2.6} /> {item}
                 </li>
               ))}
             </ul>
@@ -210,25 +216,25 @@ export default function LandingPage() {
               size={400}
               priority
               className="relative z-10 !h-[80%] !w-auto"
-              alt="Ara, maskot SiagaAI"
+              alt={t('Ara, maskot SiagaAI', 'Ara, the SiagaAI mascot')}
             />
             <OrbitChip
               className="left-0 top-[12%] animate-[float_6s_ease-in-out_infinite]"
               icon={<Flame className="text-hz-fire" />}
               value={h24}
-              label="Titik panas · 24 jam"
+              label={t('Titik panas · 24 jam', 'Hotspots · 24 h')}
             />
             <OrbitChip
               className="right-0 top-[42%] animate-[float_7s_ease-in-out_0.6s_infinite]"
               icon={<TriangleAlert className="text-risk-moderate" />}
               value={warnCount}
-              label="Peringatan BMKG"
+              label={t('Peringatan BMKG', 'BMKG warnings')}
             />
             <OrbitChip
               className="bottom-[6%] left-[2%] animate-[float_6.5s_ease-in-out_1.2s_infinite]"
               icon={<Radar className="text-risk-critical" />}
               value={quake ? `M${quake.magnitude}` : '…'}
-              label={quake ? `Gempa · ${timeAgo(quake.time)}` : 'Gempa terbaru'}
+              label={quake ? `${t('Gempa', 'Quake')} · ${timeAgo(quake.time)}` : t('Gempa terbaru', 'Latest quake')}
             />
           </div>
         </div>
@@ -236,12 +242,12 @@ export default function LandingPage() {
         {/* Tilted marquee ribbon */}
         <div className="relative z-10 -mx-4 mt-2 -rotate-[1.6deg] overflow-hidden border-y border-brand-dark bg-brand py-4 shadow-[0_16px_40px_-12px_rgb(163_19_25/0.45)]">
           <div className="flex w-max animate-marquee gap-10 whitespace-nowrap">
-            {[...MARQUEE, ...MARQUEE].map((t, i) => (
+            {[...MARQUEE, ...MARQUEE].map((word, i) => (
               <span
                 key={i}
                 className="flex items-center gap-10 text-[22px] font-bold tracking-[-0.02em] text-white sm:text-[26px]"
               >
-                {t}
+                {word}
                 <Sparkles className="size-5 text-white/60" aria-hidden />
               </span>
             ))}
@@ -254,16 +260,16 @@ export default function LandingPage() {
         <div className="mx-auto max-w-[1360px] px-5 sm:px-8">
           <Reveal className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
-              <p className="telemetry !text-brand">Indonesia hari ini</p>
+              <p className="telemetry !text-brand">{t('Indonesia hari ini', 'Indonesia today')}</p>
               <h2 className="text-balance mt-3 max-w-xl text-[32px] font-bold leading-[1.1] tracking-[-0.035em] sm:text-[44px]">
-                Setiap titik adalah sinyal nyata.
+                {t('Setiap titik adalah sinyal nyata.', 'Every dot is a real signal.')}
               </h2>
             </div>
             <div className="flex flex-wrap items-center gap-4">
               <FreshnessBadge provenance={hotspots.data?.provenance} kind="hotspots" showSource />
               <Button asChild variant="secondary" size="sm" className="rounded-full">
                 <Link to="/app/map">
-                  Buka peta <ArrowUpRight />
+                  {t('Buka peta', 'Open map')} <ArrowUpRight />
                 </Link>
               </Button>
             </div>
@@ -271,15 +277,23 @@ export default function LandingPage() {
 
           <Reveal
             delay={100}
-            className="relative mt-10 overflow-hidden rounded-[24px] border border-line bg-white p-5 shadow-soft sm:p-10"
+            className="relative mt-10 overflow-hidden rounded-[24px] border border-line bg-surface p-5 shadow-soft sm:p-10"
           >
             <div className="bg-dots absolute inset-0 opacity-60" aria-hidden />
             <div className="relative">
-              <IndonesiaSilhouette className="w-full" fill="#EFEEEA" stroke="#DAD8D2" strokeWidth={0.6} />
+              <IndonesiaSilhouette
+                className="w-full"
+                fill="var(--color-neutral-100)"
+                stroke="var(--color-line-strong)"
+                strokeWidth={0.6}
+              />
               <svg
                 viewBox={`0 0 ${SILHOUETTE_VIEWBOX.width} ${SILHOUETTE_VIEWBOX.height}`}
                 className="absolute inset-0 h-full w-full"
-                aria-label={`${stats.h7} titik panas terdeteksi dalam 7 hari terakhir`}
+                aria-label={t(
+                  `${stats.h7} titik panas terdeteksi dalam 7 hari terakhir`,
+                  `${stats.h7} hotspots detected in the last 7 days`,
+                )}
                 role="img"
               >
                 {stats.dots.map((h, i) => {
@@ -301,13 +315,13 @@ export default function LandingPage() {
             </div>
             <dl className="relative mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-4">
               <Stat
-                label="Titik panas · 7 hari"
-                value={hotspots.data ? stats.h7.toLocaleString('id-ID') : '…'}
+                label={t('Titik panas · 7 hari', 'Hotspots · 7 days')}
+                value={hotspots.data ? stats.h7.toLocaleString(locale()) : '…'}
               />
-              <Stat label="Titik panas · 24 jam" value={h24} accent />
-              <Stat label="Peringatan BMKG" value={warnCount} />
+              <Stat label={t('Titik panas · 24 jam', 'Hotspots · 24 h')} value={h24} accent />
+              <Stat label={t('Peringatan BMKG', 'BMKG warnings')} value={warnCount} />
               <Stat
-                label="Gempa terbaru"
+                label={t('Gempa terbaru', 'Latest quake')}
                 value={quake ? `M${quake.magnitude}` : '…'}
                 sub={quake ? timeAgo(quake.time) : undefined}
               />
@@ -317,27 +331,27 @@ export default function LandingPage() {
       </section>
 
       {/* ─── HOW IT WORKS ─────────────────────────────────────── */}
-      <section id="cara-kerja" className="relative border-y border-line bg-white py-24 sm:py-28">
+      <section id="cara-kerja" className="relative border-y border-line bg-surface py-24 sm:py-28">
         <div className="mx-auto max-w-[1360px] px-5 sm:px-8">
           <Reveal className="grid gap-6 lg:grid-cols-12">
             <div className="lg:col-span-6">
-              <p className="telemetry !text-brand">Cara kerja</p>
+              <p className="telemetry !text-brand">{t('Cara kerja', 'How it works')}</p>
               <h2 className="text-balance mt-3 text-[32px] font-bold leading-[1.1] tracking-[-0.035em] sm:text-[44px]">
-                Dari peringatan dini ke tindakan dini.
+                {t('Dari peringatan dini ke tindakan dini.', 'From early warning to early action.')}
               </h2>
             </div>
             <p className="text-pretty self-end text-[16px] leading-relaxed text-muted lg:col-span-4 lg:col-start-9">
-              Algoritma menghitung, AI menjelaskan — kamu tinggal bertindak.
+              {t('Algoritma menghitung, AI menjelaskan — kamu tinggal bertindak.', 'The algorithm calculates, AI explains — you just act.')}
             </p>
           </Reveal>
 
           <ol className="mt-14 grid gap-px overflow-hidden rounded-[20px] border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-            {STEPS.map((s, i) => (
+            {steps().map((s, i) => (
               <Reveal
                 as="li"
                 key={s.n}
                 delay={i * 90}
-                className="group relative flex flex-col bg-white p-6 sm:p-7"
+                className="group relative flex flex-col bg-surface p-6 sm:p-7"
               >
                 <div className="flex items-start justify-between">
                   <span className="font-mono text-[44px] font-medium leading-none tracking-[-0.04em] text-line-strong transition-colors duration-300 group-hover:text-brand">
@@ -350,9 +364,9 @@ export default function LandingPage() {
                   />
                 </div>
                 <h3 className="mt-6 text-[20px] font-bold tracking-[-0.02em]">
-                  {s.id}{' '}
+                  {s.title}{' '}
                   <span className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-subtle">
-                    / {s.en}
+                    / {s.tag}
                   </span>
                 </h3>
                 <p className="mt-2 text-[14px] leading-relaxed text-muted">{s.text}</p>
@@ -367,14 +381,14 @@ export default function LandingPage() {
         <div className="mx-auto max-w-[1360px] px-5 sm:px-8">
           <Reveal className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
-              <p className="telemetry !text-brand">Fitur</p>
+              <p className="telemetry !text-brand">{t('Fitur', 'Features')}</p>
               <h2 className="text-balance mt-3 max-w-2xl text-[32px] font-bold leading-[1.1] tracking-[-0.035em] sm:text-[44px]">
-                Satu aplikasi, dari data mentah ke langkah nyata.
+                {t('Satu aplikasi, dari data mentah ke langkah nyata.', 'One app, from raw data to real action.')}
               </h2>
             </div>
             <Button asChild variant="dark" className="self-start rounded-full md:self-auto">
               <Link to="/app">
-                Coba sekarang <ArrowRight />
+                {t('Coba sekarang', 'Try it now')} <ArrowRight />
               </Link>
             </Button>
           </Reveal>
@@ -384,11 +398,11 @@ export default function LandingPage() {
               className="md:col-span-4"
               to="/app"
               label="Siaga Score"
-              title="Seberapa berisiko lokasimu — dalam satu angka."
+              title={t('Seberapa berisiko lokasimu — dalam satu angka.', 'How risky your location is — in a single number.')}
             >
               <div className="mt-6 flex items-end gap-5">
                 <span className="display-metric text-[72px]">42</span>
-                <span className="mb-3 text-[20px] font-extrabold uppercase text-risk-moderate">Sedang</span>
+                <span className="mb-3 text-[20px] font-extrabold uppercase text-risk-moderate">{t('Sedang', 'Moderate')}</span>
               </div>
               <RiskSpectrum score={42} className="mt-4 max-w-sm" />
               <Ara pose="tablet" size={160} className="absolute -bottom-3 right-6 hidden sm:block" />
@@ -397,15 +411,15 @@ export default function LandingPage() {
             <Bento
               className="md:col-span-2"
               to="/app"
-              label="Tanya Ara"
-              title="Asisten AI yang paham konteksmu."
+              label={t('Tanya Ara', 'Ask Ara')}
+              title={t('Asisten AI yang paham konteksmu.', 'An AI assistant that understands your context.')}
             >
               <div className="mt-5 space-y-2 text-[12.5px]">
-                <p className="ml-6 rounded-2xl rounded-br-md bg-ink px-3 py-2 text-white">
-                  Aman naik motor jam 8?
+                <p className="ml-6 rounded-2xl rounded-br-md bg-inverse px-3 py-2 text-on-inverse">
+                  {t('Aman naik motor jam 8?', 'Safe to ride my motorcycle at 8?')}
                 </p>
                 <p className="mr-4 rounded-2xl rounded-bl-md border border-line bg-raised px-3 py-2 text-neutral-700">
-                  Bisa, tapi bawa jas hujan — hujan mulai 09.00. ✦
+                  {t('Bisa, tapi bawa jas hujan — hujan mulai 09.00. ✦', 'Yes, but bring a raincoat — rain starts at 09:00. ✦')}
                 </p>
               </div>
             </Bento>
@@ -413,8 +427,8 @@ export default function LandingPage() {
             <Bento
               className="md:col-span-2"
               to="/app/action-plan"
-              label="Rencana Aksi"
-              title="Langkah yang bisa dicentang."
+              label={t('Rencana Aksi', 'Action Plan')}
+              title={t('Langkah yang bisa dicentang.', 'Steps you can tick off.')}
             >
               <MiniChecklist />
             </Bento>
@@ -423,9 +437,9 @@ export default function LandingPage() {
               className="md:col-span-2"
               to="/app/map"
               label="Siaga Map"
-              title="Titik panas, cuaca, gempa & laporan warga."
+              title={t('Titik panas, cuaca, gempa & laporan warga.', 'Hotspots, weather, quakes & community reports.')}
             >
-              <div className="relative mt-5 h-24 overflow-hidden rounded-xl border border-line bg-[#EEF1F4]">
+              <div className="relative mt-5 h-24 overflow-hidden rounded-xl border border-line bg-[#EEF1F4] dark:bg-[#131517]">
                 <div className="bg-dots absolute inset-0" />
                 {(
                   [
@@ -437,7 +451,7 @@ export default function LandingPage() {
                 ).map(([x, y, c], i) => (
                   <span key={i} className="absolute" style={{ left: `${x}%`, top: `${y}%` }}>
                     <span className={cn('absolute -inset-2 animate-pulse-ring rounded-full opacity-40', c)} />
-                    <span className={cn('relative block size-2.5 rounded-full ring-2 ring-white', c)} />
+                    <span className={cn('relative block size-2.5 rounded-full ring-2 ring-surface', c)} />
                   </span>
                 ))}
               </div>
@@ -446,8 +460,8 @@ export default function LandingPage() {
             <Bento
               className="md:col-span-2"
               to="/app/family"
-              label="Keluarga Siaga"
-              title="Prioritas untuk anak & lansia."
+              label={t('Keluarga Siaga', 'Family Siaga')}
+              title={t('Prioritas untuk anak & lansia.', 'Priority for children & older adults.')}
             >
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex -space-x-2">
@@ -455,7 +469,7 @@ export default function LandingPage() {
                     <span
                       key={c}
                       className={cn(
-                        'grid size-9 place-items-center rounded-full text-[12px] font-bold ring-2 ring-white',
+                        'grid size-9 place-items-center rounded-full text-[12px] font-bold ring-2 ring-surface',
                         i === 0 ? 'bg-brand text-white' : 'bg-neutral-100 text-neutral-700',
                       )}
                     >
@@ -464,7 +478,7 @@ export default function LandingPage() {
                   ))}
                 </div>
                 <span className="font-mono text-[10.5px] uppercase tracking-[0.06em] text-risk-high">
-                  2 perlu perhatian
+                  {t('2 perlu perhatian', '2 need attention')}
                 </span>
               </div>
             </Bento>
@@ -472,23 +486,23 @@ export default function LandingPage() {
             <Bento
               className="md:col-span-3"
               to="/app/community"
-              label="Laporan Warga"
-              title="Sinyal dari lapangan, selalu diberi label."
+              label={t('Laporan Warga', 'Community Reports')}
+              title={t('Sinyal dari lapangan, selalu diberi label.', 'Signals from the ground, always labelled.')}
               icon={<Megaphone />}
             >
-              <p className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-[#FDF6E8] px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.06em] text-[#8A5A0B] ring-1 ring-inset ring-[#D99A22]/25">
-                Belum terverifikasi
+              <p className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-[var(--risk-moderate-soft)] px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--risk-moderate-text)] ring-1 ring-inset ring-risk-moderate/25">
+                {t('Belum terverifikasi', 'Unverified')}
               </p>
             </Bento>
             <Bento
               className="md:col-span-3"
               to="/app/action-plan"
               label="PWA · Offline"
-              title="Rencana & tas siaga tetap ada tanpa sinyal."
+              title={t('Rencana & tas siaga tetap ada tanpa sinyal.', 'Plans & go-bag stay available without signal.')}
               icon={<CloudOff />}
             >
               <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.06em] text-muted">
-                Instal ke layar utama →
+                {t('Instal ke layar utama →', 'Install to home screen →')}
               </p>
             </Bento>
           </div>
@@ -496,18 +510,18 @@ export default function LandingPage() {
       </section>
 
       {/* ─── PERSONAS ─────────────────────────────────────────── */}
-      <section className="border-y border-line bg-white py-24 sm:py-28">
+      <section className="border-y border-line bg-surface py-24 sm:py-28">
         <div className="mx-auto grid max-w-[1360px] gap-12 px-5 sm:px-8 lg:grid-cols-12">
           <Reveal className="lg:col-span-4">
-            <p className="telemetry !text-brand">Untuk siapa</p>
+            <p className="telemetry !text-brand">{t('Untuk siapa', 'Who it is for')}</p>
             <h2 className="text-balance mt-3 text-[32px] font-bold leading-[1.1] tracking-[-0.035em] sm:text-[40px]">
-              Bahaya sama, jawaban berbeda.
+              {t('Bahaya sama, jawaban berbeda.', 'Same hazard, different answers.')}
             </h2>
             <Ara pose="family" size={200} className="mt-10 hidden lg:block" />
           </Reveal>
           <div className="lg:col-span-8">
             <div className="divide-y divide-line border-y border-line">
-              {PERSONAS.map((p, i) => (
+              {personas().map((p, i) => (
                 <Reveal
                   key={p.name}
                   delay={i * 80}
@@ -528,7 +542,7 @@ export default function LandingPage() {
               ))}
             </div>
             <div className="flex flex-wrap items-center gap-2 pt-6">
-              <span className="data-label mr-2">Coba simulasi</span>
+              <span className="data-label mr-2">{t('Coba simulasi', 'Try a simulation')}</span>
               {Object.values(SCENARIOS).map((s) => (
                 <button
                   key={s.id}
@@ -536,7 +550,7 @@ export default function LandingPage() {
                     setScenario(s.id);
                     navigate('/app');
                   }}
-                  className="rounded-full border border-line bg-white px-3.5 py-2 text-[13px] font-semibold text-ink transition-colors hover:border-ai/30 hover:bg-ai-soft/50"
+                  className="rounded-full border border-line bg-surface px-3.5 py-2 text-[13px] font-semibold text-ink transition-colors hover:border-ai/30 hover:bg-ai-soft/50"
                 >
                   {s.emoji} {s.title}
                 </button>
@@ -547,28 +561,28 @@ export default function LandingPage() {
       </section>
 
       {/* ─── TECH ─────────────────────────────────────────────── */}
-      <section id="teknologi" className="relative overflow-hidden bg-ink py-24 text-white sm:py-28">
+      <section id="teknologi" className="relative overflow-hidden bg-night py-24 text-white sm:py-28">
         <NusantaraBackdrop variant="dark" />
         <div className="relative mx-auto grid max-w-[1360px] gap-14 px-5 sm:px-8 lg:grid-cols-12">
           <Reveal className="lg:col-span-6">
-            <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-red-300">Teknologi</p>
+            <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-red-300">{t('Teknologi', 'Technology')}</p>
             <h2 className="text-balance mt-3 text-[32px] font-bold leading-[1.1] tracking-[-0.035em] sm:text-[44px]">
-              Algoritma menghitung.
+              {t('Algoritma menghitung.', 'The algorithm calculates.')}
               <br />
-              <span className="text-white/45">AI menjelaskan.</span>
+              <span className="text-white/45">{t('AI menjelaskan.', 'AI explains.')}</span>
             </h2>
             <ul className="mt-10 grid gap-x-8 gap-y-6 sm:grid-cols-2">
               {(
                 [
-                  [Cpu, 'Skor deterministik', 'LLM tidak pernah menentukan angka risiko.'],
-                  [KeyRound, 'Kunci di server', 'PWA → gateway serverless → Gemini / Groq.'],
-                  [CloudOff, 'Offline-first', 'Data lama selalu diberi label jelas.'],
-                  [ShieldCheck, 'Cadangan lokal', 'Fitur AI tetap jalan tanpa koneksi.'],
+                  [Cpu, t('Skor deterministik', 'Deterministic scores'), t('LLM tidak pernah menentukan angka risiko.', 'The LLM never decides risk numbers.')],
+                  [KeyRound, t('Kunci di server', 'Keys on the server'), t('PWA → gateway serverless → Gemini / Groq.', 'PWA → serverless gateway → Gemini / Groq.')],
+                  [CloudOff, 'Offline-first', t('Data lama selalu diberi label jelas.', 'Older data is always clearly labelled.')],
+                  [ShieldCheck, t('Cadangan lokal', 'Local fallback'), t('Fitur AI tetap jalan tanpa koneksi.', 'AI features keep working offline.')],
                 ] as const
-              ).map(([I, t, d]) => (
-                <li key={t} className="border-t border-white/10 pt-4">
+              ).map(([I, title, d]) => (
+                <li key={title} className="border-t border-white/10 pt-4">
                   <I className="size-5 text-red-300" aria-hidden />
-                  <p className="mt-3 text-[15px] font-semibold">{t}</p>
+                  <p className="mt-3 text-[15px] font-semibold">{title}</p>
                   <p className="mt-1 text-[13.5px] leading-relaxed text-white/55">{d}</p>
                 </li>
               ))}
@@ -579,17 +593,17 @@ export default function LandingPage() {
               <p className="mb-3 text-white/35">{'// pipeline siagaai'}</p>
               {[
                 ['BMKG · NASA FIRMS · CAMS · GloFAS', 'text-white'],
-                ['↓ normalisasi sinyal', 'text-white/35'],
+                [t('↓ normalisasi sinyal', '↓ signal normalisation'), 'text-white/35'],
                 ['Siaga Risk Engine', 'text-amber-300'],
-                ['↓ skor bahaya 0–100', 'text-white/35'],
-                ['× paparan personal (0,8–1,3)', 'text-indigo-300'],
+                [t('↓ skor bahaya 0–100', '↓ hazard score 0–100'), 'text-white/35'],
+                [t('× paparan personal (0,8–1,3)', '× personal exposure (0.8–1.3)'), 'text-indigo-300'],
                 ['↓ Indicative Siaga Score', 'text-white/35'],
-                ['LLM → skema JSON tervalidasi', 'text-indigo-300'],
+                [t('LLM → skema JSON tervalidasi', 'LLM → validated JSON schema'), 'text-indigo-300'],
                 ['↓', 'text-white/35'],
-                ['Brief · Dampak · Rencana aksi', 'text-red-300'],
-              ].map(([t, c]) => (
-                <p key={t} className={cn('py-1', c)}>
-                  {t}
+                [t('Brief · Dampak · Rencana aksi', 'Brief · Impact · Action plan'), 'text-red-300'],
+              ].map(([line, c]) => (
+                <p key={line} className={cn('py-1', c)}>
+                  {line}
                 </p>
               ))}
             </div>
@@ -602,27 +616,29 @@ export default function LandingPage() {
         <div className="mx-auto max-w-[1360px] px-5 sm:px-8">
           <Reveal className="grid gap-6 lg:grid-cols-12">
             <h2 className="text-balance text-[32px] font-bold leading-[1.1] tracking-[-0.035em] sm:text-[44px] lg:col-span-7">
-              Mitigasi bencana & iklim, <span className="text-neutral-400">dari warga untuk warga.</span>
+              {t('Mitigasi bencana & iklim,', 'Disaster & climate mitigation,')}{' '}
+              <span className="text-neutral-400 dark:text-neutral-500">{t('dari warga untuk warga.', 'by citizens, for citizens.')}</span>
             </h2>
             <p className="self-end text-[15px] leading-relaxed text-muted lg:col-span-4 lg:col-start-9">
-              Sejalan dengan Kerangka Sendai & inisiatif PBB <i>Early Warnings for All</i>.
+              {t('Sejalan dengan Kerangka Sendai & inisiatif PBB', 'Aligned with the Sendai Framework & the UN')}{' '}
+              <i>Early Warnings for All</i>{t('.', ' initiative.')}
             </p>
           </Reveal>
           <div className="mt-12 grid gap-px overflow-hidden rounded-[20px] border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
             {[
-              ['13', 'Aksi Iklim', 'Ketahanan & adaptasi bencana iklim', '#3F7E44'],
-              ['11', 'Kota Berkelanjutan', 'Kurangi dampak bencana bagi warga', '#E8890C'],
-              ['3', 'Hidup Sehat', 'Paparan polusi & peringatan kesehatan', '#4C9F38'],
-              ['15', 'Ekosistem Darat', 'Pemantauan dini karhutla', '#3EA22A'],
-            ].map(([n, t, d, c], i) => (
-              <Reveal key={n} delay={i * 70} className="bg-white p-6 sm:p-7">
+              ['13', t('Aksi Iklim', 'Climate Action'), t('Ketahanan & adaptasi bencana iklim', 'Resilience & adaptation to climate disasters'), '#4E9A53'],
+              ['11', t('Kota Berkelanjutan', 'Sustainable Cities'), t('Kurangi dampak bencana bagi warga', 'Reduce disaster impacts on residents'), '#E8890C'],
+              ['3', t('Hidup Sehat', 'Good Health'), t('Paparan polusi & peringatan kesehatan', 'Pollution exposure & health warnings'), '#58AE42'],
+              ['15', t('Ekosistem Darat', 'Life on Land'), t('Pemantauan dini karhutla', 'Early wildfire monitoring'), '#45B12F'],
+            ].map(([n, title, d, c], i) => (
+              <Reveal key={n} delay={i * 70} className="bg-surface p-6 sm:p-7">
                 <span className="flex items-baseline gap-2">
                   <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-subtle">SDG</span>
                   <span className="display-metric text-[44px]" style={{ color: c }}>
                     {n}
                   </span>
                 </span>
-                <p className="mt-4 text-[16px] font-bold">{t}</p>
+                <p className="mt-4 text-[16px] font-bold">{title}</p>
                 <p className="mt-1 text-[13.5px] text-muted">{d}</p>
               </Reveal>
             ))}
@@ -638,9 +654,11 @@ export default function LandingPage() {
           <div className="relative grid items-end gap-6 px-6 pt-12 sm:px-12 md:grid-cols-[1fr_auto] md:pt-14">
             <div className="pb-12 md:pb-14">
               <h2 className="text-balance max-w-xl text-[32px] font-bold leading-[1.1] tracking-[-0.035em] sm:text-[44px]">
-                Cek kondisi lokasimu sekarang.
+                {t('Cek kondisi lokasimu sekarang.', 'Check your location’s conditions now.')}
               </h2>
-              <p className="mt-3 text-[16px] text-white/80">Gratis, tanpa akun, dalam hitungan detik.</p>
+              <p className="mt-3 text-[16px] text-white/80">
+                {t('Gratis, tanpa akun, dalam hitungan detik.', 'Free, no account, in seconds.')}
+              </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Button
                   size="lg"
@@ -649,10 +667,10 @@ export default function LandingPage() {
                   disabled={busy}
                   className="border-0"
                 >
-                  {busy ? <Loader2 className="animate-spin" /> : <LocateFixed />} Cek Lokasi Saya
+                  {busy ? <Loader2 className="animate-spin" /> : <LocateFixed />} {t('Cek Lokasi Saya', 'Check My Location')}
                 </Button>
                 <Button asChild size="lg" variant="dark">
-                  <Link to="/auth">Masuk / Akun demo</Link>
+                  <Link to="/auth">{t('Masuk / Akun demo', 'Sign in / Demo account')}</Link>
                 </Button>
               </div>
             </div>
@@ -661,35 +679,37 @@ export default function LandingPage() {
         </Reveal>
       </section>
 
-      <footer className="border-t border-line bg-white">
+      <footer className="border-t border-line bg-surface">
         <div className="mx-auto grid max-w-[1360px] gap-10 px-5 py-14 sm:px-8 md:grid-cols-12">
           <div className="md:col-span-5">
             <Logo />
             <p className="mt-4 max-w-sm text-[13.5px] leading-relaxed text-muted">
-              AI-Powered Personal Disaster Intelligence untuk Indonesia. Karya IT RUSH 2026 — Mitigasi Bencana
-              & Perubahan Iklim.
+              {t(
+                'AI-Powered Personal Disaster Intelligence untuk Indonesia. Karya IT RUSH 2026 — Mitigasi Bencana & Perubahan Iklim.',
+                'AI-Powered Personal Disaster Intelligence for Indonesia. An IT RUSH 2026 entry — Disaster Mitigation & Climate Change.',
+              )}
             </p>
           </div>
           <FooterCol
-            title="Aplikasi"
+            title={t('Aplikasi', 'App')}
             links={[
               ['/app', 'Dashboard'],
               ['/app/map', 'Siaga Map'],
-              ['/app/risk', 'Risiko Saya'],
-              ['/app/action-plan', 'Rencana Aksi'],
+              ['/app/risk', t('Risiko Saya', 'My Risk')],
+              ['/app/action-plan', t('Rencana Aksi', 'Action Plan')],
             ]}
           />
           <FooterCol
-            title="Lainnya"
+            title={t('Lainnya', 'More')}
             links={[
-              ['/app/family', 'Keluarga'],
-              ['/app/community', 'Laporan Warga'],
-              ['/app/about', 'Data & Metodologi'],
-              ['/auth', 'Masuk'],
+              ['/app/family', t('Keluarga', 'Family')],
+              ['/app/community', t('Laporan Warga', 'Community Reports')],
+              ['/app/about', t('Data & Metodologi', 'Data & Methodology')],
+              ['/auth', t('Masuk', 'Sign in')],
             ]}
           />
           <div className="text-[12.5px] leading-relaxed text-muted md:col-span-3">
-            <p className="data-label mb-3 !text-ink">Atribusi data</p>
+            <p className="data-label mb-3 !text-ink">{t('Atribusi data', 'Data attribution')}</p>
             BMKG · NASA FIRMS · Copernicus CAMS & GloFAS via Open-Meteo (CC BY 4.0) · © OpenStreetMap
             contributors.
           </div>
@@ -724,10 +744,10 @@ function LandingNav() {
           <Logo />
         </Link>
         <nav
-          className="mx-auto hidden items-center gap-1 rounded-full border border-line bg-white/70 p-1 backdrop-blur md:flex"
-          aria-label="Navigasi landing"
+          className="mx-auto hidden items-center gap-1 rounded-full border border-line bg-surface/70 p-1 backdrop-blur md:flex"
+          aria-label={t('Navigasi landing', 'Landing navigation')}
         >
-          {NAV.map(([href, label]) => (
+          {nav().map(([href, label]) => (
             <a
               key={href}
               href={href}
@@ -738,13 +758,14 @@ function LandingNav() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2 md:ml-0">
-          <Button asChild variant="ghost" size="sm" className="hidden rounded-full sm:inline-flex">
-            <Link to="/auth">Masuk</Link>
+          <PreferenceToggles className="gap-1.5" />
+          <Button asChild variant="ghost" size="sm" className="hidden rounded-full lg:inline-flex">
+            <Link to="/auth">{t('Masuk', 'Sign in')}</Link>
           </Button>
           <Button asChild size="sm" className="rounded-full pl-4 pr-3">
             <Link to="/app">
-              <span className="hidden sm:inline">Buka aplikasi</span>
-              <span className="sm:hidden">Buka</span> <ArrowUpRight />
+              <span className="hidden sm:inline">{t('Buka aplikasi', 'Open app')}</span>
+              <span className="sm:hidden">{t('Buka', 'Open')}</span> <ArrowUpRight />
             </Link>
           </Button>
           <Button
@@ -752,7 +773,7 @@ function LandingNav() {
             size="icon-sm"
             className="rounded-full md:hidden"
             onClick={() => setOpen((v) => !v)}
-            aria-label={open ? 'Tutup menu' : 'Buka menu'}
+            aria-label={open ? t('Tutup menu', 'Close menu') : t('Buka menu', 'Open menu')}
             aria-expanded={open}
           >
             {open ? <X /> : <Menu />}
@@ -761,18 +782,18 @@ function LandingNav() {
       </div>
       {open && (
         <nav className="glass mx-auto mt-2 flex max-w-[1360px] animate-fade-up flex-col rounded-[20px] p-2 md:hidden">
-          {NAV.map(([href, label]) => (
+          {nav().map(([href, label]) => (
             <a
               key={href}
               href={href}
               onClick={() => setOpen(false)}
-              className="rounded-xl px-4 py-3 text-[15px] font-semibold text-ink hover:bg-white"
+              className="rounded-xl px-4 py-3 text-[15px] font-semibold text-ink hover:bg-surface"
             >
               {label}
             </a>
           ))}
-          <Link to="/auth" className="rounded-xl px-4 py-3 text-[15px] font-semibold text-ink hover:bg-white">
-            Masuk
+          <Link to="/auth" className="rounded-xl px-4 py-3 text-[15px] font-semibold text-ink hover:bg-surface">
+            {t('Masuk', 'Sign in')}
           </Link>
         </nav>
       )}
@@ -798,7 +819,7 @@ function OrbitChip({
         className,
       )}
     >
-      <span className="grid size-9 place-items-center rounded-xl bg-white shadow-soft">{icon}</span>
+      <span className="grid size-9 place-items-center rounded-xl bg-surface shadow-soft">{icon}</span>
       <span>
         <span className="display-metric block text-[20px]">{value}</span>
         <span className="mt-0.5 block whitespace-nowrap text-[11.5px] font-medium text-muted">{label}</span>
@@ -819,7 +840,7 @@ function Stat({
   accent?: boolean;
 }) {
   return (
-    <div className="bg-white px-5 py-5 sm:px-6">
+    <div className="bg-surface px-5 py-5 sm:px-6">
       <dt className="data-label">{label}</dt>
       <dd className={cn('display-metric mt-2 text-[32px] sm:text-[40px]', accent && 'text-brand')}>
         {value}
@@ -848,7 +869,7 @@ function Bento({
     <Reveal className={className}>
       <Link
         to={to}
-        className="hover-lift group relative flex h-full min-h-[220px] flex-col overflow-hidden rounded-[20px] border border-line bg-white p-6 sm:p-7"
+        className="hover-lift group relative flex h-full min-h-[220px] flex-col overflow-hidden rounded-[20px] border border-line bg-surface p-6 sm:p-7"
       >
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-brand [&_svg]:size-3.5">
@@ -868,13 +889,17 @@ function Bento({
 
 function MiniChecklist() {
   const [done, setDone] = useState<number[]>([0]);
-  const items = ['Siapkan masker N95', 'Isi daya powerbank', 'Simpan dokumen penting'];
+  const items = [
+    t('Siapkan masker N95', 'Prepare an N95 mask'),
+    t('Isi daya powerbank', 'Charge your power bank'),
+    t('Simpan dokumen penting', 'Secure important documents'),
+  ];
   return (
     <ul className="mt-5 space-y-1.5">
-      {items.map((t, i) => {
+      {items.map((item, i) => {
         const on = done.includes(i);
         return (
-          <li key={t}>
+          <li key={item}>
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -886,12 +911,12 @@ function MiniChecklist() {
               <span
                 className={cn(
                   'grid size-[18px] shrink-0 place-items-center rounded-[5px] border transition-colors',
-                  on ? 'border-risk-safe bg-risk-safe text-white' : 'border-line-strong bg-white',
+                  on ? 'border-risk-safe bg-risk-safe text-white' : 'border-line-strong bg-surface',
                 )}
               >
                 {on && <Check className="size-3" strokeWidth={3} />}
               </span>
-              <span className={cn(on && 'text-subtle line-through')}>{t}</span>
+              <span className={cn(on && 'text-subtle line-through')}>{item}</span>
             </button>
           </li>
         );

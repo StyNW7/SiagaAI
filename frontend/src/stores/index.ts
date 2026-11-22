@@ -19,13 +19,20 @@ import type {
   UserLocation,
 } from '@/types/domain';
 import { uid } from '@/lib/utils';
+import { setRuntimeLang, type Lang } from '@/lib/i18n';
 
 const storage = createJSONStorage(() => localStorage);
 
 /* ── Settings ───────────────────────────────────────────────────────────── */
 
+export type ThemePref = 'light' | 'dark' | 'system';
+
 interface SettingsState {
   scenario: ScenarioId | null;
+  lang: Lang;
+  theme: ThemePref;
+  setLang: (l: Lang) => void;
+  setTheme: (t: ThemePref) => void;
   textScale: number;
   onboarded: boolean;
   notifications: boolean;
@@ -39,6 +46,13 @@ export const useSettings = create<SettingsState>()(
   persist(
     (set) => ({
       scenario: null,
+      lang: 'id',
+      theme: 'system',
+      setLang: (lang) => {
+        setRuntimeLang(lang);
+        set({ lang });
+      },
+      setTheme: (theme) => set({ theme }),
       textScale: 1,
       onboarded: false,
       notifications: false,
@@ -47,9 +61,18 @@ export const useSettings = create<SettingsState>()(
       setOnboarded: (onboarded) => set({ onboarded }),
       setNotifications: (notifications) => set({ notifications }),
     }),
-    { name: 'siaga.settings', storage },
+    {
+      name: 'siaga.settings',
+      storage,
+      onRehydrateStorage: () => (state) => {
+        if (state?.lang) setRuntimeLang(state.lang);
+      },
+    },
   ),
 );
+
+// localStorage hydration is synchronous — align the i18n runtime immediately.
+setRuntimeLang(useSettings.getState().lang);
 
 /* ── Location ───────────────────────────────────────────────────────────── */
 

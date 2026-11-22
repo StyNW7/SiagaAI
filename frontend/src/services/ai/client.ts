@@ -12,6 +12,7 @@ import {
 } from '@ai/contracts';
 import { hash } from '@/lib/utils';
 import { localReason } from './local-reasoner';
+import { t } from '@/lib/i18n';
 
 const ENDPOINT = (import.meta.env.VITE_AI_ENDPOINT as string | undefined) || '/api/ai';
 const ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
@@ -132,11 +133,17 @@ export async function requestAi<T extends AiTask>(
   return result;
 }
 
-export const FALLBACK_REASONS: Record<string, string> = {
-  ai_not_configured: 'Kunci LLM belum dikonfigurasi di server',
-  offline: 'Perangkat sedang offline',
-  unreachable: 'Gateway AI tidak dapat dijangkau',
-  rate_limited: 'Batas permintaan AI tercapai sementara',
-  ai_unavailable: 'Penyedia LLM sedang tidak tersedia',
-  invalid_output: 'Jawaban LLM tidak lolos validasi skema',
+const REASONS: Record<string, [string, string]> = {
+  ai_not_configured: ['Kunci LLM belum dikonfigurasi di server', 'LLM key is not configured on the server'],
+  offline: ['Perangkat sedang offline', 'Device is offline'],
+  unreachable: ['Gateway AI tidak dapat dijangkau', 'AI gateway is unreachable'],
+  rate_limited: ['Batas permintaan AI tercapai sementara', 'AI request limit temporarily reached'],
+  ai_unavailable: ['Penyedia LLM sedang tidak tersedia', 'LLM provider is currently unavailable'],
+  invalid_output: ['Jawaban LLM tidak lolos validasi skema', 'LLM answer failed schema validation'],
 };
+
+/** Human-readable fallback reasons in the active language. */
+export const FALLBACK_REASONS: Record<string, string> = new Proxy({} as Record<string, string>, {
+  get: (_, key: string) => (REASONS[key] ? t(...REASONS[key]) : undefined),
+  has: (_, key: string) => key in REASONS,
+});

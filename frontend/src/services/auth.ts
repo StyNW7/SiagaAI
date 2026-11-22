@@ -7,6 +7,7 @@
  */
 import type { SessionUser } from '@/stores';
 import { supabase } from './supabase/client';
+import { t } from '@/lib/i18n';
 
 export const DEMO_ACCOUNT = {
   email: 'demo@siagaai.id',
@@ -50,13 +51,13 @@ export async function signIn(email: string, password: string): Promise<SessionUs
     if (isDemo(email, password)) return demoUser();
     throw new AuthError(
       error?.message === 'Invalid login credentials'
-        ? 'Email atau kata sandi salah.'
-        : 'Gagal masuk. Coba lagi.',
+        ? t('Email atau kata sandi salah.', 'Incorrect email or password.')
+        : t('Gagal masuk. Coba lagi.', 'Sign-in failed. Please try again.'),
     );
   }
   if (isDemo(email, password)) return demoUser();
   const acc = readAccounts().find((a) => a.email === email.trim().toLowerCase());
-  if (!acc || acc.hash !== (await sha256(password))) throw new AuthError('Email atau kata sandi salah.');
+  if (!acc || acc.hash !== (await sha256(password))) throw new AuthError(t('Email atau kata sandi salah.', 'Incorrect email or password.'));
   return { id: acc.id, email: acc.email, name: acc.name, backend: 'local' };
 }
 
@@ -68,12 +69,12 @@ export async function signUp(name: string, email: string, password: string): Pro
       password,
       options: { data: { name } },
     });
-    if (error || !data.user) throw new AuthError(error?.message ?? 'Pendaftaran gagal.');
+    if (error || !data.user) throw new AuthError(error?.message ?? t('Pendaftaran gagal.', 'Registration failed.'));
     return { id: data.user.id, email: normalized, name, backend: 'supabase' };
   }
   const accounts = readAccounts();
   if (accounts.some((a) => a.email === normalized) || normalized === DEMO_ACCOUNT.email)
-    throw new AuthError('Email sudah terdaftar.');
+    throw new AuthError(t('Email sudah terdaftar.', 'Email is already registered.'));
   const acc: LocalAccount = {
     id: crypto.randomUUID(),
     email: normalized,
@@ -86,13 +87,17 @@ export async function signUp(name: string, email: string, password: string): Pro
 
 /** Sends a password-reset email (Supabase only). */
 export async function requestPasswordReset(email: string) {
-  if (!supabase) throw new AuthError('Reset kata sandi hanya tersedia untuk akun cloud (Supabase).');
+  if (!supabase) throw new AuthError(
+      t('Reset kata sandi hanya tersedia untuk akun cloud (Supabase).', 'Password reset is only available for cloud (Supabase) accounts.'),
+    );
   const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
     redirectTo: `${window.location.origin}/auth`,
   });
   if (error)
     throw new AuthError(
-      error.status === 429 ? 'Terlalu banyak percobaan. Coba lagi nanti.' : 'Gagal mengirim email reset.',
+      error.status === 429
+        ? t('Terlalu banyak percobaan. Coba lagi nanti.', 'Too many attempts. Please try again later.')
+        : t('Gagal mengirim email reset.', 'Failed to send the reset email.'),
     );
 }
 

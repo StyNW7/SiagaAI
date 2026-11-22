@@ -39,26 +39,34 @@ import { insertCommunityReport, uploadReportImage } from '@/services/supabase/re
 import { supabase } from '@/services/supabase/client';
 import { useAuthStore, useCommunityStore } from '@/stores';
 import type { CommunityHazard } from '@/types/domain';
+import { t } from '@/lib/i18n';
 
-const HAZARD_OPTIONS: { value: CommunityHazard; label: string; color: string }[] = [
-  { value: 'fire', label: 'Api vegetasi', color: '#D95332' },
-  { value: 'smoke', label: 'Asap', color: '#73717E' },
-  { value: 'flood', label: 'Genangan / banjir', color: '#397EB8' },
-  { value: 'weather', label: 'Cuaca ekstrem', color: '#6F63B5' },
+const hazardOptions = (): { value: CommunityHazard; label: string; color: string }[] => [
+  { value: 'fire', label: t('Api vegetasi', 'Vegetation fire'), color: '#D95332' },
+  { value: 'smoke', label: t('Asap', 'Smoke'), color: '#8B899A' },
+  { value: 'flood', label: t('Genangan / banjir', 'Waterlogging / flood'), color: '#397EB8' },
+  { value: 'weather', label: t('Cuaca ekstrem', 'Extreme weather'), color: '#7D71C8' },
 ];
-const COLOR = Object.fromEntries(HAZARD_OPTIONS.map((h) => [h.value, h.color]));
-const LABEL = Object.fromEntries(HAZARD_OPTIONS.map((h) => [h.value, h.label]));
+const COLOR = Object.fromEntries(hazardOptions().map((h) => [h.value, h.color]));
+const label = (h: string) => hazardOptions().find((o) => o.value === h)?.label ?? h;
 
+// Validation messages are functions so they follow the active language.
 const schema = z.object({
-  hazard: z.enum(['fire', 'smoke', 'flood', 'weather'], { message: 'Pilih jenis kejadian' }),
-  description: z.string().trim().min(15, 'Jelaskan minimal 15 karakter').max(500, 'Maksimal 500 karakter'),
+  hazard: z.enum(['fire', 'smoke', 'flood', 'weather'], {
+    error: () => t('Pilih jenis kejadian', 'Choose an event type'),
+  }),
+  description: z
+    .string()
+    .trim()
+    .min(15, { error: () => t('Jelaskan minimal 15 karakter', 'Describe in at least 15 characters') })
+    .max(500, { error: () => t('Maksimal 500 karakter', 'Maximum 500 characters') }),
 });
 type FormValues = z.infer<typeof schema>;
 
 const MAX_IMAGE_MB = 8;
 
 export default function CommunityPage() {
-  useDocumentTitle('Komunitas');
+  useDocumentTitle(t('Komunitas', 'Community'));
   const user = useAuthStore((s) => s.user);
   const location = useActiveLocation();
   const { reports, isRemote } = useCommunityFeed();
@@ -76,14 +84,14 @@ export default function CommunityPage() {
 
   const onImage = async (file?: File) => {
     if (!file) return;
-    if (!file.type.startsWith('image/')) return toast.error('File harus berupa gambar (JPG/PNG/WebP).');
+    if (!file.type.startsWith('image/')) return toast.error(t('File harus berupa gambar (JPG/PNG/WebP).', 'File must be an image (JPG/PNG/WebP).'));
     if (file.size > MAX_IMAGE_MB * 1024 * 1024)
-      return toast.error(`Ukuran gambar maksimal ${MAX_IMAGE_MB} MB.`);
+      return toast.error(t(`Ukuran gambar maksimal ${MAX_IMAGE_MB} MB.`, `Maximum image size is ${MAX_IMAGE_MB} MB.`));
     try {
       const blob = await compressImage(file);
       setImage({ blob, preview: await blobToDataUrl(blob) });
     } catch {
-      toast.error('Gambar tidak dapat diproses.');
+      toast.error(t('Gambar tidak dapat diproses.', 'The image could not be processed.'));
     }
   };
 
@@ -96,11 +104,11 @@ export default function CommunityPage() {
           lon: Math.round(p.coords.longitude * 1000) / 1000,
         });
         setLocating(false);
-        toast.success('Lokasi laporan menggunakan GPS (dibulatkan ±100 m)');
+        toast.success(t('Lokasi laporan menggunakan GPS (dibulatkan ±100 m)', 'Report location uses GPS (rounded to ±100 m)'));
       },
       () => {
         setLocating(false);
-        toast.error('Izin lokasi ditolak — laporan memakai lokasi aktif.');
+        toast.error(t('Izin lokasi ditolak — laporan memakai lokasi aktif.', 'Location permission denied — the report uses your active location.'));
       },
       { timeout: 10_000 },
     );
@@ -127,14 +135,17 @@ export default function CommunityPage() {
       } else {
         add({ ...payload, imageUrl: image?.preview });
       }
-      toast.success('Laporan terkirim', {
-        description: 'Ditandai "Belum terverifikasi" — terima kasih telah membantu sesama.',
+      toast.success(t('Laporan terkirim', 'Report sent'), {
+        description: t(
+          'Ditandai "Belum terverifikasi" — terima kasih telah membantu sesama.',
+          'Marked "Unverified" — thank you for helping others.',
+        ),
       });
       form.reset({ description: '' });
       setImage(null);
       setUsePrecise(null);
     } catch {
-      toast.error('Laporan gagal dikirim. Coba lagi.');
+      toast.error(t('Laporan gagal dikirim. Coba lagi.', 'The report failed to send. Please try again.'));
     }
   });
 
@@ -148,8 +159,11 @@ export default function CommunityPage() {
             <Megaphone className="size-3.5" /> Community Signal
           </span>
         }
-        title="Laporan warga"
-        description="Kondisi lapangan dari sesama warga — selalu ditandai belum terverifikasi."
+        title={t('Laporan warga', 'Community reports')}
+        description={t(
+          'Kondisi lapangan dari sesama warga — selalu ditandai belum terverifikasi.',
+          'On-the-ground conditions from fellow residents — always marked as unverified.',
+        )}
         mascot="radio"
       />
 
@@ -158,9 +172,9 @@ export default function CommunityPage() {
           <Card className="lg:sticky lg:top-24">
             <CardHeader>
               <div>
-                <CardTitle>Laporkan kondisi sekitar</CardTitle>
+                <CardTitle>{t('Laporkan kondisi sekitar', 'Report nearby conditions')}</CardTitle>
                 <p className="mt-1 text-[12.5px] text-muted">
-                  Lokasi: {location.name}
+                  {t('Lokasi', 'Location')}: {location.name}
                   {usePrecise ? ' · GPS' : ''}
                 </p>
               </div>
@@ -169,20 +183,23 @@ export default function CommunityPage() {
               {!user ? (
                 <EmptyState
                   pose="radio"
-                  title="Masuk untuk mengirim laporan"
-                  description="Login mencegah spam. Akun demo tersedia di halaman masuk."
+                  title={t('Masuk untuk mengirim laporan', 'Sign in to send a report')}
+                  description={t(
+                    'Login mencegah spam. Akun demo tersedia di halaman masuk.',
+                    'Signing in prevents spam. A demo account is available on the sign-in page.',
+                  )}
                   action={
                     <Button asChild>
-                      <Link to="/auth?next=/app/community">Masuk / Daftar</Link>
+                      <Link to="/auth?next=/app/community">{t('Masuk / Daftar', 'Sign in / Register')}</Link>
                     </Button>
                   }
                 />
               ) : (
                 <form onSubmit={submit} className="space-y-4" noValidate>
                   <fieldset>
-                    <legend className="mb-2 text-[13px] font-semibold">Apa yang terjadi?</legend>
+                    <legend className="mb-2 text-[13px] font-semibold">{t('Apa yang terjadi?', 'What is happening?')}</legend>
                     <div className="grid grid-cols-2 gap-2">
-                      {HAZARD_OPTIONS.map((o) => (
+                      {hazardOptions().map((o) => (
                         <button
                           key={o.value}
                           type="button"
@@ -191,8 +208,8 @@ export default function CommunityPage() {
                           className={cn(
                             'flex min-h-13 items-center gap-2.5 rounded-xl border px-3 py-2 text-left text-[13px] font-semibold transition-colors',
                             hazard === o.value
-                              ? 'border-ink bg-ink text-white'
-                              : 'border-line bg-white hover:border-line-strong hover:bg-raised',
+                              ? 'border-inverse bg-inverse text-on-inverse'
+                              : 'border-line bg-surface hover:border-line-strong hover:bg-raised',
                           )}
                         >
                           {(() => {
@@ -212,18 +229,21 @@ export default function CommunityPage() {
                     <FieldError>{form.formState.errors.hazard?.message}</FieldError>
                   </fieldset>
                   <div>
-                    <Label htmlFor="desc">Deskripsi</Label>
+                    <Label htmlFor="desc">{t('Deskripsi', 'Description')}</Label>
                     <Textarea
                       id="desc"
-                      placeholder="Apa yang Anda lihat? Mis. asap pekat, genangan setinggi lutut…"
+                      placeholder={t(
+                        'Apa yang Anda lihat? Mis. asap pekat, genangan setinggi lutut…',
+                        'What do you see? E.g. thick smoke, knee-deep water…',
+                      )}
                       maxLength={500}
                       {...form.register('description')}
                     />
                     <FieldError>{form.formState.errors.description?.message}</FieldError>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <label className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-line-strong/80 bg-white px-3.5 text-[13px] font-semibold transition-colors hover:bg-raised">
-                      <ImagePlus className="size-4" /> {image ? 'Ganti foto' : 'Tambah foto'}
+                    <label className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-line-strong/80 bg-surface px-3.5 text-[13px] font-semibold transition-colors hover:bg-raised">
+                      <ImagePlus className="size-4" /> {image ? t('Ganti foto', 'Change photo') : t('Tambah foto', 'Add photo')}
                       <input
                         type="file"
                         accept="image/*"
@@ -240,32 +260,35 @@ export default function CommunityPage() {
                       onClick={useGps}
                       disabled={locating}
                     >
-                      {locating ? <Loader2 className="animate-spin" /> : <LocateFixed />} Pakai GPS
+                      {locating ? <Loader2 className="animate-spin" /> : <LocateFixed />} {t('Pakai GPS', 'Use GPS')}
                     </Button>
                   </div>
                   {image && (
                     <div className="relative overflow-hidden rounded-xl border border-line">
                       <img
                         src={image.preview}
-                        alt="Pratinjau foto laporan"
+                        alt={t('Pratinjau foto laporan', 'Report photo preview')}
                         className="max-h-52 w-full object-cover"
                       />
                       <button
                         type="button"
                         onClick={() => setImage(null)}
-                        className="absolute right-2 top-2 rounded-full bg-white/90 p-1.5 shadow"
-                        aria-label="Hapus foto"
+                        className="absolute right-2 top-2 rounded-full bg-surface/90 p-1.5 shadow"
+                        aria-label={t('Hapus foto', 'Remove photo')}
                       >
                         <Trash2 className="size-4" />
                       </button>
                     </div>
                   )}
                   <p className="telemetry normal-case leading-relaxed tracking-normal">
-                    Metadata foto (EXIF/GPS) dihapus di perangkat · jangan potret wajah tanpa izin
+                    {t(
+                      'Metadata foto (EXIF/GPS) dihapus di perangkat · jangan potret wajah tanpa izin',
+                      'Photo metadata (EXIF/GPS) is removed on-device · do not photograph faces without consent',
+                    )}
                   </p>
                   <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? <Loader2 className="animate-spin" /> : <Camera />} Kirim
-                    laporan
+                    {form.formState.isSubmitting ? <Loader2 className="animate-spin" /> : <Camera />}{' '}
+                    {t('Kirim laporan', 'Send report')}
                   </Button>
                 </form>
               )}
@@ -277,30 +300,30 @@ export default function CommunityPage() {
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
               <TabsList>
-                <TabsTrigger value="all">Semua</TabsTrigger>
+                <TabsTrigger value="all">{t('Semua', 'All')}</TabsTrigger>
                 <TabsTrigger value="near">≤100 km</TabsTrigger>
               </TabsList>
             </Tabs>
             <Badge variant={isRemote ? 'success' : 'neutral'}>
-              {isRemote ? 'Realtime · Supabase' : 'Perangkat ini'}
+              {isRemote ? 'Realtime · Supabase' : t('Perangkat ini', 'This device')}
             </Badge>
           </div>
           {shown.length === 0 ? (
             <EmptyState
               pose="explore"
-              title="Belum ada laporan di sekitar"
-              description="Jadilah yang pertama berbagi kondisi lapangan."
+              title={t('Belum ada laporan di sekitar', 'No reports nearby yet')}
+              description={t('Jadilah yang pertama berbagi kondisi lapangan.', 'Be the first to share on-the-ground conditions.')}
             />
           ) : (
             <ul className="space-y-3">
               {shown.map((r) => (
                 <li key={r.id}>
                   <Card className="overflow-hidden">
-                    <div className="flex items-center gap-2 border-b border-line bg-raised px-5 py-2 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-[#8A5A0B]">
-                      <ShieldQuestion className="size-3.5" /> Laporan warga · belum terverifikasi
+                    <div className="flex items-center gap-2 border-b border-line bg-raised px-5 py-2 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-[var(--risk-moderate-text)]">
+                      <ShieldQuestion className="size-3.5" /> {t('Laporan warga · belum terverifikasi', 'Community report · unverified')}
                       {r.isExample && (
                         <span className="ml-auto rounded-full bg-neutral-100 px-2 py-0.5 text-subtle">
-                          contoh demo
+                          {t('contoh demo', 'demo example')}
                         </span>
                       )}
                     </div>
@@ -317,7 +340,7 @@ export default function CommunityPage() {
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                          <h3 className="text-[15px] font-bold">{LABEL[r.hazard]}</h3>
+                          <h3 className="text-[15px] font-bold">{label(r.hazard)}</h3>
                           <time
                             className="font-mono text-[11px] text-subtle"
                             dateTime={r.createdAt}
@@ -330,19 +353,23 @@ export default function CommunityPage() {
                         {r.imageUrl && (
                           <img
                             src={r.imageUrl}
-                            alt={`Foto laporan: ${LABEL[r.hazard]}`}
+                            alt={`${t('Foto laporan', 'Report photo')}: ${label(r.hazard)}`}
                             className="mt-3 max-h-60 rounded-xl object-cover"
                             loading="lazy"
                           />
                         )}
                         <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-[12px] text-muted">
                           <span>{r.locationName}</span>
-                          <span>· {formatDistance(haversineKm(location, r))} dari Anda</span>
-                          <span>· oleh {r.author}</span>
+                          <span>
+                            · {formatDistance(haversineKm(location, r))} {t('dari Anda', 'from you')}
+                          </span>
+                          <span>
+                            · {t('oleh', 'by')} {r.author}
+                          </span>
                           <span className="flex-1" />
                           {r.mine ? (
                             <Button variant="ghost" size="sm" onClick={() => remove(r.id)}>
-                              <Trash2 /> Hapus
+                              <Trash2 /> {t('Hapus', 'Delete')}
                             </Button>
                           ) : (
                             <Button
@@ -356,7 +383,7 @@ export default function CommunityPage() {
                               disabled={confirmed.includes(r.id)}
                             >
                               <CheckCircle2 />{' '}
-                              {confirmed.includes(r.id) ? 'Dikonfirmasi' : 'Saya juga melihat'} ·{' '}
+                              {confirmed.includes(r.id) ? t('Dikonfirmasi', 'Confirmed') : t('Saya juga melihat', 'I see it too')} ·{' '}
                               {r.confirmations}
                             </Button>
                           )}

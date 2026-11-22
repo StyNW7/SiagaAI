@@ -20,16 +20,17 @@ import { cn } from '@/lib/utils';
 import { loadProvinces } from '@/services/geo/provinces';
 import { aggregateByProvince } from '@/services/hazards/hotspots';
 import { getMultiPointSnapshot } from '@/services/weather/open-meteo';
+import { locale, t } from '@/lib/i18n';
 
-const LAYER_META: { key: keyof MapLayers; label: string; hint: string; color: string }[] = [
-  { key: 'hotspots', label: 'Titik panas', hint: 'NASA FIRMS VIIRS · 7 hari', color: '#E66B24' },
-  { key: 'heatmap', label: 'Kepadatan titik panas', hint: 'Heatmap skala nasional', color: '#C62A1F' },
-  { key: 'risk', label: 'Aktivitas per provinsi', hint: 'Choropleth deteksi 24 jam', color: '#D99A22' },
-  { key: 'warnings', label: 'Peringatan BMKG', hint: 'Garis putus-putus = aktif', color: '#D99A22' },
-  { key: 'weather', label: 'Cuaca kota', hint: 'Suhu & kondisi · Open-Meteo', color: '#3478C6' },
-  { key: 'air', label: 'Kualitas udara', hint: 'PM2.5 model CAMS', color: '#208A61' },
-  { key: 'quakes', label: 'Gempabumi', hint: 'BMKG · M5+ terkini', color: '#A51E22' },
-  { key: 'community', label: 'Laporan komunitas', hint: 'Belum terverifikasi', color: '#4E54D8' },
+const layerMeta = (): { key: keyof MapLayers; label: string; hint: string; color: string }[] => [
+  { key: 'hotspots', label: t('Titik panas', 'Hotspots'), hint: t('NASA FIRMS VIIRS · 7 hari', 'NASA FIRMS VIIRS · 7 days'), color: '#E66B24' },
+  { key: 'heatmap', label: t('Kepadatan titik panas', 'Hotspot density'), hint: t('Heatmap skala nasional', 'National-scale heatmap'), color: '#C62A1F' },
+  { key: 'risk', label: t('Aktivitas per provinsi', 'Activity by province'), hint: t('Choropleth deteksi 24 jam', '24-hour detection choropleth'), color: '#D99A22' },
+  { key: 'warnings', label: t('Peringatan BMKG', 'BMKG warnings'), hint: t('Garis putus-putus = aktif', 'Dashed outline = active'), color: '#D99A22' },
+  { key: 'weather', label: t('Cuaca kota', 'City weather'), hint: t('Suhu & kondisi · Open-Meteo', 'Temperature & conditions · Open-Meteo'), color: '#3478C6' },
+  { key: 'air', label: t('Kualitas udara', 'Air quality'), hint: t('PM2.5 model CAMS', 'PM2.5 CAMS model'), color: '#208A61' },
+  { key: 'quakes', label: t('Gempabumi', 'Earthquakes'), hint: t('BMKG · M5+ terkini', 'BMKG · latest M5+'), color: '#A51E22' },
+  { key: 'community', label: t('Laporan komunitas', 'Community reports'), hint: t('Belum terverifikasi', 'Unverified'), color: '#4E54D8' },
 ];
 
 export default function MapPage() {
@@ -152,20 +153,21 @@ export default function MapPage() {
               <FreshnessBadge provenance={hotspots.data?.provenance} kind="hotspots" />
             </div>
             <div className="mt-4 grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-line bg-line">
-              <MiniStat label="24 jam" value={total24} />
-              <MiniStat label="7 hari" value={total7} />
-              <MiniStat label="Peringatan" value={warningList.length} />
+              <MiniStat label={t('24 jam', '24 h')} value={total24} />
+              <MiniStat label={t('7 hari', '7 days')} value={total7} />
+              <MiniStat label={t('Peringatan', 'Warnings')} value={warningList.length} />
             </div>
             <div className="mt-3 hidden sm:block">
               <p className="data-label mb-1.5 flex items-center gap-1.5">
-                <Flame className="size-3.5 text-hz-fire" /> Provinsi teraktif · klik untuk detail
+                <Flame className="size-3.5 text-hz-fire" />{' '}
+                {t('Provinsi teraktif · klik untuk detail', 'Most active provinces · click for details')}
               </p>
               <ul className="space-y-1">
                 {topProvinces.map((p) => (
                   <li key={p.code}>
                     <button
                       onClick={() => selectProvince(p.code)}
-                      className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-white/80"
+                      className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-surface/80"
                     >
                       <span className="font-medium">{p.name}</span>
                       <span className="font-mono text-[11.5px] text-subtle">
@@ -175,7 +177,9 @@ export default function MapPage() {
                   </li>
                 ))}
                 {!topProvinces.length && (
-                  <li className="px-2 text-[12px] text-muted">Tidak ada titik panas terdeteksi.</li>
+                  <li className="px-2 text-[12px] text-muted">
+                    {t('Tidak ada titik panas terdeteksi.', 'No hotspots detected.')}
+                  </li>
                 )}
               </ul>
             </div>
@@ -192,7 +196,7 @@ export default function MapPage() {
           {location.provinceCode && (
             <JourneyButton
               icon={<Layers />}
-              label="Provinsi"
+              label={t('Provinsi', 'Province')}
               onClick={() => location.provinceCode && selectProvince(location.provinceCode)}
             />
           )}
@@ -211,7 +215,7 @@ export default function MapPage() {
               if (l) setFocus({ kind: 'point', lat: l.lat, lon: l.lon, zoom: 11, key: Date.now() });
             }}
           />
-          <JourneyButton icon={<Search />} label="Cari" onClick={() => setPicker(true)} />
+          <JourneyButton icon={<Search />} label={t('Cari', 'Search')} onClick={() => setPicker(true)} />
         </div>
 
         {/* Layer control */}
@@ -219,10 +223,10 @@ export default function MapPage() {
           <Button
             variant="secondary"
             size="icon"
-            className="glass ml-auto flex !border-white/70 !bg-white/85"
+            className="glass ml-auto flex !border-white/70 !bg-surface/85 dark:!border-white/10"
             onClick={() => setLayersOpen((v) => !v)}
             aria-expanded={layersOpen}
-            aria-label="Lapisan peta"
+            aria-label={t('Lapisan peta', 'Map layers')}
           >
             <Layers />
           </Button>
@@ -232,11 +236,11 @@ export default function MapPage() {
               layersOpen ? 'block animate-fade-up' : 'hidden',
             )}
           >
-            <p className="data-label mb-1.5 px-1.5">Lapisan peta</p>
+            <p className="data-label mb-1.5 px-1.5">{t('Lapisan peta', 'Map layers')}</p>
             <ul>
-              {LAYER_META.map((l) => (
+              {layerMeta().map((l) => (
                 <li key={l.key}>
-                  <label className="flex cursor-pointer items-center gap-3 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-white/80">
+                  <label className="flex cursor-pointer items-center gap-3 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-surface/80">
                     <span
                       className="size-2.5 shrink-0 rounded-full"
                       style={{ background: l.color }}
@@ -255,21 +259,21 @@ export default function MapPage() {
                 </li>
               ))}
             </ul>
-            {cityQ.isFetching && <p className="px-1 pt-1 text-[11px] text-muted">Memuat cuaca kota…</p>}
+            {cityQ.isFetching && <p className="px-1 pt-1 text-[11px] text-muted">{t('Memuat cuaca kota…', 'Loading city weather…')}</p>}
           </div>
         </div>
 
         {/* Legend */}
         <div className="glass absolute bottom-40 left-3 hidden rounded-xl px-3.5 py-2.5 text-[11.5px] sm:block md:bottom-6 md:left-4">
-          <p className="data-label mb-1.5">Usia deteksi</p>
+          <p className="data-label mb-1.5">{t('Usia deteksi', 'Detection age')}</p>
           {[
-            ['#C62A1F', '≤ 6 jam'],
-            ['#E66B24', '6–24 jam'],
-            ['#D99A22', '1–3 hari'],
-            ['#A8A29E', '> 3 hari'],
+            ['#C62A1F', t('≤ 6 jam', '≤ 6 h')],
+            ['#E66B24', t('6–24 jam', '6–24 h')],
+            ['#D99A22', t('1–3 hari', '1–3 days')],
+            ['#A8A29E', t('> 3 hari', '> 3 days')],
           ].map(([c, l]) => (
             <p key={l} className="flex items-center gap-2 py-0.5">
-              <span className="size-2.5 rounded-full ring-2 ring-white" style={{ background: c }} /> {l}
+              <span className="size-2.5 rounded-full ring-2 ring-surface" style={{ background: c }} /> {l}
             </p>
           ))}
           <p className="mt-2 border-t border-line pt-2 font-mono text-[10.5px] text-muted">
@@ -281,7 +285,7 @@ export default function MapPage() {
       {/* Province detail: side panel on desktop, bottom sheet on mobile */}
       {desktop ? (
         panel && (
-          <aside className="w-[400px] shrink-0 border-l border-line bg-white animate-fade-up">{panel}</aside>
+          <aside className="w-[400px] shrink-0 border-l border-line bg-surface animate-fade-up">{panel}</aside>
         )
       ) : (
         <DialogPrimitive.Root
@@ -291,7 +295,7 @@ export default function MapPage() {
           {panel && (
             <SheetContent
               side="bottom"
-              title={selectedFeature?.properties.name ?? 'Provinsi'}
+              title={selectedFeature?.properties.name ?? t('Provinsi', 'Province')}
               hideTitle
               className="h-[80dvh]"
             >
@@ -312,8 +316,8 @@ export default function MapPage() {
 
 function MiniStat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="bg-white/90 px-3 py-2.5">
-      <p className="display-metric text-[20px]">{value.toLocaleString('id-ID')}</p>
+    <div className="bg-surface/90 px-3 py-2.5">
+      <p className="display-metric text-[20px]">{value.toLocaleString(locale())}</p>
       <p className="telemetry mt-1 !text-[10px]">{label}</p>
     </div>
   );
@@ -323,7 +327,7 @@ function JourneyButton({ icon, label, onClick }: { icon: ReactNode; label: strin
   return (
     <button
       onClick={onClick}
-      className="flex h-10 items-center gap-1.5 rounded-full px-3.5 text-[12.5px] font-semibold text-neutral-700 transition-colors hover:bg-white hover:text-ink [&_svg]:size-4"
+      className="flex h-10 items-center gap-1.5 rounded-full px-3.5 text-[12.5px] font-semibold text-neutral-700 transition-colors hover:bg-surface hover:text-ink [&_svg]:size-4"
       aria-label={label}
     >
       {icon}

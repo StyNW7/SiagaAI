@@ -20,20 +20,30 @@ import { seedDemoWorkspace } from '@/services/demo';
 import { isSupabaseEnabled } from '@/services/supabase/client';
 import { requestOnboarding } from '@/features/onboarding/onboarding';
 import { useAuthStore, useProfileStore } from '@/stores';
+import { PreferenceToggles } from '@/features/preferences/toggles';
+import { t } from '@/lib/i18n';
 
+// Validation messages are functions so they follow the active language.
 const loginSchema = z.object({
-  email: z.email('Email tidak valid'),
-  password: z.string().min(6, 'Minimal 6 karakter'),
+  email: z.email({ error: () => t('Email tidak valid', 'Invalid email') }),
+  password: z.string().min(6, { error: () => t('Minimal 6 karakter', 'At least 6 characters') }),
 });
 const registerSchema = loginSchema
   .extend({
-    name: z.string().trim().min(2, 'Isi nama Anda').max(40),
+    name: z
+      .string()
+      .trim()
+      .min(2, { error: () => t('Isi nama Anda', 'Enter your name') })
+      .max(40),
     confirm: z.string(),
   })
-  .refine((v) => v.password === v.confirm, { message: 'Kata sandi tidak sama', path: ['confirm'] });
+  .refine((v) => v.password === v.confirm, {
+    error: () => t('Kata sandi tidak sama', 'Passwords do not match'),
+    path: ['confirm'],
+  });
 
 export default function AuthPage() {
-  useDocumentTitle('Masuk');
+  useDocumentTitle(t('Masuk', 'Sign in'));
   const [params] = useSearchParams();
   const next = params.get('next')?.startsWith('/') ? params.get('next')! : '/app';
   const navigate = useNavigate();
@@ -51,7 +61,7 @@ export default function AuthPage() {
   });
 
   const done = (name: string) => {
-    toast.success(`Selamat datang, ${name}!`);
+    toast.success(t(`Selamat datang, ${name}!`, `Welcome, ${name}!`));
     navigate(next, { replace: true });
   };
 
@@ -62,7 +72,7 @@ export default function AuthPage() {
       if (u.email === DEMO_ACCOUNT.email) seedDemoWorkspace();
       done(u.name);
     } catch (e) {
-      login.setError('root', { message: e instanceof AuthError ? e.message : 'Gagal masuk.' });
+      login.setError('root', { message: e instanceof AuthError ? e.message : t('Gagal masuk.', 'Sign-in failed.') });
     }
   });
 
@@ -74,21 +84,27 @@ export default function AuthPage() {
       requestOnboarding();
       done(u.name);
     } catch (e) {
-      register.setError('root', { message: e instanceof AuthError ? e.message : 'Pendaftaran gagal.' });
+      register.setError('root', {
+        message: e instanceof AuthError ? e.message : t('Pendaftaran gagal.', 'Registration failed.'),
+      });
     }
   });
 
   const forgot = async () => {
     const email = login.getValues('email');
     if (!z.email().safeParse(email).success) {
-      login.setError('email', { message: 'Isi email dulu untuk reset kata sandi' });
+      login.setError('email', {
+        message: t('Isi email dulu untuk reset kata sandi', 'Enter your email first to reset your password'),
+      });
       return;
     }
     try {
       await requestPasswordReset(email);
-      toast.success('Email reset terkirim', { description: 'Periksa kotak masuk Anda.' });
+      toast.success(t('Email reset terkirim', 'Reset email sent'), {
+        description: t('Periksa kotak masuk Anda.', 'Check your inbox.'),
+      });
     } catch (e) {
-      toast.error(e instanceof AuthError ? e.message : 'Gagal mengirim email reset.');
+      toast.error(e instanceof AuthError ? e.message : t('Gagal mengirim email reset.', 'Failed to send the reset email.'));
     }
   };
 
@@ -108,22 +124,25 @@ export default function AuthPage() {
             to="/"
             className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted transition-colors hover:text-ink"
           >
-            <ArrowLeft className="size-4" /> Beranda
+            <ArrowLeft className="size-4" /> {t('Beranda', 'Home')}
           </Link>
-          <Link to="/app" className="text-[13px] font-semibold text-ink underline-offset-4 hover:underline">
-            Lanjut tanpa akun
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/app" className="text-[13px] font-semibold text-ink underline-offset-4 hover:underline">
+              {t('Lanjut tanpa akun', 'Continue without an account')}
+            </Link>
+            <PreferenceToggles />
+          </div>
         </div>
 
         <div className="mx-auto flex w-full max-w-[400px] flex-1 flex-col justify-center py-6">
           <LogoMark className="mb-6 hidden size-10 lg:block" />
           <h1 className="text-[30px] font-bold leading-tight tracking-[-0.03em]">
-            {tab === 'login' ? 'Selamat datang kembali.' : 'Buat akun SiagaAI.'}
+            {tab === 'login' ? t('Selamat datang kembali.', 'Welcome back.') : t('Buat akun SiagaAI.', 'Create a SiagaAI account.')}
           </h1>
           <p className="mt-2 text-[14px] text-muted">
             {tab === 'login'
-              ? 'Simpan profil, keluarga & lokasi pentingmu.'
-              : 'Gratis. Sinkronkan rencana & lokasi di semua perangkat.'}
+              ? t('Simpan profil, keluarga & lokasi pentingmu.', 'Save your profile, family & important locations.')
+              : t('Gratis. Sinkronkan rencana & lokasi di semua perangkat.', 'Free. Sync plans & locations across all your devices.')}
           </p>
 
           <button
@@ -132,8 +151,8 @@ export default function AuthPage() {
             className={cn(
               'group mt-7 flex w-full items-center gap-3.5 rounded-[14px] border p-3.5 text-left transition-all',
               demoFilled
-                ? 'border-risk-safe/30 bg-[#EEF7F2]'
-                : 'border-dashed border-line-strong bg-white hover:border-brand/40 hover:bg-brand-pale',
+                ? 'border-risk-safe/30 bg-[var(--risk-safe-soft)]'
+                : 'border-dashed border-line-strong bg-surface hover:border-brand/40 hover:bg-brand-pale',
             )}
           >
             <span
@@ -146,7 +165,9 @@ export default function AuthPage() {
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-[14px] font-bold text-ink">
-                {demoFilled ? 'Akun demo terisi — tekan Masuk' : 'Gunakan akun demo'}
+                {demoFilled
+                  ? t('Akun demo terisi — tekan Masuk', 'Demo account filled in — press Sign in')
+                  : t('Gunakan akun demo', 'Use the demo account')}
               </span>
               <span className="block truncate font-mono text-[11px] text-muted">
                 {DEMO_ACCOUNT.email} · {DEMO_ACCOUNT.password}
@@ -157,14 +178,14 @@ export default function AuthPage() {
 
           <div className="my-6 flex items-center gap-3" aria-hidden>
             <span className="h-px flex-1 bg-line" />
-            <span className="telemetry">atau</span>
+            <span className="telemetry">{t('atau', 'or')}</span>
             <span className="h-px flex-1 bg-line" />
           </div>
 
           <Tabs value={tab} onValueChange={setTab}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Masuk</TabsTrigger>
-              <TabsTrigger value="register">Daftar</TabsTrigger>
+              <TabsTrigger value="login">{t('Masuk', 'Sign in')}</TabsTrigger>
+              <TabsTrigger value="register">{t('Daftar', 'Register')}</TabsTrigger>
             </TabsList>
             <TabsContent value="login">
               <form onSubmit={onLogin} className="mt-6 space-y-4" noValidate>
@@ -174,20 +195,20 @@ export default function AuthPage() {
                     id="l-email"
                     type="email"
                     autoComplete="email"
-                    placeholder="nama@email.com"
+                    placeholder={t('nama@email.com', 'name@email.com')}
                     {...login.register('email')}
                   />
                   <FieldError>{login.formState.errors.email?.message}</FieldError>
                 </div>
                 <div>
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="l-pass">Kata sandi</Label>
+                    <Label htmlFor="l-pass">{t('Kata sandi', 'Password')}</Label>
                     <button
                       type="button"
                       onClick={forgot}
                       className="mb-1.5 text-[12.5px] font-semibold text-muted underline-offset-4 hover:text-ink hover:underline"
                     >
-                      Lupa kata sandi?
+                      {t('Lupa kata sandi?', 'Forgot password?')}
                     </button>
                   </div>
                   <PasswordInput
@@ -200,24 +221,24 @@ export default function AuthPage() {
                 {login.formState.errors.root?.message && (
                   <p
                     role="alert"
-                    className="rounded-lg border border-risk-critical/20 bg-[#FBEDED] px-3 py-2.5 text-[13px] font-medium text-[#7A1418]"
+                    className="rounded-lg border border-risk-critical/20 bg-[var(--risk-critical-soft)] px-3 py-2.5 text-[13px] font-medium text-[var(--risk-critical-text)]"
                   >
                     {login.formState.errors.root.message}
                   </p>
                 )}
                 <Button type="submit" className="w-full" size="lg" disabled={login.formState.isSubmitting}>
-                  {login.formState.isSubmitting ? <Loader2 className="animate-spin" /> : <LogIn />} Masuk
+                  {login.formState.isSubmitting ? <Loader2 className="animate-spin" /> : <LogIn />} {t('Masuk', 'Sign in')}
                 </Button>
               </form>
             </TabsContent>
             <TabsContent value="register">
               <form onSubmit={onRegister} className="mt-6 space-y-4" noValidate>
                 <div>
-                  <Label htmlFor="r-name">Nama lengkap</Label>
+                  <Label htmlFor="r-name">{t('Nama lengkap', 'Full name')}</Label>
                   <Input
                     id="r-name"
                     autoComplete="name"
-                    placeholder="Nama Anda"
+                    placeholder={t('Nama Anda', 'Your name')}
                     {...register.register('name')}
                   />
                   <FieldError>{register.formState.errors.name?.message}</FieldError>
@@ -228,14 +249,14 @@ export default function AuthPage() {
                     id="r-email"
                     type="email"
                     autoComplete="email"
-                    placeholder="nama@email.com"
+                    placeholder={t('nama@email.com', 'name@email.com')}
                     {...register.register('email')}
                   />
                   <FieldError>{register.formState.errors.email?.message}</FieldError>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <Label htmlFor="r-pass">Kata sandi</Label>
+                    <Label htmlFor="r-pass">{t('Kata sandi', 'Password')}</Label>
                     <PasswordInput
                       id="r-pass"
                       autoComplete="new-password"
@@ -244,7 +265,7 @@ export default function AuthPage() {
                     <FieldError>{register.formState.errors.password?.message}</FieldError>
                   </div>
                   <div>
-                    <Label htmlFor="r-confirm">Ulangi</Label>
+                    <Label htmlFor="r-confirm">{t('Ulangi', 'Confirm')}</Label>
                     <PasswordInput
                       id="r-confirm"
                       autoComplete="new-password"
@@ -256,14 +277,14 @@ export default function AuthPage() {
                 {register.formState.errors.root?.message && (
                   <p
                     role="alert"
-                    className="rounded-lg border border-risk-critical/20 bg-[#FBEDED] px-3 py-2.5 text-[13px] font-medium text-[#7A1418]"
+                    className="rounded-lg border border-risk-critical/20 bg-[var(--risk-critical-soft)] px-3 py-2.5 text-[13px] font-medium text-[var(--risk-critical-text)]"
                   >
                     {register.formState.errors.root.message}
                   </p>
                 )}
                 <Button type="submit" className="w-full" size="lg" disabled={register.formState.isSubmitting}>
-                  {register.formState.isSubmitting ? <Loader2 className="animate-spin" /> : <UserPlus />} Buat
-                  akun
+                  {register.formState.isSubmitting ? <Loader2 className="animate-spin" /> : <UserPlus />}{' '}
+                  {t('Buat akun', 'Create account')}
                 </Button>
               </form>
             </TabsContent>
@@ -273,13 +294,15 @@ export default function AuthPage() {
             <span
               className={cn('size-1.5 rounded-full', isSupabaseEnabled ? 'bg-risk-safe' : 'bg-risk-moderate')}
             />
-            {isSupabaseEnabled ? 'Supabase Auth · tersinkron aman' : 'Mode perangkat · disimpan di browser'}
+            {isSupabaseEnabled
+              ? t('Supabase Auth · tersinkron aman', 'Supabase Auth · securely synced')
+              : t('Mode perangkat · disimpan di browser', 'Device mode · stored in the browser')}
           </p>
           <Link
             to="/app"
             className="mt-6 text-center text-[13.5px] font-semibold text-ink underline-offset-4 hover:underline lg:hidden"
           >
-            Lanjut tanpa akun →
+            {t('Lanjut tanpa akun →', 'Continue without an account →')}
           </Link>
         </div>
       </div>
@@ -296,7 +319,7 @@ const PasswordInput = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInput
         type="button"
         onClick={() => setShow((v) => !v)}
         className="absolute right-1.5 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-lg text-subtle transition-colors hover:bg-neutral-100 hover:text-ink"
-        aria-label={show ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+        aria-label={show ? t('Sembunyikan kata sandi', 'Hide password') : t('Tampilkan kata sandi', 'Show password')}
       >
         {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
       </button>
@@ -312,21 +335,24 @@ function StoryPanel() {
   const a = view.assessment;
   const lvl = a ? RISK_LEVELS[a.location.level] : null;
   return (
-    <div className="relative flex min-h-[32vh] flex-col overflow-hidden bg-brand-deep text-white lg:sticky lg:top-0 lg:h-dvh">
+    <div className="relative flex min-h-[32vh] flex-col overflow-hidden bg-[#741116] text-white lg:sticky dark:bg-[#2a0a0c] lg:top-0 lg:h-dvh">
       <div
-        className="absolute inset-0 bg-[radial-gradient(80%_60%_at_30%_20%,#A31319,transparent_70%)]"
+        className="absolute inset-0 bg-[radial-gradient(80%_60%_at_30%_20%,#A31319,transparent_70%)] dark:bg-[radial-gradient(80%_60%_at_30%_20%,#5c1015,transparent_70%)]"
         aria-hidden
       />
       <NusantaraBackdrop variant="red" />
       <IndonesiaSilhouette className="absolute -right-24 bottom-24 w-[120%] max-w-none text-white/[0.06]" />
 
       <div className="relative flex items-center justify-between p-5 sm:p-8 lg:p-12">
-        <Link to="/" aria-label="SiagaAI beranda" className="rounded-full bg-white py-1.5 pl-1.5 pr-4">
+        <Link to="/" aria-label={t('SiagaAI beranda', 'SiagaAI home')} className="rounded-full bg-surface py-1.5 pl-1.5 pr-4">
           <Logo />
         </Link>
-        <Link to="/app" className="text-[13px] font-semibold text-white/80 hover:text-white lg:hidden">
-          Lewati
-        </Link>
+        <div className="flex items-center gap-3 lg:hidden">
+          <PreferenceToggles tone="onDark" />
+          <Link to="/app" className="text-[13px] font-semibold text-white/80 hover:text-white">
+            {t('Lewati', 'Skip')}
+          </Link>
+        </div>
       </div>
 
       <div className="relative mt-auto grid items-end gap-6 px-5 sm:px-8 lg:grid-cols-[1fr_auto] lg:px-12">
@@ -335,7 +361,7 @@ function StoryPanel() {
             Indonesia Disaster Intelligence
           </p>
           <h2 className="text-balance mt-3 max-w-md text-[28px] font-bold leading-[1.1] tracking-[-0.03em] sm:text-[36px] lg:text-[44px]">
-            Kesiapsiagaan dimulai dari pemahaman.
+            {t('Kesiapsiagaan dimulai dari pemahaman.', 'Preparedness starts with understanding.')}
           </h2>
           <div className="glass mt-8 hidden w-fit items-center gap-4 rounded-2xl !border-white/20 !bg-white/10 px-4 py-3 text-white lg:flex">
             <span className="relative flex size-2.5" aria-hidden>
@@ -345,7 +371,8 @@ function StoryPanel() {
             <span>
               <span className="block text-[14px] font-bold">{view.location.name}</span>
               <span className="block font-mono text-[10.5px] uppercase tracking-[0.06em] text-white/70">
-                {lvl ? `Risiko ${lvl.label}` : 'Menganalisis…'} · {formatTime(now)}
+                {lvl ? t(`Risiko ${lvl.label}`, `${lvl.label} risk`) : t('Menganalisis…', 'Analysing…')} ·{' '}
+                {formatTime(now)}
               </span>
             </span>
           </div>
@@ -355,7 +382,7 @@ function StoryPanel() {
           size={420}
           priority
           className="-mb-2 hidden !h-[min(420px,56vh)] !w-auto self-end lg:block"
-          alt="Ara menyapa"
+          alt={t('Ara menyapa', 'Ara says hello')}
         />
       </div>
       <Ara pose="wave" size={150} priority className="absolute -bottom-1 right-5 lg:hidden" />

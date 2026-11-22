@@ -27,9 +27,10 @@ import { formatDateTime } from '@/lib/format';
 import { HAZARDS } from '@/lib/risk-levels';
 import { signOut } from '@/services/auth';
 import { useAuthStore, useHistoryStore, useLocationStore, useProfileStore, useSettings } from '@/stores';
+import { t } from '@/lib/i18n';
 
 export default function ProfilePage() {
-  useDocumentTitle('Profil');
+  useDocumentTitle(t('Profil', 'Profile'));
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
   const profile = useProfileStore((s) => s.profile);
@@ -49,9 +50,9 @@ export default function ProfilePage() {
   return (
     <div>
       <PageHeader
-        title="Profil & riwayat"
+        title={t('Profil & riwayat', 'Profile & history')}
         mascot="tablet"
-        description="Profil, lokasi tersimpan & riwayat skormu."
+        description={t('Profil, lokasi tersimpan & riwayat skormu.', 'Your profile, saved locations & score history.')}
       />
 
       <div className="grid gap-5 lg:grid-cols-12">
@@ -59,19 +60,19 @@ export default function ProfilePage() {
           <Card className="relative overflow-hidden">
             <div className="bg-topo absolute inset-0 opacity-[0.04]" aria-hidden />
             <CardContent className="relative flex items-center gap-4 p-5 sm:p-6">
-              <span className="grid size-14 shrink-0 place-items-center rounded-full bg-ink text-xl font-bold text-white ring-4 ring-white">
+              <span className="grid size-14 shrink-0 place-items-center rounded-full bg-inverse text-xl font-bold text-on-inverse ring-4 ring-surface">
                 {(user?.name ?? profile.displayName ?? 'T').charAt(0).toUpperCase() || 'T'}
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[17px] font-bold tracking-[-0.01em]">
-                  {user?.name ?? 'Mode tamu'}
+                  {user?.name ?? t('Mode tamu', 'Guest mode')}
                 </p>
                 <p className="truncate text-[13px] text-muted">
-                  {user ? user.email : 'Fitur inti tetap bisa dipakai'}
+                  {user ? user.email : t('Fitur inti tetap bisa dipakai', 'Core features still work')}
                 </p>
                 {user && (
                   <Badge className="mt-1.5" variant={user.backend === 'supabase' ? 'success' : 'neutral'}>
-                    {user.backend === 'supabase' ? 'Tersinkron Supabase' : 'Akun perangkat'}
+                    {user.backend === 'supabase' ? t('Tersinkron Supabase', 'Synced with Supabase') : t('Akun perangkat', 'Device account')}
                   </Badge>
                 )}
               </div>
@@ -82,15 +83,15 @@ export default function ProfilePage() {
                   onClick={async () => {
                     await signOut(user);
                     setUser(null);
-                    toast.success('Anda telah keluar');
+                    toast.success(t('Anda telah keluar', 'You have signed out'));
                   }}
                 >
-                  <LogOut /> Keluar
+                  <LogOut /> {t('Keluar', 'Sign out')}
                 </Button>
               ) : (
                 <Button asChild size="sm">
                   <Link to="/auth?next=/app/profile">
-                    <LogIn /> Masuk
+                    <LogIn /> {t('Masuk', 'Sign in')}
                   </Link>
                 </Button>
               )}
@@ -100,18 +101,18 @@ export default function ProfilePage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <UserRound className="size-4 text-brand" /> Konteks personal
+                <UserRound className="size-4 text-brand" /> {t('Konteks personal', 'Personal context')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="display-name">Nama panggilan (opsional)</Label>
+                <Label htmlFor="display-name">{t('Nama panggilan (opsional)', 'Nickname (optional)')}</Label>
                 <Input
                   id="display-name"
                   value={profile.displayName}
                   maxLength={30}
                   onChange={(e) => update({ displayName: e.target.value })}
-                  placeholder="mis. Raka"
+                  placeholder={t('mis. Raka', 'e.g. Raka')}
                 />
               </div>
               <ProfileQuickEdit />
@@ -121,10 +122,10 @@ export default function ProfilePage() {
           <Card className="md:hidden">
             <CardContent className="divide-y divide-line p-2">
               {[
-                { to: '/app/family', label: 'Keluarga', icon: HeartHandshake },
-                { to: '/app/community', label: 'Laporan komunitas', icon: Megaphone },
-                { to: '/app/settings', label: 'Pengaturan', icon: Settings },
-                { to: '/app/about', label: 'Data & Metodologi', icon: BookOpenText },
+                { to: '/app/family', label: t('Keluarga', 'Family'), icon: HeartHandshake },
+                { to: '/app/community', label: t('Laporan komunitas', 'Community reports'), icon: Megaphone },
+                { to: '/app/settings', label: t('Pengaturan', 'Settings'), icon: Settings },
+                { to: '/app/about', label: t('Data & Metodologi', 'Data & Methodology'), icon: BookOpenText },
               ].map((l) => (
                 <Link
                   key={l.to}
@@ -144,9 +145,9 @@ export default function ProfilePage() {
             <CardHeader>
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  <Bookmark className="size-4 text-brand" /> Lokasi tersimpan
+                  <Bookmark className="size-4 text-brand" /> {t('Lokasi tersimpan', 'Saved locations')}
                 </CardTitle>
-                <p className="mt-1 text-[12.5px] text-muted">Hanya atas pilihanmu</p>
+                <p className="mt-1 text-[12.5px] text-muted">{t('Hanya atas pilihanmu', 'Only by your choice')}</p>
               </div>
               {active.source !== 'saved' && !active.id.startsWith('scenario') && (
                 <Button
@@ -154,10 +155,12 @@ export default function ProfilePage() {
                   variant="secondary"
                   onClick={() => {
                     saveLocation(active);
-                    toast.success(`${active.name} disimpan`);
+                    toast.success(t(`${active.name} disimpan`, `${active.name} saved`));
                   }}
                 >
-                  <Bookmark /> <span className="max-w-32 truncate">Simpan {active.name}</span>
+                  <Bookmark /> <span className="max-w-32 truncate">
+                    {t('Simpan', 'Save')} {active.name}
+                  </span>
                 </Button>
               )}
             </CardHeader>
@@ -180,7 +183,7 @@ export default function ProfilePage() {
                             lon: s.lon,
                             source: 'saved',
                           });
-                          toast.success(`Lokasi aktif: ${s.name}`);
+                          toast.success(t(`Lokasi aktif: ${s.name}`, `Active location: ${s.name}`));
                         }}
                       >
                         <span className="block truncate text-[14px] font-semibold">{s.name}</span>
@@ -191,7 +194,7 @@ export default function ProfilePage() {
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        aria-label={`Hapus ${s.name}`}
+                        aria-label={`${t('Hapus', 'Remove')} ${s.name}`}
                         onClick={() => removeSaved(s.id)}
                       >
                         <Trash2 />
@@ -200,8 +203,8 @@ export default function ProfilePage() {
                   ))}
                 </ul>
               ) : (
-                <AraSays pose="map" size={80} title="Belum ada lokasi tersimpan">
-                  Simpan rumah, kampus, atau kantor untuk akses cepat.
+                <AraSays pose="map" size={80} title={t('Belum ada lokasi tersimpan', 'No saved locations yet')}>
+                  {t('Simpan rumah, kampus, atau kantor untuk akses cepat.', 'Save your home, campus, or office for quick access.')}
                 </AraSays>
               )}
             </CardContent>
@@ -210,14 +213,14 @@ export default function ProfilePage() {
           <Card>
             <CardHeader>
               <div>
-                <CardTitle>Riwayat Siaga Score</CardTitle>
+                <CardTitle>{t('Riwayat Siaga Score', 'Siaga Score history')}</CardTitle>
                 <p className="telemetry mt-1 normal-case tracking-normal">
-                  1 catatan/lokasi/jam · koordinat ±1 km
+                  {t('1 catatan/lokasi/jam · koordinat ±1 km', '1 record/location/hour · coordinates ±1 km')}
                 </p>
               </div>
               {real.length > 0 && (
                 <Button variant="ghost" size="sm" onClick={clearHistory}>
-                  <Trash2 /> Hapus
+                  <Trash2 /> {t('Hapus', 'Clear')}
                 </Button>
               )}
             </CardHeader>
@@ -230,7 +233,7 @@ export default function ProfilePage() {
                       <span className="min-w-0">
                         <span className="block truncate font-semibold">{s.locationName}</span>
                         <span className="font-mono text-[11px] text-subtle">
-                          {formatDateTime(s.time)} · utama {HAZARDS[s.primaryHazard].label.toLowerCase()}
+                          {formatDateTime(s.time)} · {t('utama', 'main')} {HAZARDS[s.primaryHazard].label.toLowerCase()}
                         </span>
                       </span>
                       <span className="flex items-center gap-2">
@@ -243,8 +246,11 @@ export default function ProfilePage() {
               ) : (
                 <EmptyState
                   pose="thinking"
-                  title="Riwayat masih kosong"
-                  description="Terbentuk otomatis saat kamu memantau lokasi dari waktu ke waktu."
+                  title={t('Riwayat masih kosong', 'No history yet')}
+                  description={t(
+                    'Terbentuk otomatis saat kamu memantau lokasi dari waktu ke waktu.',
+                    'Builds up automatically as you monitor locations over time.',
+                  )}
                 />
               )}
             </CardContent>

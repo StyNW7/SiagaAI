@@ -1,4 +1,5 @@
 import type { HazardType, RiskLevel } from '@/features/risk/engine/types';
+import { t } from '@/lib/i18n';
 
 export interface RiskLevelMeta {
   level: RiskLevel;
@@ -15,53 +16,83 @@ export interface RiskLevelMeta {
 export const RISK_LEVELS: Record<RiskLevel, RiskLevelMeta> = {
   safe: {
     level: 'safe',
-    label: 'Aman',
-    short: 'AMAN',
+    get label() {
+      return t('Aman', 'Safe');
+    },
+    get short() {
+      return t('AMAN', 'SAFE');
+    },
     range: [0, 20],
     color: '#208A61',
-    soft: '#EEF7F2',
-    text: '#17654A',
-    description: 'Tidak ada sinyal bahaya berarti. Tetap pantau informasi resmi.',
+    soft: 'var(--risk-safe-soft)',
+    text: 'var(--risk-safe-text)',
+    get description() {
+      return t('Tidak ada sinyal bahaya berarti. Tetap pantau informasi resmi.', 'No significant hazard signals. Keep monitoring official information.');
+    },
   },
   low: {
     level: 'low',
-    label: 'Rendah',
-    short: 'RENDAH',
+    get label() {
+      return t('Rendah', 'Low');
+    },
+    get short() {
+      return t('RENDAH', 'LOW');
+    },
     range: [21, 40],
     color: '#3478C6',
-    soft: '#EEF4FB',
-    text: '#22579A',
-    description: 'Ada sinyal ringan. Aktivitas normal dengan kewaspadaan dasar.',
+    soft: 'var(--risk-low-soft)',
+    text: 'var(--risk-low-text)',
+    get description() {
+      return t('Ada sinyal ringan. Aktivitas normal dengan kewaspadaan dasar.', 'Minor signals present. Normal activity with basic caution.');
+    },
   },
   moderate: {
     level: 'moderate',
-    label: 'Sedang',
-    short: 'SEDANG',
+    get label() {
+      return t('Sedang', 'Moderate');
+    },
+    get short() {
+      return t('SEDANG', 'MODERATE');
+    },
     range: [41, 60],
     color: '#D99A22',
-    soft: '#FDF6E8',
-    text: '#8A5A0B',
-    description: 'Perlu kewaspadaan. Siapkan rencana dan pantau perkembangan.',
+    soft: 'var(--risk-moderate-soft)',
+    text: 'var(--risk-moderate-text)',
+    get description() {
+      return t('Perlu kewaspadaan. Siapkan rencana dan pantau perkembangan.', 'Caution needed. Prepare a plan and monitor developments.');
+    },
   },
   high: {
     level: 'high',
-    label: 'Tinggi',
-    short: 'TINGGI',
+    get label() {
+      return t('Tinggi', 'High');
+    },
+    get short() {
+      return t('TINGGI', 'HIGH');
+    },
     range: [61, 80],
     color: '#E66B24',
-    soft: '#FDF0E8',
-    text: '#A4461A',
-    description: 'Risiko tinggi. Sesuaikan aktivitas dan siapkan langkah perlindungan.',
+    soft: 'var(--risk-high-soft)',
+    text: 'var(--risk-high-text)',
+    get description() {
+      return t('Risiko tinggi. Sesuaikan aktivitas dan siapkan langkah perlindungan.', 'High risk. Adjust activities and prepare protective measures.');
+    },
   },
   critical: {
     level: 'critical',
-    label: 'Kritis',
-    short: 'KRITIS',
+    get label() {
+      return t('Kritis', 'Critical');
+    },
+    get short() {
+      return t('KRITIS', 'CRITICAL');
+    },
     range: [81, 100],
     color: '#A51E22',
-    soft: '#FBEDED',
-    text: '#7A1418',
-    description: 'Kondisi sangat berbahaya. Utamakan keselamatan & ikuti arahan resmi.',
+    soft: 'var(--risk-critical-soft)',
+    text: 'var(--risk-critical-text)',
+    get description() {
+      return t('Kondisi sangat berbahaya. Utamakan keselamatan & ikuti arahan resmi.', 'Very dangerous conditions. Put safety first & follow official instructions.');
+    },
   },
 };
 
@@ -86,31 +117,55 @@ export interface HazardMeta {
 export const HAZARDS: Record<HazardType, HazardMeta> = {
   fire: {
     type: 'fire',
-    label: 'Karhutla',
-    longLabel: 'Aktivitas Titik Panas (Karhutla)',
+    get label() {
+      return t('Karhutla', 'Wildfire');
+    },
+    get longLabel() {
+      return t('Aktivitas Titik Panas (Karhutla)', 'Hotspot Activity (Wildfire)');
+    },
     emoji: '🔥',
-    description: 'Deteksi termal satelit di sekitar lokasi, kekeringan & angin.',
+    get description() {
+      return t('Deteksi termal satelit di sekitar lokasi, kekeringan & angin.', 'Satellite thermal detections near the location, dryness & wind.');
+    },
   },
   smoke: {
     type: 'smoke',
-    label: 'Asap',
-    longLabel: 'Potensi Paparan Asap',
+    get label() {
+      return t('Asap', 'Smoke');
+    },
+    get longLabel() {
+      return t('Potensi Paparan Asap', 'Potential Smoke Exposure');
+    },
     emoji: '💨',
-    description: 'PM2.5 model, titik panas searah angin, dan jarak pandang.',
+    get description() {
+      return t('PM2.5 model, titik panas searah angin, dan jarak pandang.', 'Modelled PM2.5, upwind hotspots, and visibility.');
+    },
   },
   flood: {
     type: 'flood',
-    label: 'Banjir',
-    longLabel: 'Potensi Banjir',
+    get label() {
+      return t('Banjir', 'Flood');
+    },
+    get longLabel() {
+      return t('Potensi Banjir', 'Flood Potential');
+    },
     emoji: '🌊',
-    description: 'Curah hujan 24 jam, intensitas, debit sungai & peringatan BMKG.',
+    get description() {
+      return t('Curah hujan 24 jam, intensitas, debit sungai & peringatan BMKG.', '24-hour rainfall, intensity, river discharge & BMKG warnings.');
+    },
   },
   weather: {
     type: 'weather',
-    label: 'Cuaca Ekstrem',
-    longLabel: 'Cuaca Ekstrem',
+    get label() {
+      return t('Cuaca Ekstrem', 'Extreme Weather');
+    },
+    get longLabel() {
+      return t('Cuaca Ekstrem', 'Extreme Weather');
+    },
     emoji: '⛈️',
-    description: 'Badai petir, angin kencang, peluang hujan & panas.',
+    get description() {
+      return t('Badai petir, angin kencang, peluang hujan & panas.', 'Thunderstorms, strong winds, rain probability & heat.');
+    },
   },
 };
 

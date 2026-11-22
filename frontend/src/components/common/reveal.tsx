@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ElementType, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { t } from '@/lib/i18n';
 
 /** Fades + lifts children into view once, when they enter the viewport. */
 export function Reveal({
@@ -61,9 +62,9 @@ export function BackToTop() {
   return (
     <button
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      aria-label="Kembali ke atas"
+      aria-label={t('Kembali ke atas', 'Back to top')}
       className={cn(
-        'fixed bottom-6 right-6 z-40 grid size-11 place-items-center rounded-full border border-line bg-white/90 text-ink shadow-lift backdrop-blur transition-all duration-300 hover:-translate-y-0.5',
+        'fixed bottom-6 right-6 z-40 grid size-11 place-items-center rounded-full border border-line bg-surface/90 text-ink shadow-lift backdrop-blur transition-all duration-300 hover:-translate-y-0.5',
         show ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0',
       )}
     >

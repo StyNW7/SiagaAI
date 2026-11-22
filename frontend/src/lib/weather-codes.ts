@@ -1,3 +1,5 @@
+import { getLang, t } from '@/lib/i18n';
+
 /** WMO weather interpretation codes (Open-Meteo) → Bahasa Indonesia. */
 const WMO: Record<number, string> = {
   0: 'Cerah',
@@ -24,8 +26,43 @@ const WMO: Record<number, string> = {
   99: 'Badai petir hebat',
 };
 
+/** WMO codes → English. */
+const WMO_EN: Record<number, string> = {
+  0: 'Clear',
+  1: 'Mostly clear',
+  2: 'Partly cloudy',
+  3: 'Cloudy',
+  45: 'Foggy',
+  48: 'Freezing fog',
+  51: 'Light drizzle',
+  53: 'Drizzle',
+  55: 'Heavy drizzle',
+  56: 'Freezing drizzle',
+  57: 'Freezing drizzle',
+  61: 'Light rain',
+  63: 'Moderate rain',
+  65: 'Heavy rain',
+  66: 'Freezing rain',
+  67: 'Freezing rain',
+  80: 'Light showers',
+  81: 'Showers',
+  82: 'Violent showers',
+  95: 'Thunderstorm with rain',
+  96: 'Thunderstorm & hail',
+  99: 'Severe thunderstorm',
+};
+
+/**
+ * Display text for a weather condition. BMKG descriptions are official Indonesian
+ * text, so in English mode we describe the (mapped) WMO code instead.
+ */
+export const describeWeather = (w: { weatherCode: number | null; description: string }) =>
+  getLang() === 'en' ? describeWmo(w.weatherCode) : w.description;
+
 export const describeWmo = (code: number | null | undefined) =>
-  code == null ? 'Tidak tersedia' : (WMO[code] ?? 'Berawan');
+  code == null
+    ? t('Tidak tersedia', 'Not available')
+    : ((getLang() === 'en' ? WMO_EN : WMO)[code] ?? t('Berawan', 'Cloudy'));
 
 /**
  * BMKG weather codes → closest WMO code, so the risk engine can treat both

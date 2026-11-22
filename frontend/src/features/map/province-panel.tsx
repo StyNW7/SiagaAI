@@ -17,12 +17,22 @@ import type { ProvinceHotspotStats } from '@/services/hazards/hotspots';
 import { getAirQuality, getWeatherBundle } from '@/services/weather';
 import { useLocationStore, useProfileStore, useSettings } from '@/stores';
 import type { Hotspot, OfficialWarning } from '@/types/domain';
+import { t } from '@/lib/i18n';
+import { describeWeather } from '@/lib/weather-codes';
 
-const TREND = {
-  increasing: { label: 'Meningkat', icon: TrendingUp, cls: 'text-[#7A1418] bg-[#FBEDED]' },
-  stable: { label: 'Stabil', icon: Minus, cls: 'text-neutral-700 bg-neutral-100' },
-  decreasing: { label: 'Menurun', icon: TrendingDown, cls: 'text-risk-safe bg-[#EEF7F2]' },
-};
+const trends = () => ({
+  increasing: {
+    label: t('Meningkat', 'Increasing'),
+    icon: TrendingUp,
+    cls: 'text-[var(--risk-critical-text)] bg-[var(--risk-critical-soft)]',
+  },
+  stable: { label: t('Stabil', 'Stable'), icon: Minus, cls: 'text-neutral-700 bg-neutral-100' },
+  decreasing: {
+    label: t('Menurun', 'Decreasing'),
+    icon: TrendingDown,
+    cls: 'text-[var(--risk-safe-text)] bg-[var(--risk-safe-soft)]',
+  },
+});
 
 export function ProvincePanel({
   code,
@@ -72,7 +82,7 @@ export function ProvincePanel({
     return assessRisk(signals, profile);
   }, [capital, wx.isPending, wx.data, aq.data, hotspots, warnings, name, profile]);
 
-  const trend = TREND[stats?.trend ?? 'stable'];
+  const trend = trends()[stats?.trend ?? 'stable'];
   const regionCtx = useMemo(
     () => ({
       region: {
@@ -95,14 +105,14 @@ export function ProvincePanel({
       context: {
         ...baseContext,
         location: {
-          name: `${capital?.name ?? name} (ibu kota ${name})`,
+          name: t(`${capital?.name ?? name} (ibu kota ${name})`, `${capital?.name ?? name} (capital of ${name})`),
           region: name,
           lat: capital?.lat ?? 0,
           lon: capital?.lon ?? 0,
         },
         weather: w
           ? {
-              description: w.description,
+              description: describeWeather(w),
               temperature: w.temperature,
               humidity: w.humidity,
               windSpeed: w.windSpeed,
@@ -124,20 +134,24 @@ export function ProvincePanel({
     <div className="flex h-full flex-col">
       <div className="flex items-start justify-between gap-3 border-b border-line px-6 py-5">
         <div>
-          <p className="telemetry !text-brand">Ringkasan regional</p>
+          <p className="telemetry !text-brand">{t('Ringkasan regional', 'Regional summary')}</p>
           <h2 className="mt-1 text-[22px] font-bold tracking-[-0.02em]">{name}</h2>
-          {capital && <p className="mt-0.5 text-[12.5px] text-muted">Ibu kota {capital.name}</p>}
+          {capital && (
+            <p className="mt-0.5 text-[12.5px] text-muted">
+              {t('Ibu kota', 'Capital')} {capital.name}
+            </p>
+          )}
         </div>
-        <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Tutup ringkasan">
+        <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label={t('Tutup ringkasan', 'Close summary')}>
           <X />
         </Button>
       </div>
       <div className="flex-1 space-y-6 overflow-y-auto px-6 py-5">
         <div className="grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-line bg-line">
-          <Stat label="Titik panas 24 jam" value={String(stats?.last24h ?? 0)} />
-          <Stat label="7 hari" value={String(stats?.total7d ?? 0)} />
-          <div className="bg-white p-3">
-            <p className="telemetry !text-[10px]">Tren</p>
+          <Stat label={t('Titik panas 24 jam', 'Hotspots 24 h')} value={String(stats?.last24h ?? 0)} />
+          <Stat label={t('7 hari', '7 days')} value={String(stats?.total7d ?? 0)} />
+          <div className="bg-surface p-3">
+            <p className="telemetry !text-[10px]">{t('Tren', 'Trend')}</p>
             <p
               className={`mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-bold ${trend.cls}`}
             >
@@ -149,31 +163,36 @@ export function ProvincePanel({
         {stats && stats.total7d > 0 ? (
           <div>
             <p className="data-label mb-2 flex items-center gap-1.5">
-              <Flame className="size-3.5 text-hz-fire" /> Deteksi per hari
+              <Flame className="size-3.5 text-hz-fire" /> {t('Deteksi per hari', 'Detections per day')}
             </p>
             <DailyCountChart daily={stats.daily} />
             <p className="telemetry mt-1.5 normal-case tracking-normal">
-              Deteksi termal satelit VIIRS — bukan konfirmasi kebakaran
+              {t('Deteksi termal satelit VIIRS — bukan konfirmasi kebakaran', 'VIIRS satellite thermal detections — not confirmed fires')}
             </p>
           </div>
         ) : (
-          <p className="rounded-xl bg-[#EEF7F2] px-3 py-2.5 text-[13px] text-[#17654A]">
-            Tidak ada deteksi titik panas satelit di provinsi ini dalam 7 hari terakhir.
+          <p className="rounded-xl bg-[var(--risk-safe-soft)] px-3 py-2.5 text-[13px] text-[var(--risk-safe-text)]">
+            {t(
+              'Tidak ada deteksi titik panas satelit di provinsi ini dalam 7 hari terakhir.',
+              'No satellite hotspot detections in this province in the last 7 days.',
+            )}
           </p>
         )}
 
         <div>
-          <p className="data-label mb-2">Kondisi di {capital?.name ?? name}</p>
+          <p className="data-label mb-2">
+            {t('Kondisi di', 'Conditions in')} {capital?.name ?? name}
+          </p>
           {wx.data ? (
             <div className="flex items-center gap-3 rounded-xl border border-line bg-raised p-3.5">
               <WeatherIcon code={wx.data.current.weatherCode} className="size-8 text-neutral-600" />
               <div className="flex-1 text-[13px]">
                 <p className="font-semibold">
-                  {wx.data.current.description} · {Math.round(wx.data.current.temperature ?? 0)}°C
+                  {describeWeather(wx.data.current)} · {Math.round(wx.data.current.temperature ?? 0)}°C
                 </p>
                 <p className="text-muted">
-                  RH {Math.round(wx.data.current.humidity ?? 0)}% · angin{' '}
-                  {Math.round(wx.data.current.windSpeed ?? 0)} km/j · hujan 24j{' '}
+                  RH {Math.round(wx.data.current.humidity ?? 0)}% · {t('angin', 'wind')}{' '}
+                  {Math.round(wx.data.current.windSpeed ?? 0)} {t('km/j', 'km/h')} · {t('hujan 24j', '24h rain')}{' '}
                   {wx.data.next24h.precipitationSum.toFixed(1)} mm
                   {aq.data?.pm25 != null && ` · PM2.5 ${Math.round(aq.data.pm25)}`}
                 </p>
@@ -181,7 +200,7 @@ export function ProvincePanel({
               <FreshnessBadge provenance={wx.data.provenance} />
             </div>
           ) : wx.isError ? (
-            <p className="text-[13px] text-muted">Cuaca sementara tidak tersedia.</p>
+            <p className="text-[13px] text-muted">{t('Cuaca sementara tidak tersedia.', 'Weather is temporarily unavailable.')}</p>
           ) : (
             <Skeleton className="h-16" />
           )}
@@ -189,7 +208,7 @@ export function ProvincePanel({
 
         {assessment && (
           <div>
-            <p className="data-label mb-2">Risiko indikatif · ibu kota</p>
+            <p className="data-label mb-2">{t('Risiko indikatif · ibu kota', 'Indicative risk · capital')}</p>
             <ul className="divide-y divide-line rounded-xl border border-line">
               {HAZARD_ORDER.map((k) => (
                 <li key={k} className="flex items-center justify-between gap-2 px-3 py-2.5 text-[13px]">
@@ -213,27 +232,29 @@ export function ProvincePanel({
         )}
 
         <div>
-          <p className="data-label mb-2">Peringatan dini BMKG</p>
+          <p className="data-label mb-2">{t('Peringatan dini BMKG', 'BMKG early warnings')}</p>
           {warnings.length ? (
             <ul className="space-y-2">
               {warnings.slice(0, 3).map((w) => (
                 <li
                   key={w.id}
-                  className="rounded-xl border border-[#D99A22]/30 bg-[#FDF6E8]/70 p-3 text-[12.5px]"
+                  className="rounded-xl border border-risk-moderate/30 bg-[var(--risk-moderate-soft)]/70 p-3 text-[12.5px]"
                 >
-                  <p className="font-semibold text-[#8A5A0B]">{w.title}</p>
-                  <p className="mt-1 line-clamp-3 text-[#8A5A0B]/80">{w.description}</p>
+                  <p className="font-semibold text-[var(--risk-moderate-text)]">{w.title}</p>
+                  <p className="mt-1 line-clamp-3 text-[var(--risk-moderate-text)]/80">{w.description}</p>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-[13px] text-muted">Tidak ada peringatan dini cuaca aktif.</p>
+            <p className="text-[13px] text-muted">
+              {t('Tidak ada peringatan dini cuaca aktif.', 'No active weather early warnings.')}
+            </p>
           )}
         </div>
 
         {ai.data ? (
           <AiPanel
-            title="Penjelasan regional"
+            title={t('Penjelasan regional', 'Regional explanation')}
             provider={ai.data.provider}
             fallbackReason={ai.data.fallback ? ai.data.fallbackReason : undefined}
             compact
@@ -241,18 +262,18 @@ export function ProvincePanel({
             <p className="font-semibold text-ink">{ai.data.output.headline}</p>
             <RichText text={ai.data.output.summary} className="mt-1 text-[13px]" />
             <p className="mt-2 text-[13px] text-neutral-700">
-              <b>Pantau:</b> {ai.data.output.outlook}
+              <b>{t('Pantau:', 'Watch:')}</b> {ai.data.output.outlook}
             </p>
           </AiPanel>
         ) : ai.isPending ? (
-          <AiPanel title="Penjelasan regional" compact>
+          <AiPanel title={t('Penjelasan regional', 'Regional explanation')} compact>
             <AiThinking />
           </AiPanel>
         ) : null}
       </div>
       <div className="safe-bottom grid gap-2 border-t border-line bg-raised px-6 py-4 sm:grid-cols-2">
         <Button variant="ai" onClick={explain} disabled={!assessment || ai.isPending}>
-          <Sparkles /> Jelaskan dengan AI
+          <Sparkles /> {t('Jelaskan dengan AI', 'Explain with AI')}
         </Button>
         {capital && (
           <Button
@@ -270,7 +291,7 @@ export function ProvincePanel({
               navigate('/app');
             }}
           >
-            Analisis {capital.name} <ArrowRight />
+            {t('Analisis', 'Analyse')} {capital.name} <ArrowRight />
           </Button>
         )}
       </div>
@@ -280,7 +301,7 @@ export function ProvincePanel({
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white p-3">
+    <div className="bg-surface p-3">
       <p className="telemetry !text-[10px]">{label}</p>
       <p className="display-metric mt-1.5 text-[24px]">{value}</p>
     </div>

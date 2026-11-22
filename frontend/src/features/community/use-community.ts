@@ -4,56 +4,69 @@ import { fetchCommunityReports, rowToReport } from '@/services/supabase/reposito
 import { supabase } from '@/services/supabase/client';
 import { useCommunityStore } from '@/stores';
 import type { CommunityReport } from '@/types/domain';
+import { t } from '@/lib/i18n';
 
 const h = (hours: number) => new Date(Date.now() - hours * 3_600_000).toISOString();
 
 /** Clearly-labelled example reports so the feature can be evaluated on a fresh device. */
-export const EXAMPLE_REPORTS: CommunityReport[] = [
+export const exampleReports = (): CommunityReport[] => [
   {
     id: 'ex-1',
     hazard: 'smoke',
-    description: 'Asap tipis tercium sejak pagi di sekitar Jl. Tjilik Riwut, jarak pandang masih cukup baik.',
+    description: t(
+      'Asap tipis tercium sejak pagi di sekitar Jl. Tjilik Riwut, jarak pandang masih cukup baik.',
+      'Light smoke smelled since morning around Jl. Tjilik Riwut; visibility is still fairly good.',
+    ),
     locationName: 'Palangka Raya, Kalimantan Tengah',
     lat: -2.185,
     lon: 113.88,
     createdAt: h(3),
-    author: 'Warga (contoh)',
+    author: t('Warga (contoh)', 'Resident (example)'),
     confirmations: 4,
     isExample: true,
   },
   {
     id: 'ex-2',
     hazard: 'flood',
-    description: 'Genangan ±20 cm di underpass setelah hujan deras, motor disarankan memutar.',
+    description: t(
+      'Genangan ±20 cm di underpass setelah hujan deras, motor disarankan memutar.',
+      'About 20 cm of water in the underpass after heavy rain; motorcycles are advised to detour.',
+    ),
     locationName: 'Jakarta Utara, DKI Jakarta',
     lat: -6.135,
     lon: 106.86,
     createdAt: h(6),
-    author: 'Warga (contoh)',
+    author: t('Warga (contoh)', 'Resident (example)'),
     confirmations: 7,
     isExample: true,
   },
   {
     id: 'ex-3',
     hazard: 'weather',
-    description: 'Angin kencang dan hujan lebat sore hari, beberapa ranting pohon patah di pinggir jalan.',
+    description: t(
+      'Angin kencang dan hujan lebat sore hari, beberapa ranting pohon patah di pinggir jalan.',
+      'Strong winds and heavy rain in the afternoon; some tree branches broke along the road.',
+    ),
     locationName: 'Bengkulu, Bengkulu',
     lat: -3.79,
     lon: 102.27,
     createdAt: h(20),
-    author: 'Warga (contoh)',
+    author: t('Warga (contoh)', 'Resident (example)'),
     confirmations: 2,
     isExample: true,
   },
   {
     id: 'ex-4',
     hazard: 'fire',
-    description: 'Terlihat api kecil di lahan semak dekat perkebunan, petugas sudah dihubungi.',
+    description: t(
+      'Terlihat api kecil di lahan semak dekat perkebunan, petugas sudah dihubungi.',
+      'A small fire was seen in scrubland near a plantation; officers have been contacted.',
+    ),
     locationName: 'Kampar, Riau',
     lat: 0.33,
     lon: 101.2,
     createdAt: h(28),
-    author: 'Warga (contoh)',
+    author: t('Warga (contoh)', 'Resident (example)'),
     confirmations: 3,
     isExample: true,
   },
@@ -94,7 +107,7 @@ export function useCommunityFeed() {
 
   const reports = useMemo(() => {
     const ids = new Set<string>();
-    return [...local, ...(remote.data ?? []), ...EXAMPLE_REPORTS]
+    return [...local, ...(remote.data ?? []), ...exampleReports()]
       .filter((r) => (ids.has(r.id) ? false : (ids.add(r.id), true)))
       .map((r) =>
         confirmedIds.includes(r.id) && r.isExample ? { ...r, confirmations: r.confirmations + 1 } : r,

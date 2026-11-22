@@ -15,6 +15,7 @@ import { getHotspots } from '@/services/hazards/hotspots';
 import { getAirQuality, getRiverDischarge, getWeatherBundle } from '@/services/weather';
 import { useLocationStore, useProfileStore, useSettings } from '@/stores';
 import type { DataMode, OfficialWarning, Provenance, UserLocation } from '@/types/domain';
+import { getLang, t } from '@/lib/i18n';
 
 const MIN = 60_000;
 
@@ -42,7 +43,7 @@ const scenarioCache = new Map<string, ScenarioBundle>();
 
 /** Scenario data is memoised per 10-minute bucket so object identity stays stable across renders. */
 function scenarioData(id: ScenarioId): ScenarioBundle {
-  const bucket = `${id}:${Math.floor(Date.now() / (10 * MIN))}`;
+  const bucket = `${id}:${getLang()}:${Math.floor(Date.now() / (10 * MIN))}`;
   if (!scenarioCache.has(bucket)) {
     scenarioCache.clear();
     const data = buildScenario(id);
@@ -51,7 +52,7 @@ function scenarioData(id: ScenarioId): ScenarioBundle {
       warningsResponse: {
         warnings: data.warnings,
         provenance: {
-          source: 'SIMULASI — Peringatan',
+          source: t('SIMULASI — Peringatan', 'SIMULATION — Warnings'),
           fetchedAt: new Date().toISOString(),
           mode: 'scenario',
         },
@@ -208,13 +209,13 @@ export function useRiskAssessment() {
         : 'live';
 
   const sources: { key: string; label: string; state: SourceState; provenance?: Provenance }[] = [
-    { key: 'weather', label: 'Cuaca', state: weather.state, provenance: weather.data?.provenance },
-    { key: 'hotspots', label: 'Titik panas', state: hotspots.state, provenance: hotspots.data?.provenance },
-    { key: 'air', label: 'Kualitas udara', state: airQuality.state, provenance: airQuality.data?.provenance },
-    { key: 'river', label: 'Debit sungai', state: river.state, provenance: river.data?.provenance },
+    { key: 'weather', label: t('Cuaca', 'Weather'), state: weather.state, provenance: weather.data?.provenance },
+    { key: 'hotspots', label: t('Titik panas', 'Hotspots'), state: hotspots.state, provenance: hotspots.data?.provenance },
+    { key: 'air', label: t('Kualitas udara', 'Air quality'), state: airQuality.state, provenance: airQuality.data?.provenance },
+    { key: 'river', label: t('Debit sungai', 'River discharge'), state: river.state, provenance: river.data?.provenance },
     {
       key: 'warnings',
-      label: 'Peringatan BMKG',
+      label: t('Peringatan BMKG', 'BMKG warnings'),
       state: warnings.state,
       provenance: warnings.data?.provenance,
     },

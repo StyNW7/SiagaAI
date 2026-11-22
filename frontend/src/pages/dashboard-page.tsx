@@ -17,7 +17,7 @@ import {
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
-import { ARA_LINES, Ara, AraSays, poseForLevel } from '@/components/common/ara';
+import { Ara, AraSays, araLine, poseForLevel } from '@/components/common/ara';
 import { NusantaraBackdrop } from '@/components/common/brand';
 import { ErrorState, FreshnessBadge } from '@/components/common/data-state';
 import {
@@ -46,7 +46,9 @@ import { useCountUp, useDocumentTitle } from '@/hooks/use-misc';
 import { compass, formatDistance, formatLongDate, formatTime, timeAgo } from '@/lib/format';
 import { HAZARD_ORDER, HAZARDS, RISK_LEVELS } from '@/lib/risk-levels';
 import { cn } from '@/lib/utils';
+import { describeWeather } from '@/lib/weather-codes';
 import { useHistoryStore, useLocationStore, useSettings } from '@/stores';
+import { t } from '@/lib/i18n';
 
 const analyzed = new Set<string>(JSON.parse(sessionStorage.getItem('siaga.analyzed') ?? '[]'));
 
@@ -114,7 +116,7 @@ export default function DashboardPage() {
             <FreshnessBadge provenance={weather.data?.provenance} showSource />
           </>
         }
-        title="Seberapa aman lokasi Anda hari ini?"
+        title={t('Seberapa aman lokasi Anda hari ini?', 'How safe is your location today?')}
         actions={
           <>
             {location.source === 'gps' && (
@@ -122,16 +124,19 @@ export default function DashboardPage() {
                 variant="secondary"
                 onClick={() => {
                   saveLocation(location);
-                  toast.success('Lokasi disimpan', {
-                    description: 'Koordinat disimpan di perangkat Anda atas izin Anda.',
+                  toast.success(t('Lokasi disimpan', 'Location saved'), {
+                    description: t(
+                      'Koordinat disimpan di perangkat Anda atas izin Anda.',
+                      'Coordinates are saved on your device with your permission.',
+                    ),
                   });
                 }}
               >
-                <Bookmark /> Simpan
+                <Bookmark /> {t('Simpan', 'Save')}
               </Button>
             )}
             <Button variant="secondary" onClick={() => setPicker(true)}>
-              <MapPin /> Ubah lokasi
+              <MapPin /> {t('Ubah lokasi', 'Change location')}
             </Button>
           </>
         }
@@ -143,14 +148,14 @@ export default function DashboardPage() {
           size={84}
           tone="brand"
           className="mb-6"
-          title={`Ini lokasi bawaan: ${location.name}`}
+          title={t(`Ini lokasi bawaan: ${location.name}`, `This is the default location: ${location.name}`)}
           action={
             <Button size="sm" onClick={() => setPicker(true)}>
-              <MapPin /> Pilih lokasi saya
+              <MapPin /> {t('Pilih lokasi saya', 'Choose my location')}
             </Button>
           }
         >
-          Pilih lokasimu agar analisis risikonya personal.
+          {t('Pilih lokasimu agar analisis risikonya personal.', 'Choose your location so the risk analysis is personal.')}
         </AraSays>
       )}
 
@@ -166,7 +171,7 @@ export default function DashboardPage() {
           {/* ROW 1 — Score (8) · Brief (4) */}
           <div className="grid gap-5 lg:grid-cols-12 lg:gap-6">
             <section
-              className="relative min-w-0 overflow-hidden rounded-[18px] border border-line bg-white shadow-soft lg:col-span-8"
+              className="relative min-w-0 overflow-hidden rounded-[18px] border border-line bg-surface shadow-soft lg:col-span-8"
               aria-label="Siaga Score"
             >
               <NusantaraBackdrop batik={false} />
@@ -178,7 +183,7 @@ export default function DashboardPage() {
                       <Tabs value={mode} onValueChange={(v) => setMode(v as typeof mode)}>
                         <TabsList>
                           <TabsTrigger value="personal">Personal</TabsTrigger>
-                          <TabsTrigger value="location">Lokasi</TabsTrigger>
+                          <TabsTrigger value="location">{t('Lokasi', 'Location')}</TabsTrigger>
                         </TabsList>
                       </Tabs>
                     </div>
@@ -205,11 +210,11 @@ export default function DashboardPage() {
                               <TrendingDown className="size-3.5" />
                             )}
                             {trend.delta > 0 ? '+' : ''}
-                            {trend.delta} sejak {formatTime(trend.since)}
+                            {trend.delta} {t('sejak', 'since')} {formatTime(trend.since)}
                           </p>
                         ) : (
                           <p className="telemetry mt-2">
-                            {mode === 'personal' ? 'Disesuaikan profil Anda' : 'Bahaya lingkungan'}
+                            {mode === 'personal' ? t('Disesuaikan profil Anda', 'Tailored to your profile') : t('Bahaya lingkungan', 'Environmental hazard')}
                           </p>
                         )}
                       </div>
@@ -218,21 +223,21 @@ export default function DashboardPage() {
                     <RiskSpectrum score={score.score} className="mt-6 max-w-xl" />
 
                     <dl className="mt-7 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-line pt-5 2xl:grid-cols-3">
-                      <Meta label="Bahaya utama">
+                      <Meta label={t('Bahaya utama', 'Main hazard')}>
                         {(() => {
                           const Icon = HAZARD_ICONS[score.primaryHazard];
                           return <Icon className="size-4 text-brand" aria-hidden />;
                         })()}
                         {HAZARDS[score.primaryHazard].label}
                       </Meta>
-                      <Meta label="Lokasi">
+                      <Meta label={t('Lokasi', 'Location')}>
                         <span className="truncate">{location.name}</span>
                       </Meta>
-                      <Meta label="Cuaca kini" className="col-span-2 2xl:col-span-1">
+                      <Meta label={t('Cuaca kini', 'Weather now')} className="col-span-2 2xl:col-span-1">
                         {w ? (
                           <>
                             <WeatherIcon code={w.weatherCode} className="size-4 text-muted" />
-                            {w.temperature != null ? `${Math.round(w.temperature)}°C` : ''} · {w.description}
+                            {w.temperature != null ? `${Math.round(w.temperature)}°C` : ''} · {describeWeather(w)}
                           </>
                         ) : (
                           '–'
@@ -243,12 +248,12 @@ export default function DashboardPage() {
                     <div className="mt-7 flex flex-col gap-2.5 sm:flex-row">
                       <Button asChild>
                         <Link to="/app/action-plan">
-                          <ClipboardCheck /> Buat Rencana Aksi
+                          <ClipboardCheck /> {t('Buat Rencana Aksi', 'Create Action Plan')}
                         </Link>
                       </Button>
                       <Button asChild variant="secondary">
                         <Link to="/app/risk">
-                          <Sparkles className="text-ai" /> Apa artinya bagi saya?
+                          <Sparkles className="text-ai" /> {t('Apa artinya bagi saya?', 'What does it mean for me?')}
                         </Link>
                       </Button>
                     </div>
@@ -257,7 +262,7 @@ export default function DashboardPage() {
                   {/* Ara reacts to the current level */}
                   <div className="hidden w-[180px] flex-col items-center justify-end md:flex">
                     <div className="relative mb-3 rounded-2xl rounded-br-md border border-line bg-raised px-4 py-3 text-[13px] font-medium leading-snug text-neutral-700">
-                      {ARA_LINES[score.level]}
+                      {araLine(score.level)}
                     </div>
                     <Ara pose={poseForLevel(score.level)} size={180} className="self-end" />
                   </div>
@@ -284,14 +289,16 @@ export default function DashboardPage() {
                     variant="ghost"
                     size="icon-sm"
                     onClick={() => brief.refetch()}
-                    aria-label="Perbarui brief"
+                    aria-label={t('Perbarui brief', 'Refresh brief')}
                   >
                     <RefreshCw className={brief.isFetching ? 'animate-spin' : ''} />
                   </Button>
                 )
               }
             >
-              <p className="telemetry -mt-1 mb-3">Dari {sources.length} sumber sinyal</p>
+              <p className="telemetry -mt-1 mb-3">
+                {t(`Dari ${sources.length} sumber sinyal`, `From ${sources.length} signal sources`)}
+              </p>
               {brief.data ? (
                 <div className="animate-fade-up">
                   <p className="text-balance text-[18px] font-bold leading-snug tracking-[-0.02em] text-ink">
@@ -306,14 +313,17 @@ export default function DashboardPage() {
                     ))}
                   </ul>
                   <div className="mt-5 rounded-xl bg-ai-soft/60 p-3.5">
-                    <p className="data-label !text-ai-deep">Langkah berikutnya</p>
+                    <p className="data-label !text-ai-deep">{t('Langkah berikutnya', 'Next step')}</p>
                     <p className="mt-1 text-[13.5px] font-semibold leading-snug text-ink">
                       {brief.data.output.nextAction}
                     </p>
                   </div>
                 </div>
               ) : brief.isError ? (
-                <ErrorState title="SiagaAI tidak dapat menyusun brief" onRetry={() => brief.refetch()} />
+                <ErrorState
+                  title={t('SiagaAI tidak dapat menyusun brief', 'SiagaAI could not compose the brief')}
+                  onRetry={() => brief.refetch()}
+                />
               ) : (
                 <AiThinking />
               )}
@@ -325,13 +335,16 @@ export default function DashboardPage() {
             <Card className="flex min-w-0 flex-col overflow-hidden lg:col-span-7">
               <CardHeader>
                 <div className="min-w-0">
-                  <CardTitle>Peta sekitar</CardTitle>
+                  <CardTitle>{t('Peta sekitar', 'Nearby map')}</CardTitle>
                   <p className="mt-1 truncate text-[12.5px] text-muted">
                     {hotspots.data
                       ? nearby && nearby.length
-                        ? `${nearby.length} titik panas ≤150 km · terdekat ${formatDistance(nearby[0].distanceKm)}`
-                        : 'Tidak ada titik panas ≤150 km (72 jam)'
-                      : 'Memuat titik panas…'}
+                        ? t(
+                            `${nearby.length} titik panas ≤150 km · terdekat ${formatDistance(nearby[0].distanceKm)}`,
+                            `${nearby.length} hotspots ≤150 km · nearest ${formatDistance(nearby[0].distanceKm)}`,
+                          )
+                        : t('Tidak ada titik panas ≤150 km (72 jam)', 'No hotspots ≤150 km (72 h)')
+                      : t('Memuat titik panas…', 'Loading hotspots…')}
                   </p>
                 </div>
                 <FreshnessBadge provenance={hotspots.data?.provenance} kind="hotspots" />
@@ -357,9 +370,9 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between gap-2 border-t border-line px-5 py-3 sm:px-6">
                 <span className="flex items-center gap-3 font-mono text-[10.5px] uppercase tracking-[0.04em] text-muted">
                   {[
-                    ['#C62A1F', '≤6j'],
-                    ['#E66B24', '≤24j'],
-                    ['#D99A22', '≤72j'],
+                    ['#C62A1F', t('≤6j', '≤6h')],
+                    ['#E66B24', t('≤24j', '≤24h')],
+                    ['#D99A22', t('≤72j', '≤72h')],
                   ].map(([c, l]) => (
                     <span key={l} className="inline-flex items-center gap-1.5">
                       <span className="size-2 rounded-full" style={{ background: c }} />
@@ -368,7 +381,7 @@ export default function DashboardPage() {
                   ))}
                 </span>
                 <TextLink to="/app/map">
-                  Buka Siaga Map <ArrowUpRight className="size-3.5" />
+                  {t('Buka Siaga Map', 'Open Siaga Map')} <ArrowUpRight className="size-3.5" />
                 </TextLink>
               </div>
             </Card>
@@ -376,10 +389,10 @@ export default function DashboardPage() {
             <Card className="min-w-0 lg:col-span-5">
               <CardHeader>
                 <div>
-                  <CardTitle>Ringkasan bahaya</CardTitle>
-                  <p className="mt-1 text-[12.5px] text-muted">Ketuk untuk melihat penjelasan</p>
+                  <CardTitle>{t('Ringkasan bahaya', 'Hazard summary')}</CardTitle>
+                  <p className="mt-1 text-[12.5px] text-muted">{t('Ketuk untuk melihat penjelasan', 'Tap to see the explanation')}</p>
                 </div>
-                <span className="telemetry">{mode === 'personal' ? 'Personal' : 'Lokasi'}</span>
+                <span className="telemetry">{mode === 'personal' ? 'Personal' : t('Lokasi', 'Location')}</span>
               </CardHeader>
               <div className="divide-y divide-line px-3 pb-3 sm:px-4">
                 {assessment
@@ -400,11 +413,14 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <div className="min-w-0">
-                <CardTitle>Kondisi 24 jam ke depan</CardTitle>
+                <CardTitle>{t('Kondisi 24 jam ke depan', 'Conditions for the next 24 hours')}</CardTitle>
                 <p className="mt-1 truncate text-[12.5px] text-muted">
                   {weather.data?.bmkg
-                    ? `Prakiraan BMKG — ${weather.data.bmkg.village}, ${weather.data.bmkg.city}`
-                    : 'Model Open-Meteo'}
+                    ? t(
+                        `Prakiraan BMKG — ${weather.data.bmkg.village}, ${weather.data.bmkg.city}`,
+                        `BMKG forecast — ${weather.data.bmkg.village}, ${weather.data.bmkg.city}`,
+                      )
+                    : t('Model Open-Meteo', 'Open-Meteo model')}
                 </p>
               </div>
               <FreshnessBadge provenance={weather.data?.provenance} />
@@ -412,8 +428,11 @@ export default function DashboardPage() {
             <CardContent>
               {weather.state === 'error' ? (
                 <ErrorState
-                  title="Cuaca sementara tidak tersedia"
-                  description="Sumber BMKG & Open-Meteo tidak merespons. Skor dihitung tanpa data cuaca."
+                  title={t('Cuaca sementara tidak tersedia', 'Weather temporarily unavailable')}
+                  description={t(
+                    'Sumber BMKG & Open-Meteo tidak merespons. Skor dihitung tanpa data cuaca.',
+                    'BMKG & Open-Meteo are not responding. Scores are calculated without weather data.',
+                  )}
                   onRetry={() => weather.refetch()}
                 />
               ) : w ? (
@@ -421,25 +440,25 @@ export default function DashboardPage() {
                   <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line lg:grid-cols-1">
                     <Metric
                       icon={<WeatherIcon code={w.weatherCode} className="size-4" />}
-                      label="Kondisi"
-                      value={w.description}
+                      label={t('Kondisi', 'Condition')}
+                      value={describeWeather(w)}
                     />
                     <Metric
                       icon={<Thermometer className="size-4" />}
-                      label="Suhu"
+                      label={t('Suhu', 'Temperature')}
                       value={w.temperature != null ? `${Math.round(w.temperature)}°C` : '–'}
                     />
                     <Metric
                       icon={<Droplets className="size-4" />}
-                      label="Kelembapan"
+                      label={t('Kelembapan', 'Humidity')}
                       value={w.humidity != null ? `${Math.round(w.humidity)}%` : '–'}
                     />
                     <Metric
                       icon={<Wind className="size-4" />}
-                      label="Angin"
+                      label={t('Angin', 'Wind')}
                       value={
                         w.windSpeed != null
-                          ? `${Math.round(w.windSpeed)} km/j${w.windDirection != null ? ` ${compass(w.windDirection)}` : ''}`
+                          ? `${Math.round(w.windSpeed)} ${t('km/j', 'km/h')}${w.windDirection != null ? ` ${compass(w.windDirection)}` : ''}`
                           : '–'
                       }
                     />
@@ -447,8 +466,8 @@ export default function DashboardPage() {
                   <div className="min-w-0">
                     <HourlyWeatherCharts hourly={weather.data!.hourly} />
                     {windows && windows.length > 0 && (
-                      <p className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-risk-safe/20 bg-[#EEF7F2] px-3.5 py-2.5 text-[13px] text-[#17654A]">
-                        <span className="font-semibold">Waktu luar ruang lebih aman:</span>
+                      <p className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-risk-safe/20 bg-[var(--risk-safe-soft)] px-3.5 py-2.5 text-[13px] text-[var(--risk-safe-text)]">
+                        <span className="font-semibold">{t('Waktu luar ruang lebih aman:', 'Safer outdoor times:')}</span>
                         <span className="font-mono text-[12px]">
                           {windows.map(describeWindow).join(' · ')} WIB
                         </span>
@@ -467,11 +486,11 @@ export default function DashboardPage() {
             <Card className="min-w-0 lg:col-span-7">
               <CardHeader>
                 <div>
-                  <CardTitle>Peringatan resmi</CardTitle>
-                  <p className="mt-1 text-[12.5px] text-muted">BMKG · diperbarui otomatis</p>
+                  <CardTitle>{t('Peringatan resmi', 'Official warnings')}</CardTitle>
+                  <p className="mt-1 text-[12.5px] text-muted">{t('BMKG · diperbarui otomatis', 'BMKG · updated automatically')}</p>
                 </div>
                 <TextLink to="/app/alerts">
-                  Semua <ArrowRight className="size-3.5" />
+                  {t('Semua', 'All')} <ArrowRight className="size-3.5" />
                 </TextLink>
               </CardHeader>
               <CardContent className="pt-0">
@@ -503,8 +522,13 @@ export default function DashboardPage() {
                     ))}
                   </ul>
                 ) : (
-                  <AraSays pose="rest" size={80} tone="calm" title="Tidak ada peringatan resmi">
-                    Belum ada yang perlu dikhawatirkan saat ini.
+                  <AraSays
+                    pose="rest"
+                    size={80}
+                    tone="calm"
+                    title={t('Tidak ada peringatan resmi', 'No official warnings')}
+                  >
+                    {t('Belum ada yang perlu dikhawatirkan saat ini.', 'Nothing to worry about right now.')}
                   </AraSays>
                 )}
               </CardContent>
@@ -514,8 +538,8 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <div>
-                    <CardTitle>Kualitas udara</CardTitle>
-                    <p className="mt-1 text-[12.5px] text-muted">Model CAMS · indikatif</p>
+                    <CardTitle>{t('Kualitas udara', 'Air quality')}</CardTitle>
+                    <p className="mt-1 text-[12.5px] text-muted">{t('Model CAMS · indikatif', 'CAMS model · indicative')}</p>
                   </div>
                   <FreshnessBadge provenance={airQuality.data?.provenance} />
                 </CardHeader>
@@ -536,42 +560,42 @@ export default function DashboardPage() {
                       )}
                       <p className="ml-auto max-w-[44%] text-right text-[12.5px] leading-snug text-muted">
                         {airQuality.data.pm25 <= 15
-                          ? 'Baik untuk aktivitas luar.'
+                          ? t('Baik untuk aktivitas luar.', 'Good for outdoor activities.')
                           : airQuality.data.pm25 <= 35
-                            ? 'Sedang — kelompok sensitif hati-hati.'
-                            : 'Tidak sehat — pakai masker.'}
+                            ? t('Sedang — kelompok sensitif hati-hati.', 'Moderate — sensitive groups take care.')
+                            : t('Tidak sehat — pakai masker.', 'Unhealthy — wear a mask.')}
                       </p>
                     </div>
                   ) : airQuality.state === 'loading' ? (
                     <Skeleton className="h-14" />
                   ) : (
-                    <p className="text-[13px] text-muted">Data kualitas udara tidak tersedia.</p>
+                    <p className="text-[13px] text-muted">{t('Data kualitas udara tidak tersedia.', 'Air-quality data unavailable.')}</p>
                   )}
                 </CardContent>
               </Card>
 
               <Card className="overflow-hidden">
                 <CardHeader className="pb-1">
-                  <CardTitle>Lanjutkan persiapan</CardTitle>
+                  <CardTitle>{t('Lanjutkan persiapan', 'Continue preparing')}</CardTitle>
                 </CardHeader>
                 <nav className="divide-y divide-line px-2 pb-2">
                   <NextStep
                     to="/app/action-plan"
                     icon={<ClipboardCheck />}
-                    title="Rencana Aksi"
-                    text="Langkah sekarang & nanti"
+                    title={t('Rencana Aksi', 'Action Plan')}
+                    text={t('Langkah sekarang & nanti', 'Steps for now & later')}
                   />
                   <NextStep
                     to="/app/family"
                     icon={<Users />}
-                    title="Keluarga Siaga"
-                    text="Prioritas anak & lansia"
+                    title={t('Keluarga Siaga', 'Family Siaga')}
+                    text={t('Prioritas anak & lansia', 'Prioritise children & older adults')}
                   />
                   <NextStep
                     to="/app/community"
                     icon={<Megaphone />}
-                    title="Laporan Warga"
-                    text="Kondisi dari lapangan"
+                    title={t('Laporan Warga', 'Community Reports')}
+                    text={t('Kondisi dari lapangan', 'Conditions on the ground')}
                   />
                 </nav>
               </Card>
@@ -581,7 +605,9 @@ export default function DashboardPage() {
           {/* Explore & data */}
           <div className="grid gap-5 lg:grid-cols-12 lg:gap-6">
             <section className="min-w-0 lg:col-span-7">
-              <SectionTitle eyebrow="Eksplorasi">Coba wilayah atau simulasi lain</SectionTitle>
+              <SectionTitle eyebrow={t('Eksplorasi', 'Explore')}>
+                {t('Coba wilayah atau simulasi lain', 'Try another region or simulation')}
+              </SectionTitle>
               <div className="snap-row -mx-4 flex gap-2 overflow-x-auto px-4 pb-2 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">
                 {EXPLORE_PRESETS.map((p) => {
                   const c = CITY_BY_SLUG[p.slug];
@@ -621,21 +647,21 @@ export default function DashboardPage() {
             <Card className="min-w-0 lg:col-span-5">
               <CardHeader className="pb-1">
                 <div>
-                  <CardTitle>Kesegaran data</CardTitle>
+                  <CardTitle>{t('Kesegaran data', 'Data freshness')}</CardTitle>
                   <p className="telemetry mt-1">
-                    Mode:{' '}
+                    {t('Mode', 'Mode')}:{' '}
                     <span className="text-ink">
                       {dataMode === 'live'
                         ? 'Live'
                         : dataMode === 'snapshot'
                           ? 'Snapshot'
                           : dataMode === 'scenario'
-                            ? 'Simulasi'
+                            ? t('Simulasi', 'Simulation')
                             : 'Offline'}
                     </span>
                   </p>
                 </div>
-                <TextLink to="/app/about">Metodologi</TextLink>
+                <TextLink to="/app/about">{t('Metodologi', 'Methodology')}</TextLink>
               </CardHeader>
               <CardContent>
                 <SourcesPanel sources={sources} />
@@ -643,7 +669,7 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          <Disclaimer className="rounded-card border border-line bg-white px-5 py-4" />
+          <Disclaimer className="rounded-card border border-line bg-surface px-5 py-4" />
         </div>
       )}
 
@@ -655,7 +681,7 @@ export default function DashboardPage() {
 function ScoreNumber({ value }: { value: number }) {
   const v = useCountUp(value);
   return (
-    <p className="display-metric text-[88px] text-ink sm:text-[104px]" aria-label={`Skor ${value} dari 100`}>
+    <p className="display-metric text-[88px] text-ink sm:text-[104px]" aria-label={t(`Skor ${value} dari 100`, `Score ${value} out of 100`)}>
       {v}
       <span className="ml-1.5 font-mono text-[15px] font-medium tracking-normal text-subtle">/100</span>
     </p>
@@ -675,7 +701,7 @@ function Meta({ label, children, className }: { label: string; children: ReactNo
 
 function Metric({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="bg-white px-4 py-3.5">
+    <div className="bg-surface px-4 py-3.5">
       <dt className="flex items-center gap-1.5 text-[12px] font-medium text-muted [&_svg]:text-subtle">
         {icon}
         {label}

@@ -5,6 +5,9 @@
 @import '@fontsource/ibm-plex-mono/600.css';
 @import 'maplibre-gl/dist/maplibre-gl.css';
 
+/* Class-based dark mode: <html class="dark"> (set by PreferencesSync + the no-flash script in index.html). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ─────────────────────────────────────────────────────────────────────────────
    SiagaAI Design System — "Indonesian Civic Intelligence"
    Calm on the surface, intelligent underneath.
@@ -35,6 +38,13 @@
   --color-subtle: #989898;
   --color-line: #e6e5e1;
   --color-line-strong: #d4d2cc;
+
+  /* Inverse surface (dark chips/buttons in light mode, light ones in dark mode) */
+  --color-inverse: #171717;
+  --color-inverse-hover: #292929;
+  --color-on-inverse: #ffffff;
+  /* Always-dark "night" surface (tech section, hero sides) */
+  --color-night: #171717;
 
   /* Warm neutral scale — overrides Tailwind's cool greys app-wide */
   --color-neutral-50: #fafaf8;
@@ -165,6 +175,107 @@
   }
 }
 
+/* Risk-level tints used in inline styles (RISK_LEVELS.soft / .text). */
+:root {
+  --risk-safe-soft: #eef7f2;
+  --risk-safe-text: #17654a;
+  --risk-low-soft: #eef4fb;
+  --risk-low-text: #22579a;
+  --risk-moderate-soft: #fdf6e8;
+  --risk-moderate-text: #8a5a0b;
+  --risk-high-soft: #fdf0e8;
+  --risk-high-text: #a4461a;
+  --risk-critical-soft: #fbeded;
+  --risk-critical-text: #7a1418;
+  --chip-neutral-bg: #f3f2ef;
+  --chip-neutral-text: #5f5e59;
+  --chip-neutral-ring: #e6e5e1;
+  --glass-bg: rgb(255 255 255 / 0.78);
+  --glass-border: rgb(255 255 255 / 0.65);
+  --dot-color: rgb(23 23 23 / 0.09);
+  color-scheme: light;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Dark mode — "Siaga Night"
+   Deep warm charcoal, crisp off-white text (≥ 12:1), brighter brand red and
+   indigo so accents stay vivid, and risk colours lifted for contrast.
+   ───────────────────────────────────────────────────────────────────────── */
+html.dark {
+  color-scheme: dark;
+
+  --color-brand: #f0353d;
+  --color-brand-dark: #ff6168;
+  --color-brand-deep: #ffb4b7;
+  --color-brand-soft: #3a1517;
+  --color-brand-pale: #24110f;
+
+  --color-canvas: #0e0e0d;
+  --color-surface: #171716;
+  --color-raised: #1d1d1b;
+  --color-sidebar: #121211;
+  --color-ink: #f4f3ef;
+  --color-graphite: #e4e2dc;
+  --color-muted: #a9a79f;
+  --color-subtle: #7d7b74;
+  --color-line: #2b2a27;
+  --color-line-strong: #3b3a36;
+
+  --color-inverse: #f4f3ef;
+  --color-inverse-hover: #dedcd5;
+  --color-on-inverse: #111110;
+  --color-night: #080808;
+
+  --color-neutral-50: #1b1b19;
+  --color-neutral-100: #232321;
+  --color-neutral-200: #2d2c29;
+  --color-neutral-300: #3c3b37;
+  --color-neutral-400: #5c5a55;
+  --color-neutral-500: #8a8881;
+  --color-neutral-600: #aeaca5;
+  --color-neutral-700: #cfcdc6;
+  --color-neutral-800: #e4e2dc;
+  --color-neutral-900: #f0efea;
+  --color-neutral-950: #f8f7f3;
+
+  --color-ai: #8b90ff;
+  --color-ai-deep: #b7baff;
+  --color-ai-soft: #1d1e3d;
+
+  --color-risk-safe: #2fb37c;
+  --color-risk-low: #4d95e6;
+  --color-risk-moderate: #eab03d;
+  --color-risk-high: #f47f3a;
+  --color-risk-critical: #e8464c;
+
+  --color-hz-smoke: #a19fae;
+  --color-hz-flood: #5aa2e0;
+  --color-hz-fire: #f06a47;
+  --color-hz-weather: #9d91e6;
+
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-lift: 0 10px 34px rgb(0 0 0 / 0.55);
+  --shadow-float: 0 24px 80px rgb(0 0 0 / 0.65);
+  --shadow-map: 0 8px 28px rgb(0 0 0 / 0.5);
+
+  --risk-safe-soft: #10291f;
+  --risk-safe-text: #6ee0ae;
+  --risk-low-soft: #0f2136;
+  --risk-low-text: #8cc0f6;
+  --risk-moderate-soft: #2d220b;
+  --risk-moderate-text: #f5cd77;
+  --risk-high-soft: #301a0d;
+  --risk-high-text: #ffac78;
+  --risk-critical-soft: #331113;
+  --risk-critical-text: #ff8f93;
+  --chip-neutral-bg: #232321;
+  --chip-neutral-text: #c4c2bb;
+  --chip-neutral-ring: #34332f;
+  --glass-bg: rgb(23 23 22 / 0.8);
+  --glass-border: rgb(255 255 255 / 0.08);
+  --dot-color: rgb(255 255 255 / 0.07);
+}
+
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
@@ -238,10 +349,10 @@
     box-shadow: var(--shadow-soft);
   }
   .glass {
-    background: rgb(255 255 255 / 0.78);
+    background: var(--glass-bg);
     backdrop-filter: blur(18px) saturate(140%);
     -webkit-backdrop-filter: blur(18px) saturate(140%);
-    border: 1px solid rgb(255 255 255 / 0.65);
+    border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-map);
   }
   .hover-lift {
@@ -268,13 +379,22 @@
   }
   /* Fine dot grid — map/command-center texture */
   .bg-dots {
-    background-image: radial-gradient(rgb(23 23 23 / 0.09) 1px, transparent 1px);
+    background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
     background-size: 18px 18px;
   }
   .skeleton {
     background: linear-gradient(90deg, #f1f0ec 0px, #e8e7e2 80px, #f1f0ec 160px);
     background-size: 800px 100%;
     animation: var(--animate-shimmer);
+  }
+  .dark .skeleton {
+    background: linear-gradient(90deg, #1e1e1c 0px, #2a2a27 80px, #1e1e1c 160px);
+    background-size: 800px 100%;
+  }
+  /* Patterns are drawn in ink; in dark mode flip them to light strokes. */
+  .dark .bg-batik,
+  .dark .bg-topo {
+    filter: invert(1);
   }
   .scrollbar-none {
     scrollbar-width: none;
@@ -306,6 +426,15 @@
   }
 }
 
+/* Smooth theme switch (colour-only, no layout). Disabled during the very first paint. */
+html.theme-ready body,
+html.theme-ready .panel {
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease;
+}
+
 /* MapLibre polish */
 .maplibregl-popup-content {
   border-radius: 14px !important;
@@ -313,12 +442,21 @@
   box-shadow: var(--shadow-lift) !important;
   border: 1px solid var(--color-line);
   font-family: var(--font-sans);
+  background: var(--color-surface) !important;
+  color: var(--color-ink);
+}
+.dark .maplibregl-popup-tip {
+  border-top-color: var(--color-surface) !important;
+  border-bottom-color: var(--color-surface) !important;
+}
+.dark .maplibregl-popup-close-button {
+  color: var(--color-muted);
 }
 .maplibregl-ctrl-group {
   border-radius: 12px !important;
   box-shadow: var(--shadow-map) !important;
-  border: 1px solid rgb(255 255 255 / 0.65) !important;
-  background: rgb(255 255 255 / 0.85) !important;
+  border: 1px solid var(--glass-border) !important;
+  background: var(--glass-bg) !important;
   backdrop-filter: blur(18px) saturate(140%);
   overflow: hidden;
 }
@@ -326,9 +464,25 @@
   width: 38px !important;
   height: 38px !important;
 }
+.dark .maplibregl-ctrl-group button + button {
+  border-top-color: var(--color-line) !important;
+}
+.dark .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  filter: invert(1);
+}
 .maplibregl-ctrl-attrib {
   font-size: 10px;
   border-radius: 8px 0 0 0;
+}
+.dark .maplibregl-ctrl-attrib {
+  background: rgb(23 23 22 / 0.75) !important;
+  color: var(--color-muted);
+}
+.dark .maplibregl-ctrl-attrib a {
+  color: var(--color-muted);
+}
+.dark .maplibregl-ctrl-attrib-button {
+  filter: invert(1);
 }
 
 @media (prefers-reduced-motion: reduce) {

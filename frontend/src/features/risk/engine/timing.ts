@@ -5,6 +5,7 @@
  */
 import { formatHour } from '@/lib/format';
 import { piecewise } from '@/lib/utils';
+import { t } from '@/lib/i18n';
 import type { AirQuality, HourlyWeather } from '@/types/domain';
 import type { HourlyOutdoorPoint, OutdoorWindow } from './types';
 
@@ -90,14 +91,14 @@ export function findOutdoorWindows(points: HourlyOutdoorPoint[], maxWindows = 2)
     const worst = slice.reduce((a, b) => (b.index > a.index ? b : a));
     const reason =
       mean < 20
-        ? 'Kondisi relatif tenang'
+        ? t('Kondisi relatif tenang', 'Relatively calm conditions')
         : worst.storm
-          ? 'Hindari: potensi petir'
+          ? t('Hindari: potensi petir', 'Avoid: possible lightning')
           : worst.rain >= worst.heat && worst.rain >= worst.air
-            ? 'Kemungkinan hujan'
+            ? t('Kemungkinan hujan', 'Chance of rain')
             : worst.heat >= worst.air
-              ? 'Cuaca panas'
-              : 'Kualitas udara menurun';
+              ? t('Cuaca panas', 'Hot weather')
+              : t('Kualitas udara menurun', 'Declining air quality');
     const end = new Date(new Date(slice[slice.length - 1].time).getTime() + 3_600_000).toISOString();
     candidates.push({ start: slice[0].time, end, index: Math.round(mean), reason });
   }

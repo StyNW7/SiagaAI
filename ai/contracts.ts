@@ -30,7 +30,11 @@ export interface AiHazardContext {
   topFactors: { label: string; value: string }[];
 }
 
+export type AiLanguage = "id" | "en";
+
 export interface AiContext {
+  /** Output language chosen by the user (default "id"). All text values must be written in it. */
+  language?: AiLanguage;
   location: { name: string; region?: string; lat: number; lon: number };
   dataMode: "live" | "snapshot" | "scenario" | "cached";
   scenarioName?: string;

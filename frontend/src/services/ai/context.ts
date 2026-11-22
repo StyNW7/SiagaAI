@@ -11,13 +11,22 @@ import type { HazardType, OutdoorWindow, RiskAssessment } from '@/features/risk/
 import { compass } from '@/lib/format';
 import { haversineKm } from '@/lib/geo';
 import type { DataMode, Earthquake, PersonalProfile, UserLocation, WeatherBundle } from '@/types/domain';
+import { getLang } from '@/lib/i18n';
+import { describeWeather } from '@/lib/weather-codes';
 
-const AGE: Record<string, string> = {
+const AGE_ID: Record<string, string> = {
   infant: 'balita',
   child: 'anak',
   teen: 'remaja',
   adult: 'dewasa',
   elderly: 'lansia',
+};
+const AGE_EN: Record<string, string> = {
+  infant: 'toddler',
+  child: 'child',
+  teen: 'teen',
+  adult: 'adult',
+  elderly: 'older adult',
 };
 
 export function profileTags(p: PersonalProfile, hasFamily = false): ActionTag[] {
@@ -85,7 +94,11 @@ export function buildAiContext(i: ContextInput): AiContext {
   const s = a.signals;
   const quakeDistance = i.earthquake ? haversineKm(i.location, i.earthquake) : null;
 
+  const lang = getLang();
+  const AGE = lang === 'en' ? AGE_EN : AGE_ID;
+
   return {
+    language: lang,
     location: {
       name: i.location.name,
       region: i.location.region,
@@ -108,7 +121,7 @@ export function buildAiContext(i: ContextInput): AiContext {
     weather:
       i.weather && s.weather
         ? {
-            description: i.weather.current.description,
+            description: describeWeather(i.weather.current),
             temperature: s.weather.temperature,
             humidity: s.weather.humidity,
             windSpeed: s.weather.windSpeed,
@@ -149,7 +162,7 @@ export function buildAiContext(i: ContextInput): AiContext {
     family: i.family?.map((f) => ({
       name: f.member.name,
       relation: f.member.relation,
-      ageGroup: AGE[f.member.ageGroup] ?? 'dewasa',
+      ageGroup: AGE[f.member.ageGroup] ?? AGE.adult,
       level: f.level,
       priority: f.priority,
     })),

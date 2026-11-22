@@ -9,6 +9,7 @@ import {
 } from '@/services/supabase/repository';
 import { isSupabaseEnabled } from '@/services/supabase/client';
 import { useAuthStore, useFamilyStore, useLocationStore, usePlanStore, useProfileStore } from '@/stores';
+import { t } from '@/lib/i18n';
 
 /**
  * Mirrors local stores to Supabase for signed-in Supabase users.
@@ -27,9 +28,9 @@ export function SyncManager() {
         if (d.family.length) useFamilyStore.getState().setMembers(d.family);
         if (d.locations.length) useLocationStore.getState().setSaved(d.locations);
         if (d.plans.length) usePlanStore.getState().setPlans(d.plans);
-        toast.success('Data akun tersinkron dari cloud');
+        toast.success(t('Data akun tersinkron dari cloud', 'Account data synced from the cloud'));
       })
-      .catch(() => toast.error('Sinkronisasi cloud gagal — data tetap tersimpan di perangkat'));
+      .catch(() => toast.error(t('Sinkronisasi cloud gagal — data tetap tersimpan di perangkat', 'Cloud sync failed — your data is still saved on this device')));
   }, [user]);
 
   useEffect(() => {

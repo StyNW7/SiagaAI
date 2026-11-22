@@ -7,6 +7,7 @@
  * wet-season extreme rainfall, but the numbers are synthetic.
  */
 import { describeWmo } from '@/lib/weather-codes';
+import { t } from '@/lib/i18n';
 import type {
   AirQuality,
   Hotspot,
@@ -45,15 +46,29 @@ const city = (slug: string): UserLocation => {
 export const SCENARIOS: Record<ScenarioId, ScenarioMeta> = {
   'karhutla-kalteng': {
     id: 'karhutla-kalteng',
-    title: 'Puncak Karhutla & Kabut Asap',
-    subtitle: 'Palangka Raya, Kalimantan Tengah — simulasi musim kemarau',
+    get title() {
+      return t('Puncak Karhutla & Kabut Asap', 'Peak Wildfire & Haze');
+    },
+    get subtitle() {
+      return t(
+        'Palangka Raya, Kalimantan Tengah — simulasi musim kemarau',
+        'Palangka Raya, Central Kalimantan — dry-season simulation',
+      );
+    },
     emoji: '🔥',
     location: city('palangka-raya'),
   },
   'banjir-jakarta': {
     id: 'banjir-jakarta',
-    title: 'Hujan Ekstrem & Banjir',
-    subtitle: 'Jakarta Utara, DKI Jakarta — simulasi puncak musim hujan',
+    get title() {
+      return t('Hujan Ekstrem & Banjir', 'Extreme Rain & Flooding');
+    },
+    get subtitle() {
+      return t(
+        'Jakarta Utara, DKI Jakarta — simulasi puncak musim hujan',
+        'North Jakarta, DKI Jakarta — peak rainy-season simulation',
+      );
+    },
     emoji: '🌊',
     location: city('jakarta-utara'),
   },
@@ -82,7 +97,7 @@ interface ScenarioData {
 }
 
 const provenance = (source: string) => ({
-  source: `SIMULASI — ${source}`,
+  source: `${t('SIMULASI', 'SIMULATION')} — ${source}`,
   fetchedAt: new Date().toISOString(),
   mode: 'scenario' as const,
 });
@@ -91,11 +106,11 @@ function karhutla(now: number): ScenarioData {
   const rand = prng(2019);
   const t0 = hourStart(now);
   const hourly = Array.from({ length: 74 }, (_, i) => {
-    const t = t0 + (i - 2) * 3_600_000;
-    const h = wibHour(t);
+    const ts = t0 + (i - 2) * 3_600_000;
+    const h = wibHour(ts);
     const day = h >= 9 && h <= 17;
     return {
-      time: new Date(t).toISOString(),
+      time: new Date(ts).toISOString(),
       temperature: day ? 33 + rand() * 2.5 : 26 + rand() * 2,
       humidity: day ? 38 + rand() * 8 : 62 + rand() * 10,
       precipitation: 0,
@@ -141,7 +156,7 @@ function karhutla(now: number): ScenarioData {
         windDirection: 135,
         windGust: 34,
         weatherCode: 45,
-        description: 'Udara kabur / asap',
+        description: t('Udara kabur / asap', 'Haze / smoke'),
         visibility: 1200,
         cloudCover: 20,
         apparentTemperature: 37,
@@ -156,7 +171,7 @@ function karhutla(now: number): ScenarioData {
         weatherCode: 45,
       })),
       next24h: summarizeNext24h(hourly, now),
-      provenance: provenance('Cuaca kemarau ekstrem'),
+      provenance: provenance(t('Cuaca kemarau ekstrem', 'Extreme dry-season weather')),
     },
     airQuality: {
       pm25: 168,
@@ -169,19 +184,19 @@ function karhutla(now: number): ScenarioData {
             ? 85 + rand() * 25
             : 150 + rand() * 60,
       })),
-      provenance: provenance('PM2.5 kabut asap'),
+      provenance: provenance(t('PM2.5 kabut asap', 'Haze PM2.5')),
     },
     hotspots: {
       hotspots,
       latestDetection: new Date(now - 1.2 * 3_600_000).toISOString(),
-      provenance: provenance('Titik panas pola gambut'),
+      provenance: provenance(t('Titik panas pola gambut', 'Peatland hotspot pattern')),
     },
     river: {
       forecastMax: 120,
       baseline: 210,
       ratio: 0.57,
       series: [],
-      provenance: provenance('Debit sungai surut'),
+      provenance: provenance(t('Debit sungai surut', 'Receding river discharge')),
     },
     warnings: [],
   };
@@ -191,12 +206,12 @@ function banjir(now: number): ScenarioData {
   const rand = prng(2020);
   const t0 = hourStart(now);
   const hourly = Array.from({ length: 74 }, (_, i) => {
-    const t = t0 + (i - 2) * 3_600_000;
-    const h = wibHour(t);
+    const ts = t0 + (i - 2) * 3_600_000;
+    const h = wibHour(ts);
     const storm = (i >= 3 && i <= 8) || (i >= 26 && i <= 29);
     const precipitation = storm ? 14 + rand() * 20 : h >= 0 && h <= 6 ? 1 + rand() * 3 : rand() * 1.5;
     return {
-      time: new Date(t).toISOString(),
+      time: new Date(ts).toISOString(),
       temperature: storm ? 25 + rand() : 27 + rand() * 3,
       humidity: storm ? 95 : 85 + rand() * 8,
       precipitation: Math.round(precipitation * 10) / 10,
@@ -243,29 +258,34 @@ function banjir(now: number): ScenarioData {
         weatherCode: 95,
       })),
       next24h: summarizeNext24h(hourly, now),
-      provenance: provenance('Hujan ekstrem'),
+      provenance: provenance(t('Hujan ekstrem', 'Extreme rain')),
     },
     airQuality: {
       pm25: 14,
       pm10: 22,
       usAqi: 55,
       hourly: hourly.map((h) => ({ time: h.time, pm25: 10 + rand() * 8 })),
-      provenance: provenance('Kualitas udara'),
+      provenance: provenance(t('Kualitas udara', 'Air quality')),
     },
-    hotspots: { hotspots: [], latestDetection: null, provenance: provenance('Tidak ada titik panas') },
+    hotspots: { hotspots: [], latestDetection: null, provenance: provenance(t('Tidak ada titik panas', 'No hotspots')) },
     river: {
       forecastMax: 190,
       baseline: 66,
       ratio: 2.9,
       series,
-      provenance: provenance('Debit sungai meningkat'),
+      provenance: provenance(t('Debit sungai meningkat', 'Rising river discharge')),
     },
     warnings: [
       {
         id: 'SIM-JKT-1',
-        title: 'SIMULASI — Hujan Lebat disertai Petir di DKI Jakarta',
-        description:
+        title: t(
+          'SIMULASI — Hujan Lebat disertai Petir di DKI Jakarta',
+          'SIMULATION — Heavy Rain with Thunderstorms in DKI Jakarta',
+        ),
+        description: t(
           'SIMULASI DEMONSTRASI (bukan peringatan resmi). Hujan lebat disertai petir dan angin kencang berpotensi terjadi di Jakarta Utara, Jakarta Pusat, dan Jakarta Barat. Berpotensi menimbulkan genangan dan banjir lokal.',
+          'DEMONSTRATION SIMULATION (not an official warning). Heavy rain with thunderstorms and strong winds may occur in North, Central and West Jakarta, potentially causing waterlogging and local flooding.',
+        ),
         province: 'DKI Jakarta',
         areas: ['Jakarta Utara', 'Jakarta Pusat', 'Jakarta Barat'],
         link: 'https://www.bmkg.go.id/alerts/nowcast/id',

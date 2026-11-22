@@ -9,6 +9,7 @@ import { haversineKm, isInIndonesiaBBox } from '@/lib/geo';
 import type { GeoPoint } from '@/types/domain';
 import { fetchJson } from '../http';
 import { provinceAt } from './provinces';
+import { t } from '@/lib/i18n';
 
 export interface PlaceResult extends GeoPoint {
   id: string;
@@ -136,7 +137,7 @@ export async function reverseGeocode(point: GeoPoint, signal?: AbortSignal): Pro
 
   const { c, d } = nearestCity(point);
   return {
-    name: d < 40 ? c.name : isInIndonesiaBBox(point) ? `Sekitar ${c.name}` : 'Lokasi Anda',
+    name: d < 40 ? c.name : isInIndonesiaBBox(point) ? t(`Sekitar ${c.name}`, `Near ${c.name}`) : t('Lokasi Anda', 'Your location'),
     region: region || c.province,
     provinceCode: province?.code ?? c.provinceCode,
   };

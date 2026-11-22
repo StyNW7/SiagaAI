@@ -21,9 +21,12 @@ import type { HourlyOutdoorPoint } from '@/features/risk/engine/types';
 import { formatDate, formatHour, formatWeekday } from '@/lib/format';
 import { RISK_LEVELS, levelFromScore } from '@/lib/risk-levels';
 import type { HourlyWeather } from '@/types/domain';
+import { t } from '@/lib/i18n';
 
-const AXIS = { fontSize: 11, fill: '#6B7280' };
-const GRID = '#EEF0F3';
+// Theme-aware: CSS variables resolve to the light or dark palette automatically.
+const AXIS = { fontSize: 11, fill: 'var(--color-muted)' };
+const GRID = 'var(--color-line)';
+const CURSOR = 'var(--color-ink)';
 
 function TipBox({
   title,
@@ -33,7 +36,7 @@ function TipBox({
   rows: { label: string; value: string; color?: string }[];
 }) {
   return (
-    <div className="rounded-xl border border-line bg-white px-3 py-2 text-[12px] shadow-float">
+    <div className="rounded-xl border border-line bg-surface px-3 py-2 text-[12px] shadow-float">
       <div className="mb-1 font-semibold text-ink">{title}</div>
       {rows.map((r) => (
         <div key={r.label} className="flex items-center gap-2 text-neutral-700">
@@ -68,17 +71,17 @@ export function HourlyWeatherCharts({ hourly, height = 92 }: { hourly: HourlyWea
       <TipBox
         title={`${payload[0].payload.label} WIB`}
         rows={[
-          { label: 'Suhu', value: `${Math.round(Number(payload[0].payload.temp))}°C`, color: '#E66B24' },
-          { label: 'Hujan', value: `${Number(payload[0].payload.rain).toFixed(1)} mm`, color: '#3478C6' },
-          { label: 'Peluang', value: `${payload[0].payload.prob}%` },
+          { label: t('Suhu', 'Temp.'), value: `${Math.round(Number(payload[0].payload.temp))}°C`, color: '#E66B24' },
+          { label: t('Hujan', 'Rain'), value: `${Number(payload[0].payload.rain).toFixed(1)} mm`, color: '#3478C6' },
+          { label: t('Peluang', 'Chance'), value: `${payload[0].payload.prob}%` },
         ]}
       />
     ) : null;
 
   return (
-    <div className="space-y-1" role="img" aria-label="Grafik suhu dan curah hujan 24 jam ke depan">
+    <div className="space-y-1" role="img" aria-label={t('Grafik suhu dan curah hujan 24 jam ke depan', 'Temperature and rainfall chart for the next 24 hours')}>
       <div className="flex items-baseline justify-between text-[11px] font-semibold text-muted">
-        <span>Suhu (°C)</span>
+        <span>{t('Suhu (°C)', 'Temperature (°C)')}</span>
       </div>
       <ResponsiveContainer width="100%" height={height}>
         <AreaChart data={data} margin={{ top: 6, right: 6, left: -22, bottom: 0 }} syncId="wx">
@@ -98,7 +101,7 @@ export function HourlyWeatherCharts({ hourly, height = 92 }: { hourly: HourlyWea
             tickCount={3}
             allowDecimals={false}
           />
-          <Tooltip content={tip} cursor={{ stroke: '#171717', strokeOpacity: 0.15 }} />
+          <Tooltip content={tip} cursor={{ stroke: CURSOR, strokeOpacity: 0.15 }} />
           <Area
             type="monotone"
             dataKey="temp"
@@ -106,12 +109,12 @@ export function HourlyWeatherCharts({ hourly, height = 92 }: { hourly: HourlyWea
             strokeWidth={2}
             fill="url(#tempFill)"
             dot={false}
-            activeDot={{ r: 4, stroke: '#fff', strokeWidth: 2 }}
+            activeDot={{ r: 4, stroke: 'var(--color-surface)', strokeWidth: 2 }}
           />
         </AreaChart>
       </ResponsiveContainer>
       <div className="flex items-baseline justify-between pt-1 text-[11px] font-semibold text-muted">
-        <span>Curah hujan (mm/jam)</span>
+        <span>{t('Curah hujan (mm/jam)', 'Rainfall (mm/h)')}</span>
       </div>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart
@@ -137,7 +140,7 @@ export function HourlyWeatherCharts({ hourly, height = 92 }: { hourly: HourlyWea
             tickCount={3}
             domain={[0, (max: number) => Math.max(2, Math.ceil(max))]}
           />
-          <Tooltip content={tip} cursor={{ fill: '#171717', fillOpacity: 0.04 }} />
+          <Tooltip content={tip} cursor={{ fill: CURSOR, fillOpacity: 0.06 }} />
           <Bar dataKey="rain" fill="#3478C6" radius={[4, 4, 0, 0]} maxBarSize={14} />
         </BarChart>
       </ResponsiveContainer>
@@ -158,7 +161,7 @@ export function OutdoorIndexChart({
     color: RISK_LEVELS[levelFromScore(p.index)].color,
   }));
   return (
-    <div role="img" aria-label="Indeks risiko aktivitas luar ruang per jam">
+    <div role="img" aria-label={t('Indeks risiko aktivitas luar ruang per jam', 'Hourly outdoor activity risk index')}>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data} margin={{ top: 6, right: 4, left: -24, bottom: 0 }} barCategoryGap={2}>
           <CartesianGrid vertical={false} stroke={GRID} />
@@ -166,16 +169,16 @@ export function OutdoorIndexChart({
           <YAxis tick={AXIS} axisLine={false} tickLine={false} domain={[0, 100]} ticks={[0, 50, 100]} />
           <ReferenceLine y={40} stroke="#D99A22" strokeDasharray="3 3" strokeOpacity={0.6} />
           <Tooltip
-            cursor={{ fill: '#171717', fillOpacity: 0.04 }}
+            cursor={{ fill: CURSOR, fillOpacity: 0.06 }}
             content={({ active, payload }: Tp) =>
               active && payload?.length ? (
                 <TipBox
-                  title={`${payload[0].payload.label} WIB · indeks ${payload[0].payload.index}`}
+                  title={`${payload[0].payload.label} WIB · ${t('indeks', 'index')} ${payload[0].payload.index}`}
                   rows={[
-                    { label: 'Hujan', value: String(payload[0].payload.rain) },
-                    { label: 'Petir', value: String(payload[0].payload.storm) },
-                    { label: 'Panas', value: String(payload[0].payload.heat) },
-                    { label: 'Udara', value: String(payload[0].payload.air) },
+                    { label: t('Hujan', 'Rain'), value: String(payload[0].payload.rain) },
+                    { label: t('Petir', 'Lightning'), value: String(payload[0].payload.storm) },
+                    { label: t('Panas', 'Heat'), value: String(payload[0].payload.heat) },
+                    { label: t('Udara', 'Air'), value: String(payload[0].payload.air) },
                   ]}
                 />
               ) : null
@@ -212,7 +215,7 @@ export function DailyCountChart({
   daily,
   height = 110,
   color = '#E66B24',
-  unit = 'titik',
+  unit = t('titik', 'points'),
 }: {
   daily: { date: string; count: number }[];
   height?: number;
@@ -221,19 +224,19 @@ export function DailyCountChart({
 }) {
   const data = daily.map((d) => ({ ...d, label: formatWeekday(`${d.date}T12:00:00Z`) }));
   return (
-    <div role="img" aria-label={`Jumlah ${unit} per hari, 7 hari terakhir`}>
+    <div role="img" aria-label={t(`Jumlah ${unit} per hari, 7 hari terakhir`, `Number of ${unit} per day, last 7 days`)}>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data} margin={{ top: 8, right: 4, left: -24, bottom: 0 }} barCategoryGap={6}>
           <CartesianGrid vertical={false} stroke={GRID} />
           <XAxis dataKey="label" tick={AXIS} axisLine={false} tickLine={false} />
           <YAxis tick={AXIS} axisLine={false} tickLine={false} allowDecimals={false} tickCount={3} />
           <Tooltip
-            cursor={{ fill: '#171717', fillOpacity: 0.04 }}
+            cursor={{ fill: CURSOR, fillOpacity: 0.06 }}
             content={({ active, payload }: Tp) =>
               active && payload?.length ? (
                 <TipBox
                   title={formatDate(`${payload[0].payload.date}T12:00:00Z`)}
-                  rows={[{ label: 'Deteksi', value: `${payload[0].payload.count} ${unit}`, color }]}
+                  rows={[{ label: t('Deteksi', 'Detections'), value: `${payload[0].payload.count} ${unit}`, color }]}
                 />
               ) : null
             }
@@ -261,7 +264,7 @@ export function DischargeChart({
   const firstFuture = data.findIndex((d) => d.forecast);
   if (firstFuture > 0) data[firstFuture - 1].future = data[firstFuture - 1].past;
   return (
-    <div role="img" aria-label="Debit sungai 30 hari terakhir dan prakiraan 7 hari">
+    <div role="img" aria-label={t('Debit sungai 30 hari terakhir dan prakiraan 7 hari', 'River discharge over the last 30 days and 7-day forecast')}>
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data} margin={{ top: 6, right: 6, left: -16, bottom: 0 }}>
           <CartesianGrid vertical={false} stroke={GRID} />
@@ -274,7 +277,7 @@ export function DischargeChart({
                   title={String(payload[0].payload.label)}
                   rows={[
                     {
-                      label: payload[0].payload.forecast ? 'Prakiraan' : 'Teramati',
+                      label: payload[0].payload.forecast ? t('Prakiraan', 'Forecast') : t('Teramati', 'Observed'),
                       value: `${Math.round(Number(payload[0].payload.discharge))} m³/s`,
                       color: '#0891B2',
                     },
@@ -308,7 +311,7 @@ export function ScoreHistoryChart({
 }) {
   const data = points.map((p) => ({ ...p, label: `${formatDate(p.time)} ${formatHour(p.time)}` }));
   return (
-    <div role="img" aria-label="Riwayat Siaga Score">
+    <div role="img" aria-label={t('Riwayat Siaga Score', 'Siaga Score history')}>
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data} margin={{ top: 8, right: 8, left: -22, bottom: 0 }}>
           <CartesianGrid vertical={false} stroke={GRID} />
@@ -327,7 +330,7 @@ export function ScoreHistoryChart({
                   title={String(payload[0].payload.label)}
                   rows={[
                     {
-                      label: 'Skor personal',
+                      label: t('Skor personal', 'Personal score'),
                       value: `${payload[0].payload.score} · ${RISK_LEVELS[levelFromScore(Number(payload[0].payload.score))].label}`,
                     },
                   ]}
@@ -338,9 +341,9 @@ export function ScoreHistoryChart({
           <Line
             type="monotone"
             dataKey="score"
-            stroke="#171717"
+            stroke="var(--color-ink)"
             strokeWidth={2}
-            dot={{ r: 3, fill: '#fff', strokeWidth: 2 }}
+            dot={{ r: 3, fill: 'var(--color-surface)', strokeWidth: 2 }}
             activeDot={{ r: 5 }}
           />
         </LineChart>

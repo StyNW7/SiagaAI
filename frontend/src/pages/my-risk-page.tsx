@@ -28,29 +28,30 @@ import { useDocumentTitle } from '@/hooks/use-misc';
 import { useRiskAssessment } from '@/hooks/use-siaga-data';
 import { HAZARD_ORDER, HAZARDS, RISK_LEVELS } from '@/lib/risk-levels';
 import { cn } from '@/lib/utils';
+import { t } from '@/lib/i18n';
 
-const PERSONAS: { key: string; label: string; emoji: string; ctx: PersonalContext }[] = [
+const personaList = (): { key: string; label: string; emoji: string; ctx: PersonalContext }[] => [
   {
     key: 'student',
-    label: 'Mahasiswa bermotor',
+    label: t('Mahasiswa bermotor', 'Student on a motorcycle'),
     emoji: '🛵',
     ctx: { occupation: 'student', transport: 'motorcycle', exposure: 'moderate', activity: 'mixed' },
   },
   {
     key: 'outdoor',
-    label: 'Pekerja luar ruang',
+    label: t('Pekerja luar ruang', 'Outdoor worker'),
     emoji: '👷',
     ctx: { occupation: 'outdoor', transport: 'motorcycle', exposure: 'high', activity: 'outdoor' },
   },
   {
     key: 'office',
-    label: 'Pekerja kantor bermobil',
+    label: t('Pekerja kantor bermobil', 'Office worker by car'),
     emoji: '💼',
     ctx: { occupation: 'office', transport: 'car', exposure: 'low', activity: 'indoor' },
   },
   {
     key: 'elderly',
-    label: 'Lansia di rumah',
+    label: t('Lansia di rumah', 'Older adult at home'),
     emoji: '👵',
     ctx: {
       occupation: 'other',
@@ -63,7 +64,7 @@ const PERSONAS: { key: string; label: string; emoji: string; ctx: PersonalContex
 ];
 
 export default function MyRiskPage() {
-  useDocumentTitle('Risiko Saya');
+  useDocumentTitle(t('Risiko Saya', 'My Risk'));
   const view = useRiskAssessment();
   const { assessment, location, hourly, windows, river } = view;
   const [params, setParams] = useSearchParams();
@@ -75,7 +76,7 @@ export default function MyRiskPage() {
   const impact = useAiMutation('impact');
 
   const personas = useMemo(
-    () => (assessment ? PERSONAS.map((p) => ({ ...p, result: personalize(assessment.hazards, p.ctx) })) : []),
+    () => (assessment ? personaList().map((p) => ({ ...p, result: personalize(assessment.hazards, p.ctx) })) : []),
     [assessment],
   );
 
@@ -101,8 +102,11 @@ export default function MyRiskPage() {
             <Sparkles className="size-3.5 text-ai" /> Personal Impact Forecast
           </span>
         }
-        title="Apa artinya bagi saya?"
-        description={`Skor ${location.name} disesuaikan dengan pekerjaan, transportasi & aktivitasmu.`}
+        title={t('Apa artinya bagi saya?', 'What does it mean for me?')}
+        description={t(
+          `Skor ${location.name} disesuaikan dengan pekerjaan, transportasi & aktivitasmu.`,
+          `The ${location.name} score tailored to your occupation, transport & activity.`,
+        )}
         mascot="thinking"
       />
 
@@ -110,11 +114,11 @@ export default function MyRiskPage() {
         {/* Scores */}
         <Card className="min-w-0 lg:col-span-5">
           <CardContent className="p-6 sm:p-7">
-            <p className="data-label">Ringkasan risiko</p>
+            <p className="data-label">{t('Ringkasan risiko', 'Risk summary')}</p>
             <div className="mt-5 flex items-end justify-between gap-4">
               <div>
-                <p className="telemetry">Lokasi</p>
-                <p className="display-metric mt-2 text-[44px] text-neutral-400">
+                <p className="telemetry">{t('Lokasi', 'Location')}</p>
+                <p className="display-metric mt-2 text-[44px] text-neutral-400 dark:text-neutral-500">
                   {assessment.location.score}
                 </p>
                 <RiskBadge level={assessment.location.level} className="mt-2.5" />
@@ -148,23 +152,24 @@ export default function MyRiskPage() {
             </div>
             <RiskSpectrum score={assessment.personal.score} className="mt-6" showLabels={false} />
             <p className="mt-4 text-[13px] leading-relaxed text-neutral-600">
-              Profilmu membuat paparan{' '}
-              <b className={cn(delta > 0 ? 'text-[#A4461A]' : delta < 0 ? 'text-risk-safe' : 'text-ink')}>
+              {t('Profilmu membuat paparan', 'Your profile makes your exposure')}{' '}
+              <b className={cn(delta > 0 ? 'text-[var(--risk-high-text)]' : delta < 0 ? 'text-risk-safe' : 'text-ink')}>
                 {delta > 0
-                  ? `${delta} poin lebih tinggi`
+                  ? t(`${delta} poin lebih tinggi`, `${delta} points higher`)
                   : delta < 0
-                    ? `${-delta} poin lebih rendah`
-                    : 'setara'}
+                    ? t(`${-delta} poin lebih rendah`, `${-delta} points lower`)
+                    : t('setara', 'equal')}
               </b>{' '}
-              dari rata-rata.
+              {t('dari rata-rata.', 'than average.')}
             </p>
             <div className="mt-5 border-t border-line pt-5">
               <p className="mb-3 flex items-center gap-1.5 text-[13.5px] font-bold">
-                <SlidersHorizontal className="size-4 text-brand" /> Ubah profil, lihat dampaknya
+                <SlidersHorizontal className="size-4 text-brand" />{' '}
+                {t('Ubah profil, lihat dampaknya', 'Change your profile, see the impact')}
               </p>
               <ProfileQuickEdit compact />
               <p className="telemetry mt-4 normal-case tracking-normal">
-                Tanpa data medis · tersimpan di perangkatmu
+                {t('Tanpa data medis · tersimpan di perangkatmu', 'No medical data · saved on your device')}
               </p>
             </div>
           </CardContent>
@@ -173,7 +178,7 @@ export default function MyRiskPage() {
         <div className="min-w-0 space-y-5 lg:col-span-7">
           {/* AI impact */}
           <AiPanel
-            title="Dampak personal menurut SiagaAI"
+            title={t('Dampak personal menurut SiagaAI', 'Personal impact according to SiagaAI')}
             provider={impact.data?.provider}
             fallbackReason={impact.data?.fallback ? impact.data.fallbackReason : undefined}
             generatedAt={impact.data?.generatedAt}
@@ -184,7 +189,7 @@ export default function MyRiskPage() {
                   size="sm"
                   onClick={() => context && impact.mutate({ context, fresh: true })}
                 >
-                  <RefreshCw /> Perbarui
+                  <RefreshCw /> {t('Perbarui', 'Refresh')}
                 </Button>
               )
             }
@@ -218,13 +223,13 @@ export default function MyRiskPage() {
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="rounded-xl border border-line bg-raised p-3.5">
                     <p className="flex items-center gap-1.5 text-[12px] font-bold text-muted">
-                      <Clock className="size-3.5" /> Waktu
+                      <Clock className="size-3.5" /> {t('Waktu', 'Timing')}
                     </p>
                     <p className="mt-1 text-[13px] text-neutral-700">{impact.data.output.timing}</p>
                   </div>
                   <div className="rounded-xl border border-line bg-raised p-3.5">
                     <p className="flex items-center gap-1.5 text-[12px] font-bold text-muted">
-                      <Eye className="size-3.5" /> Waspadai
+                      <Eye className="size-3.5" /> {t('Waspadai', 'Watch for')}
                     </p>
                     <ul className="mt-1 space-y-0.5 text-[13px] text-neutral-700">
                       {impact.data.output.watchFor.map((x) => (
@@ -235,21 +240,21 @@ export default function MyRiskPage() {
                 </div>
                 <Button asChild>
                   <Link to="/app/action-plan">
-                    Buat Rencana Aksi <ArrowRight />
+                    {t('Buat Rencana Aksi', 'Create Action Plan')} <ArrowRight />
                   </Link>
                 </Button>
               </div>
             ) : impact.isPending ? (
               <AiThinking
                 steps={[
-                  'Membaca skor bahaya dari Siaga Risk Engine',
-                  'Menerapkan konteks pekerjaan & transportasi',
-                  'Menyusun dampak dan saran yang relevan',
+                  t('Membaca skor bahaya dari Siaga Risk Engine', 'Reading hazard scores from the Siaga Risk Engine'),
+                  t('Menerapkan konteks pekerjaan & transportasi', 'Applying occupation & transport context'),
+                  t('Menyusun dampak dan saran yang relevan', 'Composing relevant impacts and advice'),
                 ]}
               />
             ) : impact.isError ? (
               <ErrorState
-                title="Gagal membuat analisis"
+                title={t('Gagal membuat analisis', 'Failed to create the analysis')}
                 onRetry={() => context && impact.mutate({ context })}
               />
             ) : (
@@ -257,10 +262,13 @@ export default function MyRiskPage() {
                 <Ara pose="explain" size={130} />
                 <div className="flex-1 pb-2 text-center sm:text-left">
                   <p className="text-[15px] font-bold leading-snug text-ink">
-                    Skor {assessment.personal.score}/100 — apa dampaknya untukmu?
+                    {t(
+                      `Skor ${assessment.personal.score}/100 — apa dampaknya untukmu?`,
+                      `Score ${assessment.personal.score}/100 — what does it mean for you?`,
+                    )}
                   </p>
                   <p className="mt-1 text-[13.5px] text-muted">
-                    Sebagai {context?.profile.occupation.toLowerCase()} ·{' '}
+                    {t('Sebagai', 'As a')} {context?.profile.occupation.toLowerCase()} ·{' '}
                     {context?.profile.transport.toLowerCase()}
                   </p>
                   <Button
@@ -269,7 +277,7 @@ export default function MyRiskPage() {
                     onClick={() => context && impact.mutate({ context })}
                     disabled={!context}
                   >
-                    <Sparkles /> Analisis dampak personal
+                    <Sparkles /> {t('Analisis dampak personal', 'Analyse personal impact')}
                   </Button>
                 </div>
               </div>
@@ -280,8 +288,10 @@ export default function MyRiskPage() {
           <Card>
             <CardHeader>
               <div>
-                <CardTitle>Kapan aman beraktivitas di luar?</CardTitle>
-                <p className="mt-1 text-[12.5px] text-muted">Indeks per jam · makin rendah makin baik</p>
+                <CardTitle>{t('Kapan aman beraktivitas di luar?', 'When is it safe to be outdoors?')}</CardTitle>
+                <p className="mt-1 text-[12.5px] text-muted">
+                  {t('Indeks per jam · makin rendah makin baik', 'Hourly index · lower is better')}
+                </p>
               </div>
             </CardHeader>
             <CardContent>
@@ -293,20 +303,22 @@ export default function MyRiskPage() {
                       windows.map((w) => (
                         <span
                           key={w.start}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-[#EEF7F2] px-3 py-1.5 text-[12.5px] font-semibold text-[#17654A] ring-1 ring-inset ring-risk-safe/20"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-[var(--risk-safe-soft)] px-3 py-1.5 text-[12.5px] font-semibold text-[var(--risk-safe-text)] ring-1 ring-inset ring-risk-safe/20"
                         >
                           <Clock className="size-3.5" /> {describeWindow(w)} WIB · {w.reason}
                         </span>
                       ))
                     ) : (
                       <span className="text-[13px] text-muted">
-                        Tidak ada jendela waktu yang jelas lebih aman hari ini.
+                        {t('Tidak ada jendela waktu yang jelas lebih aman hari ini.', 'No clearly safer time window today.')}
                       </span>
                     )}
                   </div>
                 </>
               ) : (
-                <p className="text-[13px] text-muted">Data prakiraan per jam tidak tersedia.</p>
+                <p className="text-[13px] text-muted">
+                  {t('Data prakiraan per jam tidak tersedia.', 'Hourly forecast data is unavailable.')}
+                </p>
               )}
             </CardContent>
           </Card>
@@ -317,8 +329,10 @@ export default function MyRiskPage() {
       <Card className="mt-5">
         <CardHeader className="flex-col sm:flex-row sm:items-center">
           <div>
-            <CardTitle>Kenapa skornya segini?</CardTitle>
-            <p className="mt-1 text-[12.5px] text-muted">Kontribusi tiap indikator · algoritma, bukan AI</p>
+            <CardTitle>{t('Kenapa skornya segini?', 'Why is the score this high?')}</CardTitle>
+            <p className="mt-1 text-[12.5px] text-muted">
+              {t('Kontribusi tiap indikator · algoritma, bukan AI', 'Contribution of each indicator · algorithm, not AI')}
+            </p>
           </div>
           <Tabs
             value={hazard}
@@ -342,12 +356,15 @@ export default function MyRiskPage() {
               score={ph.score}
               level={ph.level}
               size={200}
-              label={`Skor personal ${HAZARDS[hazard].label}`}
-              sublabel={`Bahaya ${h.score} × pengubah ${ph.modifier.value.toFixed(2)}`}
+              label={t(`Skor personal ${HAZARDS[hazard].label}`, `Personal ${HAZARDS[hazard].label} score`)}
+              sublabel={t(
+                `Bahaya ${h.score} × pengubah ${ph.modifier.value.toFixed(2)}`,
+                `Hazard ${h.score} × modifier ${ph.modifier.value.toFixed(2)}`,
+              )}
             />
             <p className="mt-3 text-center text-[13px] leading-relaxed text-neutral-600">{h.headline}</p>
             <div className="mt-5 rounded-xl border border-line bg-raised p-4">
-              <p className="data-label mb-2.5">Pengubah paparan</p>
+              <p className="data-label mb-2.5">{t('Pengubah paparan', 'Exposure modifiers')}</p>
               {ph.modifier.contributions.length ? (
                 <ul className="space-y-1 text-[12.5px]">
                   {ph.modifier.contributions.map((c) => (
@@ -356,7 +373,7 @@ export default function MyRiskPage() {
                       <span
                         className={cn(
                           'tabular font-semibold',
-                          c.delta > 0 ? 'text-[#A4461A]' : 'text-risk-safe',
+                          c.delta > 0 ? 'text-[var(--risk-high-text)]' : 'text-risk-safe',
                         )}
                       >
                         {c.delta > 0 ? '+' : ''}
@@ -367,7 +384,7 @@ export default function MyRiskPage() {
                 </ul>
               ) : (
                 <p className="text-[12.5px] text-muted">
-                  Profil Anda tidak mengubah paparan untuk bahaya ini.
+                  {t('Profil Anda tidak mengubah paparan untuk bahaya ini.', 'Your profile does not change exposure for this hazard.')}
                 </p>
               )}
             </div>
@@ -378,7 +395,8 @@ export default function MyRiskPage() {
               <div className="mt-6 border-t border-line pt-4">
                 <p className="mb-1 flex items-center justify-between gap-2 text-[12px] font-semibold text-muted">
                   <span className="flex items-center gap-1.5">
-                    <Waves className="size-3.5" /> Debit sungai terdekat (GloFAS) — garis putus = prakiraan
+                    <Waves className="size-3.5" />{' '}
+                    {t('Debit sungai terdekat (GloFAS) — garis putus = prakiraan', 'Nearest river discharge (GloFAS) — dashed line = forecast')}
                   </span>
                   <FreshnessBadge provenance={river.data.provenance} kind="river" />
                 </p>
@@ -393,8 +411,10 @@ export default function MyRiskPage() {
       <Card className="mt-5">
         <CardHeader>
           <div>
-            <CardTitle>Satu bahaya, dampak berbeda</CardTitle>
-            <p className="mt-1 text-[12.5px] text-muted">Perbandingan persona di {location.name}</p>
+            <CardTitle>{t('Satu bahaya, dampak berbeda', 'One hazard, different impacts')}</CardTitle>
+            <p className="mt-1 text-[12.5px] text-muted">
+              {t('Perbandingan persona di', 'Persona comparison in')} {location.name}
+            </p>
           </div>
           <UserRound className="size-5 text-muted" />
         </CardHeader>
@@ -408,7 +428,7 @@ export default function MyRiskPage() {
               </div>
               <ScoreBar score={p.result.score} level={p.result.level} className="mt-2" />
               <p className="mt-2 text-[12px] text-muted">
-                Pengubah ×{p.result.modifierAvg.toFixed(2)} · utama{' '}
+                {t('Pengubah', 'Modifier')} ×{p.result.modifierAvg.toFixed(2)} · {t('utama', 'main')}{' '}
                 {HAZARDS[p.result.primaryHazard].label.toLowerCase()}
               </p>
             </div>

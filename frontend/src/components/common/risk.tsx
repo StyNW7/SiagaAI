@@ -13,6 +13,7 @@ import type { HazardType, RiskLevel } from '@/features/risk/engine/types';
 import { useCountUp } from '@/hooks/use-misc';
 import { HAZARDS, RISK_LEVELS } from '@/lib/risk-levels';
 import { cn } from '@/lib/utils';
+import { t } from '@/lib/i18n';
 
 export const HAZARD_ICONS: Record<HazardType, LucideIcon> = {
   flood: Waves,
@@ -81,9 +82,9 @@ export function HazardIcon({
         className,
       )}
       style={{
-        background: m?.soft ?? '#F3F2EF',
-        color: m?.color ?? '#5F5E59',
-        boxShadow: `inset 0 0 0 1px ${m ? m.color + '22' : '#E6E5E1'}`,
+        background: m?.soft ?? 'var(--chip-neutral-bg)',
+        color: m?.color ?? 'var(--chip-neutral-text)',
+        boxShadow: `inset 0 0 0 1px ${m ? m.color + '22' : 'var(--chip-neutral-ring)'}`,
       }}
       aria-label={HAZARDS[hazard].label}
     >
@@ -116,7 +117,7 @@ export function ScoreGauge({
       className="relative mx-auto"
       style={{ width: size, height: size * 0.62 }}
       role="img"
-      aria-label={`${label}: ${score} dari 100, kategori ${m.label}`}
+      aria-label={t(`${label}: ${score} dari 100, kategori ${m.label}`, `${label}: ${score} out of 100, category ${m.label}`)}
     >
       <svg viewBox="0 0 200 124" className="h-full w-full overflow-visible">
         {segments.map((s, i) => {
@@ -147,7 +148,7 @@ export function ScoreGauge({
           const a = Math.PI * (1 - value / 100);
           const x = 100 + r * Math.cos(a);
           const y = 108 - r * Math.sin(a);
-          return <circle cx={x} cy={y} r={9} fill="#fff" stroke={m.color} strokeWidth={4} />;
+          return <circle cx={x} cy={y} r={9} fill="var(--color-surface)" stroke={m.color} strokeWidth={4} />;
         })()}
       </svg>
       <div className="absolute inset-x-0 bottom-0 text-center">
@@ -219,7 +220,7 @@ export function RiskSpectrum({
           ))}
         </div>
         <span
-          className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white bg-ink shadow-[0_2px_8px_rgb(0_0_0/0.25)] transition-[left] duration-700 ease-out"
+          className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-surface bg-inverse shadow-[0_2px_8px_rgb(0_0_0/0.25)] transition-[left] duration-700 ease-out"
           style={{ left: `${pos}%` }}
         />
       </div>

@@ -1,4 +1,5 @@
 import type { FamilyMember, PersonalProfile } from '@/types/domain';
+import { t } from '@/lib/i18n';
 import { personalize } from './assess';
 import type { HazardScore, HazardType, RiskAssessment, RiskLevel } from './types';
 
@@ -22,7 +23,12 @@ export function assessFamily(
 ): FamilyMemberRisk[] {
   const rows: FamilyMemberRisk[] = [
     {
-      member: { id: 'self', name: self.displayName || 'Anda', relation: 'Anda', ageGroup: 'adult' },
+      member: {
+        id: 'self',
+        name: self.displayName || t('Anda', 'You'),
+        relation: t('Anda', 'You'),
+        ageGroup: 'adult',
+      },
       score: selfPersonal.score,
       level: selfPersonal.level,
       primaryHazard: selfPersonal.primaryHazard,
@@ -44,10 +50,10 @@ export function assessFamily(
     if (sensitive)
       reasons.push(
         m.ageGroup === 'elderly'
-          ? 'Lansia lebih rentan terhadap asap & panas'
-          : 'Anak lebih rentan terhadap paparan asap',
+          ? t('Lansia lebih rentan terhadap asap & panas', 'Older adults are more vulnerable to smoke & heat')
+          : t('Anak lebih rentan terhadap paparan asap', 'Children are more vulnerable to smoke exposure'),
       );
-    if (m.exposure === 'high') reasons.push('Paparan luar ruang tinggi');
+    if (m.exposure === 'high') reasons.push(t('Paparan luar ruang tinggi', 'High outdoor exposure'));
     const priority: FamilyMemberRisk['priority'] =
       p.score >= 61 || (sensitive && p.score >= 41)
         ? 'high'

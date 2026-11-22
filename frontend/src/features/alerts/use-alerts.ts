@@ -5,17 +5,75 @@ import { useRiskAssessment } from '@/hooks/use-siaga-data';
 import { haversineKm } from '@/lib/geo';
 import { HAZARDS, RISK_LEVELS } from '@/lib/risk-levels';
 import { formatDistance } from '@/lib/format';
+import { t } from '@/lib/i18n';
 import type { AlertLevel, Earthquake, SiagaAlert } from '@/types/domain';
 
 export const ALERT_LEVELS: Record<
   AlertLevel,
-  { label: string; rank: number; color: string; soft: string; text: string }
+  { readonly label: string; rank: number; color: string; soft: string; text: string }
 > = {
-  critical: { label: 'Kritis', rank: 0, color: '#A51E22', soft: '#FBEDED', text: '#7A1418' },
-  warning: { label: 'Peringatan', rank: 1, color: '#E66B24', soft: '#FDF0E8', text: '#A4461A' },
-  advisory: { label: 'Waspada', rank: 2, color: '#D99A22', soft: '#FDF6E8', text: '#8A5A0B' },
-  info: { label: 'Informasi', rank: 3, color: '#3478C6', soft: '#EEF4FB', text: '#22579A' },
+  critical: {
+    get label() {
+      return t('Kritis', 'Critical');
+    },
+    rank: 0,
+    color: '#A51E22',
+    soft: 'var(--risk-critical-soft)',
+    text: 'var(--risk-critical-text)',
+  },
+  warning: {
+    get label() {
+      return t('Peringatan', 'Warning');
+    },
+    rank: 1,
+    color: '#E66B24',
+    soft: 'var(--risk-high-soft)',
+    text: 'var(--risk-high-text)',
+  },
+  advisory: {
+    get label() {
+      return t('Waspada', 'Advisory');
+    },
+    rank: 2,
+    color: '#D99A22',
+    soft: 'var(--risk-moderate-soft)',
+    text: 'var(--risk-moderate-text)',
+  },
+  info: {
+    get label() {
+      return t('Informasi', 'Info');
+    },
+    rank: 3,
+    color: '#3478C6',
+    soft: 'var(--risk-low-soft)',
+    text: 'var(--risk-low-text)',
+  },
 };
+
+/** BMKG publishes quake bulletins in Indonesian; translate the standard phrases for English mode. */
+export function localizeQuakeText(s: string): string {
+  return t(
+    s,
+    s
+      .replace(/tidak berpotensi tsunami/gi, 'No tsunami potential')
+      .replace(/berpotensi tsunami/gi, 'Potential tsunami')
+      .replace(/Gempa ini dirasakan untuk diteruskan pada masyarakat/gi, 'This earthquake was felt; information relayed to the public')
+      .replace(/Gempa ini dirasakan/gi, 'This earthquake was felt')
+      .replace(/(\d+)\s*km\s+(BaratLaut|TimurLaut|BaratDaya|Tenggara|Barat|Timur|Utara|Selatan)/g, (_, km: string, dir: string) => {
+        const D: Record<string, string> = {
+          BaratLaut: 'NW',
+          TimurLaut: 'NE',
+          BaratDaya: 'SW',
+          Tenggara: 'SE',
+          Barat: 'W',
+          Timur: 'E',
+          Utara: 'N',
+          Selatan: 'S',
+        };
+        return `${km} km ${D[dir] ?? dir}`;
+      }),
+  );
+}
 
 export function quakeLevel(q: Earthquake): AlertLevel {
   const tsunami = /berpotensi tsunami/i.test(q.potential) && !/tidak berpotensi/i.test(q.potential);
@@ -40,18 +98,18 @@ export function useAlerts() {
         level: local.has(w.id) ? 'warning' : 'advisory',
         category:
           w.hazard === 'storm'
-            ? 'Hujan lebat & petir'
+            ? t('Hujan lebat & petir', 'Heavy rain & lightning')
             : w.hazard === 'wind'
-              ? 'Angin kencang'
-              : 'Cuaca ekstrem',
+              ? t('Angin kencang', 'Strong winds')
+              : t('Cuaca ekstrem', 'Extreme weather'),
         title: w.title,
         description: w.description,
         location: w.province ?? 'Indonesia',
         time: w.publishedAt,
         source:
           warnings.data?.provenance.mode === 'scenario'
-            ? 'SIMULASI (bukan BMKG)'
-            : 'BMKG — Peringatan Dini Cuaca',
+            ? t('SIMULASI (bukan BMKG)', 'SIMULATION (not BMKG)')
+            : t('BMKG — Peringatan Dini Cuaca', 'BMKG — Weather Early Warning'),
         sourceUrl: w.link,
         updatedAt: warnings.data?.provenance.fetchedAt ?? w.publishedAt,
         origin: 'official',
@@ -66,12 +124,18 @@ export function useAlerts() {
       out.push({
         id: `eq-${q.id}`,
         level: d > 600 && quakeLevel(q) !== 'critical' ? 'info' : quakeLevel(q),
-        category: 'Gempabumi',
-        title: `Gempa M${q.magnitude.toFixed(1)} — ${q.region}`,
-        description: `Kedalaman ${q.depthKm} km. ${q.potential}${q.felt ? ` Dirasakan: ${q.felt}.` : ''} Sekitar ${formatDistance(d)} dari lokasi Anda.`,
-        location: q.region,
+        category: t('Gempabumi', 'Earthquake'),
+        title: t(
+          `Gempa M${q.magnitude.toFixed(1)} — ${q.region}`,
+          `M${q.magnitude.toFixed(1)} earthquake — ${localizeQuakeText(q.region)}`,
+        ),
+        description: t(
+          `Kedalaman ${q.depthKm} km. ${q.potential}${q.felt ? ` Dirasakan: ${q.felt}.` : ''} Sekitar ${formatDistance(d)} dari lokasi Anda.`,
+          `Depth ${q.depthKm} km. ${localizeQuakeText(q.potential)}${q.felt ? ` Felt: ${q.felt}.` : ''} About ${formatDistance(d)} from your location.`,
+        ),
+        location: localizeQuakeText(q.region),
         time: q.time,
-        source: 'BMKG — Informasi Gempabumi',
+        source: t('BMKG — Informasi Gempabumi', 'BMKG — Earthquake Information'),
         sourceUrl: 'https://www.bmkg.go.id/gempabumi/gempabumi-dirasakan',
         updatedAt: earthquakes.data?.provenance.fetchedAt ?? q.time,
         origin: 'official',
@@ -87,11 +151,17 @@ export function useAlerts() {
           id: `siaga-${k}-${location.id}`,
           level: h.level === 'critical' ? 'critical' : h.level === 'high' ? 'warning' : 'advisory',
           category: HAZARDS[k].longLabel,
-          title: `${HAZARDS[k].label} ${RISK_LEVELS[h.level].label.toLowerCase()} di ${location.name}`,
-          description: `${h.headline} Skor indikatif ${h.score}/100 dari Siaga Risk Engine — bukan peringatan resmi.`,
+          title: t(
+            `${HAZARDS[k].label} ${RISK_LEVELS[h.level].label.toLowerCase()} di ${location.name}`,
+            `${RISK_LEVELS[h.level].label} ${HAZARDS[k].label.toLowerCase()} risk in ${location.name}`,
+          ),
+          description: t(
+            `${h.headline} Skor indikatif ${h.score}/100 dari Siaga Risk Engine — bukan peringatan resmi.`,
+            `${h.headline} Indicative score ${h.score}/100 from the Siaga Risk Engine — not an official warning.`,
+          ),
           location: location.name,
           time: assessment.computedAt,
-          source: dataMode === 'scenario' ? 'SiagaAI · Simulasi' : 'SiagaAI · Indikatif',
+          source: dataMode === 'scenario' ? t('SiagaAI · Simulasi', 'SiagaAI · Simulation') : t('SiagaAI · Indikatif', 'SiagaAI · Indicative'),
           updatedAt: assessment.computedAt,
           origin: 'siaga',
         });

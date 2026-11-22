@@ -11,12 +11,13 @@ import { searchPlaces, type PlaceResult } from '@/services/geo/geocoding';
 import { useLocationStore, useSettings } from '@/stores';
 import type { UserLocation } from '@/types/domain';
 import { cn } from '@/lib/utils';
+import { t } from '@/lib/i18n';
 
 function useDebounced<T>(value: T, ms = 300) {
   const [v, setV] = useState(value);
   useEffect(() => {
-    const t = setTimeout(() => setV(value), ms);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setV(value), ms);
+    return () => clearTimeout(timer);
   }, [value, ms]);
   return v;
 }
@@ -72,8 +73,8 @@ export function LocationPicker({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        title="Pilih lokasi"
-        description="GPS, cari kota, atau jelajahi wilayah rawan."
+        title={t('Pilih lokasi', 'Choose location')}
+        description={t('GPS, cari kota, atau jelajahi wilayah rawan.', 'GPS, search a city, or explore hazard-prone regions.')}
         className="max-w-xl"
       >
         <Button
@@ -90,13 +91,16 @@ export function LocationPicker({
         >
           {busy ? <Loader2 className="animate-spin" /> : <LocateFixed />}
           {status === 'locating'
-            ? 'Mendapatkan lokasi…'
+            ? t('Mendapatkan lokasi…', 'Getting location…')
             : status === 'resolving'
-              ? 'Mengenali wilayah…'
-              : 'Gunakan lokasi saya (GPS)'}
+              ? t('Mengenali wilayah…', 'Identifying area…')
+              : t('Gunakan lokasi saya (GPS)', 'Use my location (GPS)')}
         </Button>
         <p className="mt-2 text-[12px] text-muted">
-          GPS hanya dipakai untuk analisis — tidak disimpan kecuali kamu pilih "Simpan".
+          {t(
+            'GPS hanya dipakai untuk analisis — tidak disimpan kecuali kamu pilih "Simpan".',
+            'GPS is only used for analysis — it is not stored unless you choose "Save".',
+          )}
         </p>
 
         <div className="relative mt-5">
@@ -109,8 +113,8 @@ export function LocationPicker({
             role="combobox"
             aria-expanded={!!results.data?.length}
             aria-controls={listId}
-            aria-label="Cari kota atau kabupaten"
-            placeholder="Cari kota/kabupaten, mis. Palangka Raya"
+            aria-label={t('Cari kota atau kabupaten', 'Search city or regency')}
+            placeholder={t('Cari kota/kabupaten, mis. Palangka Raya', 'Search city/regency, e.g. Palangka Raya')}
             className="pl-10"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -146,14 +150,16 @@ export function LocationPicker({
               ))
             ) : (
               <li className="px-3.5 py-4 text-sm text-muted">
-                {results.isFetching ? 'Mencari…' : 'Lokasi tidak ditemukan. Coba nama kota/kabupaten lain.'}
+                {results.isFetching
+                  ? t('Mencari…', 'Searching…')
+                  : t('Lokasi tidak ditemukan. Coba nama kota/kabupaten lain.', 'Location not found. Try another city/regency name.')}
               </li>
             )}
           </ul>
         )}
 
         {saved.length > 0 && (
-          <Group title="Lokasi tersimpan" icon={<Bookmark className="size-3.5" />}>
+          <Group title={t('Lokasi tersimpan', 'Saved locations')} icon={<Bookmark className="size-3.5" />}>
             <div className="flex flex-wrap gap-2">
               {saved.map((s) => (
                 <Chip
@@ -177,7 +183,7 @@ export function LocationPicker({
           </Group>
         )}
 
-        <Group title="Jelajahi wilayah (data live)" icon={<Compass className="size-3.5" />}>
+        <Group title={t('Jelajahi wilayah (data live)', 'Explore regions (live data)')} icon={<Compass className="size-3.5" />}>
           <div className="grid gap-2 sm:grid-cols-2">
             {EXPLORE_PRESETS.map((p) => {
               const c = CITY_BY_SLUG[p.slug];
@@ -205,7 +211,7 @@ export function LocationPicker({
           </div>
         </Group>
 
-        <Group title="Skenario demonstrasi (simulasi)" icon={<Sparkles className="size-3.5" />}>
+        <Group title={t('Skenario demonstrasi (simulasi)', 'Demo scenarios (simulation)')} icon={<Sparkles className="size-3.5" />}>
           <div className="grid gap-2 sm:grid-cols-2">
             {Object.values(SCENARIOS).map((s) => (
               <button
@@ -257,8 +263,8 @@ export function Chip({
       className={cn(
         'inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors',
         active
-          ? 'border-ink bg-ink text-white'
-          : 'border-line bg-white text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50',
+          ? 'border-inverse bg-inverse text-on-inverse'
+          : 'border-line bg-surface text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50',
         className,
       )}
     >

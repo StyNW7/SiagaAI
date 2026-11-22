@@ -7,6 +7,7 @@
  */
 import type { AgeGroup, DailyActivity, ExposureLevel, Occupation, Transport } from '@/types/domain';
 import { round } from '@/lib/utils';
+import { getLang } from '@/lib/i18n';
 import type { ExposureModifier, HazardType, ModifierContribution, PersonalContext } from './types';
 
 type Deltas = Partial<Record<HazardType, number>>;
@@ -49,7 +50,7 @@ export const AGE_DELTAS: Record<AgeGroup, Deltas> = {
   elderly: { fire: 0.05, smoke: 0.15, flood: 0.1, weather: 0.1 },
 };
 
-const LABELS = {
+const LABELS_ID = {
   occupation: {
     student: 'Pelajar/mahasiswa',
     office: 'Pekerja kantor',
@@ -74,7 +75,53 @@ const LABELS = {
     indoor: 'Aktivitas dominan dalam ruang',
   },
   age: { infant: 'Balita', child: 'Anak-anak', teen: 'Remaja', adult: 'Dewasa', elderly: 'Lansia' },
-} as const;
+};
+
+const LABELS_EN: typeof LABELS_ID = {
+  occupation: {
+    student: 'Student',
+    office: 'Office worker',
+    outdoor: 'Outdoor worker',
+    merchant: 'Trader / vendor',
+    other: 'Other occupation',
+  },
+  transport: {
+    walking: 'Walking',
+    motorcycle: 'Motorcycle',
+    car: 'Car',
+    public: 'Public transport',
+  },
+  exposure: {
+    high: 'High outdoor exposure',
+    moderate: 'Moderate outdoor exposure',
+    low: 'Low outdoor exposure',
+  },
+  activity: {
+    outdoor: 'Mostly outdoor activity',
+    mixed: 'Mixed activity',
+    indoor: 'Mostly indoor activity',
+  },
+  age: { infant: 'Toddler', child: 'Child', teen: 'Teen', adult: 'Adult', elderly: 'Older adult' },
+};
+
+/** Persona labels in the active language (resolved on every access). */
+const LABELS = {
+  get occupation() {
+    return (getLang() === 'en' ? LABELS_EN : LABELS_ID).occupation;
+  },
+  get transport() {
+    return (getLang() === 'en' ? LABELS_EN : LABELS_ID).transport;
+  },
+  get exposure() {
+    return (getLang() === 'en' ? LABELS_EN : LABELS_ID).exposure;
+  },
+  get activity() {
+    return (getLang() === 'en' ? LABELS_EN : LABELS_ID).activity;
+  },
+  get age() {
+    return (getLang() === 'en' ? LABELS_EN : LABELS_ID).age;
+  },
+};
 
 export function computeModifier(hazard: HazardType, ctx: PersonalContext): ExposureModifier {
   const parts: [string, Deltas][] = [

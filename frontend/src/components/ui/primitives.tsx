@@ -45,14 +45,14 @@ export const badgeVariants = cva(
     variants: {
       variant: {
         neutral: 'bg-neutral-100 text-neutral-700 ring-1 ring-inset ring-line',
-        outline: 'border border-line bg-white text-neutral-700',
+        outline: 'border border-line bg-surface text-neutral-700',
         brand: 'bg-brand-soft text-brand-dark ring-1 ring-inset ring-brand/15',
         ai: 'bg-ai-soft text-ai-deep ring-1 ring-inset ring-ai/15',
-        success: 'bg-[#EEF7F2] text-[#17654A] ring-1 ring-inset ring-[#208A61]/20',
-        warning: 'bg-[#FDF6E8] text-[#8A5A0B] ring-1 ring-inset ring-[#D99A22]/25',
-        danger: 'bg-[#FBEDED] text-[#7A1418] ring-1 ring-inset ring-[#A51E22]/20',
-        info: 'bg-[#EEF4FB] text-[#22579A] ring-1 ring-inset ring-[#3478C6]/20',
-        dark: 'bg-ink text-white',
+        success: 'bg-[var(--risk-safe-soft)] text-[var(--risk-safe-text)] ring-1 ring-inset ring-risk-safe/20',
+        warning: 'bg-[var(--risk-moderate-soft)] text-[var(--risk-moderate-text)] ring-1 ring-inset ring-risk-moderate/25',
+        danger: 'bg-[var(--risk-critical-soft)] text-[var(--risk-critical-text)] ring-1 ring-inset ring-risk-critical/20',
+        info: 'bg-[var(--risk-low-soft)] text-[var(--risk-low-text)] ring-1 ring-inset ring-risk-low/20',
+        dark: 'bg-inverse text-on-inverse',
       },
       size: { sm: 'px-2 py-0.5 text-[11px]', md: 'px-2.5 py-1 text-[12px]' },
     },
@@ -72,7 +72,7 @@ export const Badge = ({
 /* ── Form controls ────────────────────────────────────────────────────── */
 
 const field =
-  'w-full rounded-[10px] border border-[#D8D7D2] bg-white px-3.5 text-[15px] text-ink placeholder:text-neutral-400 transition-[border-color,box-shadow] hover:border-neutral-400 focus:border-brand/60 focus:outline-none focus:ring-4 focus:ring-brand/10 disabled:opacity-60';
+  'w-full rounded-[10px] border border-line-strong bg-surface px-3.5 text-[15px] text-ink placeholder:text-neutral-400 transition-[border-color,box-shadow] hover:border-neutral-400 focus:border-brand/60 focus:outline-none focus:ring-4 focus:ring-brand/10 disabled:opacity-60';
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   ({ className, ...p }, ref) => <input ref={ref} className={cn(field, 'h-12', className)} {...p} />,

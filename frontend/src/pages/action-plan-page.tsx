@@ -30,39 +30,41 @@ import { formatDateTime } from '@/lib/format';
 import { HAZARDS } from '@/lib/risk-levels';
 import { cn } from '@/lib/utils';
 import { usePlanStore, type SavedPlan } from '@/stores';
+import { t } from '@/lib/i18n';
 
-const SECTIONS = [
-  {
-    key: 'rightNow',
-    label: 'Now',
-    title: 'Sekarang',
-    subtitle: 'Lakukan segera',
-    icon: Zap,
-    accent: '#D71920',
-    priority: 'Tinggi',
-  },
-  {
-    key: 'nextHours',
-    label: 'Next hours',
-    title: 'Beberapa jam ke depan',
-    subtitle: 'Persiapan berikutnya',
-    icon: AlarmClock,
-    accent: '#D99A22',
-    priority: 'Sedang',
-  },
-  {
-    key: 'ifWorsens',
-    label: 'If worsens',
-    title: 'Jika kondisi memburuk',
-    subtitle: 'Eskalasi & keselamatan',
-    icon: Siren,
-    accent: '#A51E22',
-    priority: 'Siaga',
-  },
-] as const;
+const sections = () =>
+  [
+    {
+      key: 'rightNow',
+      label: 'Now',
+      title: t('Sekarang', 'Right now'),
+      subtitle: t('Lakukan segera', 'Do it immediately'),
+      icon: Zap,
+      accent: '#D71920',
+      priority: t('Tinggi', 'High'),
+    },
+    {
+      key: 'nextHours',
+      label: 'Next hours',
+      title: t('Beberapa jam ke depan', 'Next few hours'),
+      subtitle: t('Persiapan berikutnya', 'Next preparations'),
+      icon: AlarmClock,
+      accent: '#D99A22',
+      priority: t('Sedang', 'Medium'),
+    },
+    {
+      key: 'ifWorsens',
+      label: 'If worsens',
+      title: t('Jika kondisi memburuk', 'If conditions worsen'),
+      subtitle: t('Eskalasi & keselamatan', 'Escalation & safety'),
+      icon: Siren,
+      accent: '#E8464C',
+      priority: t('Siaga', 'Alert'),
+    },
+  ] as const;
 
 export default function ActionPlanPage() {
-  useDocumentTitle('Rencana Aksi');
+  useDocumentTitle(t('Rencana Aksi', 'Action Plan'));
   const view = useRiskAssessment();
   const { assessment, location, scenario } = view;
   const context = useAiContext(view);
@@ -88,7 +90,9 @@ export default function ActionPlanPage() {
             scenario: !!scenario,
           });
           setActiveId(p.id);
-          toast.success('Rencana aksi tersimpan', { description: 'Tersedia juga saat offline.' });
+          toast.success(t('Rencana aksi tersimpan', 'Action plan saved'), {
+            description: t('Tersedia juga saat offline.', 'Also available offline.'),
+          });
         },
       },
     );
@@ -98,22 +102,25 @@ export default function ActionPlanPage() {
     const text = [
       `${p.plan.title} (${formatDateTime(p.createdAt)})`,
       '',
-      'SEKARANG:',
+      t('SEKARANG:', 'RIGHT NOW:'),
       ...p.plan.rightNow.map((x) => `• ${x}`),
       '',
-      'BEBERAPA JAM KE DEPAN:',
+      t('BEBERAPA JAM KE DEPAN:', 'NEXT FEW HOURS:'),
       ...p.plan.nextHours.map((x) => `• ${x}`),
       '',
-      'JIKA MEMBURUK:',
+      t('JIKA MEMBURUK:', 'IF IT WORSENS:'),
       ...p.plan.ifWorsens.map((x) => `• ${x}`),
       '',
-      'Darurat: 112 · Dibuat dengan SiagaAI — bukan peringatan resmi.',
+      t(
+        'Darurat: 112 · Dibuat dengan SiagaAI — bukan peringatan resmi.',
+        'Emergency: 112 · Made with SiagaAI — not an official warning.',
+      ),
     ].join('\n');
     try {
       if (navigator.share) await navigator.share({ title: p.plan.title, text });
       else {
         await navigator.clipboard.writeText(text);
-        toast.success('Rencana disalin ke clipboard');
+        toast.success(t('Rencana disalin ke clipboard', 'Plan copied to clipboard'));
       }
     } catch {
       /* user cancelled */
@@ -131,11 +138,11 @@ export default function ActionPlanPage() {
       <PageHeader
         eyebrow={
           <span className="inline-flex items-center gap-1.5">
-            <ClipboardCheck className="size-3.5" /> Rencana kesiapsiagaan
+            <ClipboardCheck className="size-3.5" /> {t('Rencana kesiapsiagaan', 'Preparedness plan')}
           </span>
         }
-        title="Rencana aksi Anda"
-        description={`${location.name}${assessment ? ` · skor ${assessment.personal.score} · ${HAZARDS[assessment.personal.primaryHazard].label.toLowerCase()}` : ''}`}
+        title={t('Rencana aksi Anda', 'Your action plan')}
+        description={`${location.name}${assessment ? ` · ${t('skor', 'score')} ${assessment.personal.score} · ${HAZARDS[assessment.personal.primaryHazard].label.toLowerCase()}` : ''}`}
         mascot="checklist"
         actions={
           <Button
@@ -148,7 +155,7 @@ export default function ActionPlanPage() {
             ) : (
               <Sparkles className={active ? 'text-ai' : ''} />
             )}{' '}
-            {active ? 'Perbarui rencana' : 'Buat Rencana Aksi'}
+            {active ? t('Perbarui rencana', 'Refresh plan') : t('Buat Rencana Aksi', 'Create Action Plan')}
           </Button>
         }
       />
@@ -158,23 +165,23 @@ export default function ActionPlanPage() {
           <Ara pose="checklist" size={150} float />
           <AiThinking
             steps={[
-              'Membaca bahaya utama & level risiko',
-              `Menyesuaikan profil (${context?.profile.transport ?? ''})`,
-              'Memilih langkah dari panduan BNPB/BMKG',
-              'Memvalidasi struktur rencana',
+              t('Membaca bahaya utama & level risiko', 'Reading the main hazard & risk level'),
+              t(`Menyesuaikan profil (${context?.profile.transport ?? ''})`, `Tailoring to your profile (${context?.profile.transport ?? ''})`),
+              t('Memilih langkah dari panduan BNPB/BMKG', 'Choosing steps from BNPB/BMKG guidance'),
+              t('Memvalidasi struktur rencana', 'Validating the plan structure'),
             ]}
           />
         </Card>
       ) : active ? (
-        <section aria-label="Papan rencana aksi">
+        <section aria-label={t('Papan rencana aksi', 'Action plan board')}>
           {/* Plan summary strip */}
-          <div className="mb-5 grid gap-5 rounded-[18px] border border-line bg-white p-5 shadow-soft sm:p-6 lg:grid-cols-[1fr_280px] lg:items-center">
+          <div className="mb-5 grid gap-5 rounded-[18px] border border-line bg-surface p-5 shadow-soft sm:p-6 lg:grid-cols-[1fr_280px] lg:items-center">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <RiskBadge level={active.level} />
                 <span className="telemetry">
                   {active.locationName} · {formatDateTime(active.createdAt)}
-                  {active.scenario && ' · simulasi'}
+                  {active.scenario && t(' · simulasi', ' · simulation')}
                 </span>
               </div>
               <h2 className="mt-2.5 text-[20px] font-bold leading-snug tracking-[-0.02em]">
@@ -190,26 +197,26 @@ export default function ActionPlanPage() {
             <div className="flex items-center gap-4 lg:flex-col lg:items-stretch">
               <div className="flex-1">
                 <div className="flex items-baseline justify-between">
-                  <span className="data-label">Progres</span>
+                  <span className="data-label">{t('Progres', 'Progress')}</span>
                   <span className="display-metric text-[28px]">
                     {progress}
                     <span className="font-mono text-[12px] text-subtle">%</span>
                   </span>
                 </div>
-                <Progress value={progress} color="#208A61" label="Progres rencana aksi" className="mt-2" />
+                <Progress value={progress} color="#208A61" label={t('Progres rencana aksi', 'Action plan progress')} className="mt-2" />
                 <p className="telemetry mt-2 normal-case tracking-normal">
-                  {active.checked.length} dari {total} langkah selesai
+                  {t(`${active.checked.length} dari ${total} langkah selesai`, `${active.checked.length} of ${total} steps done`)}
                 </p>
               </div>
               <div className="flex gap-2">
                 <Button variant="secondary" size="sm" onClick={() => share(active)} className="flex-1">
-                  <Share2 /> Bagikan
+                  <Share2 /> {t('Bagikan', 'Share')}
                 </Button>
                 <Button
                   variant="secondary"
                   size="icon-sm"
                   onClick={() => window.print()}
-                  aria-label="Cetak rencana"
+                  aria-label={t('Cetak rencana', 'Print plan')}
                 >
                   <Printer />
                 </Button>
@@ -218,14 +225,20 @@ export default function ActionPlanPage() {
           </div>
 
           {progress === 100 && (
-            <AraSays pose="success" size={90} tone="calm" className="mb-5" title="Semua langkah selesai! 🎉">
-              Kamu sudah siap. Tetap pantau info resmi BMKG & BPBD.
+            <AraSays
+              pose="success"
+              size={90}
+              tone="calm"
+              className="mb-5"
+              title={t('Semua langkah selesai! 🎉', 'All steps done! 🎉')}
+            >
+              {t('Kamu sudah siap. Tetap pantau info resmi BMKG & BPBD.', "You're prepared. Keep monitoring official BMKG & BPBD updates.")}
             </AraSays>
           )}
 
           {/* Kanban */}
           <div className="snap-row -mx-4 flex gap-4 overflow-x-auto px-4 pb-2 scrollbar-none md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
-            {SECTIONS.map((sec) => {
+            {sections().map((sec) => {
               const items = active.plan[sec.key];
               const doneCount = items.filter((_, i) => active.checked.includes(`${sec.key}:${i}`)).length;
               return (
@@ -253,7 +266,7 @@ export default function ActionPlanPage() {
                             role="checkbox"
                             aria-checked={done}
                             className={cn(
-                              'group relative flex w-full items-start gap-3 overflow-hidden rounded-xl border bg-white p-3.5 text-left shadow-soft transition-all duration-200 hover:-translate-y-px hover:shadow-lift',
+                              'group relative flex w-full items-start gap-3 overflow-hidden rounded-xl border bg-surface p-3.5 text-left shadow-soft transition-all duration-200 hover:-translate-y-px hover:shadow-lift',
                               done ? 'border-line opacity-70' : 'border-line',
                             )}
                           >
@@ -283,7 +296,7 @@ export default function ActionPlanPage() {
                               </span>
                               <span className="mt-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.06em] text-subtle">
                                 <span style={{ color: done ? '#208A61' : sec.accent }}>
-                                  {done ? 'Selesai' : sec.priority}
+                                  {done ? t('Selesai', 'Done') : sec.priority}
                                 </span>
                                 · ✦ AI
                               </span>
@@ -298,29 +311,32 @@ export default function ActionPlanPage() {
             })}
           </div>
 
-          <p className="mt-4 flex items-start gap-2.5 rounded-xl border border-line bg-white px-4 py-3 text-[13px] text-neutral-700">
+          <p className="mt-4 flex items-start gap-2.5 rounded-xl border border-line bg-surface px-4 py-3 text-[13px] text-neutral-700">
             <ShieldAlert className="mt-0.5 size-4 shrink-0 text-brand" /> {active.plan.officialNote}
           </p>
         </section>
       ) : (
         <EmptyState
           pose="checklist"
-          title="Belum ada rencana aksi"
+          title={t('Belum ada rencana aksi', 'No action plan yet')}
           description={
             assessment
-              ? `Buat rencana personal untuk ${location.name}. Tersimpan & bisa dibuka offline.`
-              : 'Menunggu analisis risiko selesai…'
+              ? t(
+                  `Buat rencana personal untuk ${location.name}. Tersimpan & bisa dibuka offline.`,
+                  `Create a personal plan for ${location.name}. It's saved & opens offline.`,
+                )
+              : t('Menunggu analisis risiko selesai…', 'Waiting for the risk analysis to finish…')
           }
           action={
             <Button onClick={() => generate()} disabled={!context}>
-              <Sparkles /> Buat Rencana Aksi Saya
+              <Sparkles /> {t('Buat Rencana Aksi Saya', 'Create My Action Plan')}
             </Button>
           }
         />
       )}
       {!online && (
         <p className="telemetry mt-3 normal-case tracking-normal">
-          Offline — rencana dibuat Local Reasoner dari data terakhir.
+          {t('Offline — rencana dibuat Local Reasoner dari data terakhir.', 'Offline — plans are made by the Local Reasoner from the latest data.')}
         </p>
       )}
 
@@ -333,7 +349,7 @@ export default function ActionPlanPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Phone className="size-4 text-brand" /> Nomor darurat
+                <Phone className="size-4 text-brand" /> {t('Nomor darurat', 'Emergency numbers')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -366,7 +382,7 @@ export default function ActionPlanPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <History className="size-4 text-muted" /> Riwayat rencana
+                <History className="size-4 text-muted" /> {t('Riwayat rencana', 'Plan history')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -383,15 +399,15 @@ export default function ActionPlanPage() {
                       <button className="min-w-0 flex-1 text-left" onClick={() => setActiveId(p.id)}>
                         <span className="block truncate text-[13.5px] font-semibold">{p.locationName}</span>
                         <span className="block font-mono text-[10.5px] text-subtle">
-                          {formatDateTime(p.createdAt)} · {p.checked.length} selesai
-                          {p.scenario ? ' · simulasi' : ''}
+                          {formatDateTime(p.createdAt)} · {p.checked.length} {t('selesai', 'done')}
+                          {p.scenario ? t(' · simulasi', ' · simulation') : ''}
                         </span>
                       </button>
                       <RiskBadge level={p.level} />
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        aria-label="Hapus rencana"
+                        aria-label={t('Hapus rencana', 'Delete plan')}
                         onClick={() => {
                           remove(p.id);
                           if (p.id === activeId) setActiveId(null);
@@ -403,7 +419,9 @@ export default function ActionPlanPage() {
                   ))}
                 </ul>
               ) : (
-                <p className="text-[13px] text-muted">Rencana yang kamu buat akan muncul di sini.</p>
+                <p className="text-[13px] text-muted">
+                  {t('Rencana yang kamu buat akan muncul di sini.', 'Plans you create will appear here.')}
+                </p>
               )}
             </CardContent>
           </Card>
@@ -415,11 +433,12 @@ export default function ActionPlanPage() {
 }
 
 function GoBag() {
+  // Items are keyed by position ("group:item") so checks survive a language switch.
   const [checked, setChecked] = useState<string[]>(() =>
-    JSON.parse(localStorage.getItem('siaga.gobag') ?? '[]'),
+    (JSON.parse(localStorage.getItem('siaga.gobag.v2') ?? '[]') as string[]).filter((k) => /^\d+:\d+$/.test(k)),
   );
   useEffect(() => {
-    localStorage.setItem('siaga.gobag', JSON.stringify(checked));
+    localStorage.setItem('siaga.gobag.v2', JSON.stringify(checked));
   }, [checked]);
   const all = GO_BAG.flatMap((g) => g.items);
   return (
@@ -427,9 +446,11 @@ function GoBag() {
       <CardHeader>
         <div>
           <CardTitle className="flex items-center gap-2">
-            <Backpack className="size-4 text-brand" /> Tas Siaga Bencana
+            <Backpack className="size-4 text-brand" /> {t('Tas Siaga Bencana', 'Disaster Go-Bag')}
           </CardTitle>
-          <p className="mt-1 text-[12.5px] text-muted">Konsep Tas Siaga Bencana BNPB · tersedia offline</p>
+          <p className="mt-1 text-[12.5px] text-muted">
+            {t('Konsep Tas Siaga Bencana BNPB · tersedia offline', 'Based on the BNPB Go-Bag concept · available offline')}
+          </p>
         </div>
         <span className="font-mono text-[12px] font-medium text-muted">
           {checked.length}/{all.length}
@@ -439,26 +460,27 @@ function GoBag() {
         <Progress
           value={(checked.length / all.length) * 100}
           color="#208A61"
-          label="Kelengkapan tas siaga"
+          label={t('Kelengkapan tas siaga', 'Go-bag completeness')}
           className="mb-4"
         />
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {GO_BAG.map((g) => (
+          {GO_BAG.map((g, gi) => (
             <div key={g.group}>
               <p className="data-label mb-2">{g.group}</p>
               <ul className="space-y-0.5">
-                {g.items.map((item) => {
-                  const done = checked.includes(item);
+                {g.items.map((item, ii) => {
+                  const id = `${gi}:${ii}`;
+                  const done = checked.includes(id);
                   return (
-                    <li key={item}>
+                    <li key={id}>
                       <label className="flex cursor-pointer items-start gap-2.5 rounded-lg px-1.5 py-1.5 text-[13.5px] transition-colors hover:bg-raised">
                         <input
                           type="checkbox"
                           checked={done}
                           onChange={() =>
-                            setChecked((c) => (done ? c.filter((x) => x !== item) : [...c, item]))
+                            setChecked((c) => (done ? c.filter((x) => x !== id) : [...c, id]))
                           }
-                          className="mt-0.5 size-4 accent-[#208A61]"
+                          className="mt-0.5 size-4 accent-risk-safe"
                         />
                         <span className={cn(done && 'text-muted line-through')}>{item}</span>
                       </label>

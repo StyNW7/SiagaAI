@@ -13,6 +13,7 @@ import { formatDistance, formatNumber } from '@/lib/format';
 import { levelFromScore } from '@/lib/risk-levels';
 import { clamp, piecewise, round } from '@/lib/utils';
 import type { Confidence, HazardScore, HazardSignals, HazardType, RiskFactor } from './types';
+import { t } from '@/lib/i18n';
 
 type FactorInput = Omit<RiskFactor, 'effectiveWeight' | 'contribution' | 'available'> & {
   normalized: number | null;
@@ -178,7 +179,10 @@ export function combineFactors(
   let note: string | undefined;
   if (cap != null && score > cap) {
     score = cap;
-    note = `Dibatasi ${cap} karena tidak ada deteksi termal satelit dalam radius 100 km.`;
+    note = t(
+      `Dibatasi ${cap} karena tidak ada deteksi termal satelit dalam radius 100 km.`,
+      `Capped at ${cap} because there are no satellite thermal detections within 100 km.`,
+    );
   }
   score = Math.round(clamp(score));
 
@@ -190,12 +194,14 @@ export function combineFactors(
     confidence: available ? confidenceFrom(coverage) : 'low',
     coverage: round(coverage, 2),
     factors,
-    headline: available ? headline : 'Data belum cukup untuk menilai bahaya ini.',
+    headline: available
+      ? headline
+      : t('Data belum cukup untuk menilai bahaya ini.', 'Not enough data to assess this hazard yet.'),
     note,
   };
 }
 
-const NA = 'Tidak tersedia';
+const na = () => t('Tidak tersedia', 'Not available');
 
 export function scoreFire(s: HazardSignals): HazardScore {
   const h = s.hotspots;
@@ -223,61 +229,73 @@ export function scoreFire(s: HazardSignals): HazardScore {
   const noNearby = h != null && h.count100 === 0;
 
   const headline = !h
-    ? 'Data titik panas tidak tersedia; penilaian memakai kondisi cuaca.'
+    ? t(
+        'Data titik panas tidak tersedia; penilaian memakai kondisi cuaca.',
+        'Hotspot data unavailable; assessment uses weather conditions.',
+      )
     : h.nearestKm == null || h.nearestKm > 150
-      ? 'Tidak ada titik panas satelit dalam radius 150 km.'
-      : `${h.count50} titik panas ≤50 km, terdekat ${formatDistance(h.nearestKm)}.`;
+      ? t('Tidak ada titik panas satelit dalam radius 150 km.', 'No satellite hotspots within 150 km.')
+      : t(
+          `${h.count50} titik panas ≤50 km, terdekat ${formatDistance(h.nearestKm)}.`,
+          `${h.count50} hotspot${h.count50 === 1 ? '' : 's'} ≤50 km, nearest ${formatDistance(h.nearestKm)}.`,
+        );
 
   return combineFactors(
     'fire',
     [
       {
         key: 'proximity',
-        label: 'Kedekatan & kepadatan titik panas',
+        label: t('Kedekatan & kepadatan titik panas', 'Hotspot proximity & density'),
         displayValue: h
           ? h.nearestKm == null
-            ? 'Tidak ada dalam 150 km'
-            : `Terdekat ${formatDistance(h.nearestKm)} · ${h.count50} titik ≤50 km`
-          : NA,
+            ? t('Tidak ada dalam 150 km', 'None within 150 km')
+            : t(
+                `Terdekat ${formatDistance(h.nearestKm)} · ${h.count50} titik ≤50 km`,
+                `Nearest ${formatDistance(h.nearestKm)} · ${h.count50} points ≤50 km`,
+              )
+          : na(),
         normalized: proximity,
         weight: WEIGHTS.fire.proximity,
         source: 'NASA FIRMS',
       },
       {
         key: 'recency',
-        label: 'Kebaruan deteksi',
+        label: t('Kebaruan deteksi', 'Detection recency'),
         displayValue: h
           ? h.latestHoursAgo == null
-            ? 'Tidak ada deteksi ≤100 km'
-            : `${Math.round(h.latestHoursAgo)} jam lalu`
-          : NA,
+            ? t('Tidak ada deteksi ≤100 km', 'No detections ≤100 km')
+            : t(`${Math.round(h.latestHoursAgo)} jam lalu`, `${Math.round(h.latestHoursAgo)} h ago`)
+          : na(),
         normalized: recency,
         weight: WEIGHTS.fire.recency,
         source: 'NASA FIRMS',
       },
       {
         key: 'dryness',
-        label: 'Kekeringan lingkungan',
+        label: t('Kekeringan lingkungan', 'Environmental dryness'),
         displayValue:
           w?.humidity != null
-            ? `RH ${Math.round(w.humidity)}% · hujan 24j ${formatNumber(w.precip24h, 1)} mm`
-            : NA,
+            ? t(
+                `RH ${Math.round(w.humidity)}% · hujan 24j ${formatNumber(w.precip24h, 1)} mm`,
+                `RH ${Math.round(w.humidity)}% · 24h rain ${formatNumber(w.precip24h, 1)} mm`,
+              )
+            : na(),
         normalized: dryness,
         weight: WEIGHTS.fire.dryness,
         source: 'BMKG / Open-Meteo',
       },
       {
         key: 'wind',
-        label: 'Kondisi angin',
-        displayValue: w?.windSpeed != null ? `${Math.round(w.windSpeed)} km/jam` : NA,
+        label: t('Kondisi angin', 'Wind conditions'),
+        displayValue: w?.windSpeed != null ? `${Math.round(w.windSpeed)} ${t('km/jam', 'km/h')}` : na(),
         normalized: wind,
         weight: WEIGHTS.fire.wind,
         source: 'BMKG / Open-Meteo',
       },
       {
         key: 'airQuality',
-        label: 'Kualitas udara (PM2.5)',
-        displayValue: aq?.pm25 != null ? `${Math.round(aq.pm25)} µg/m³` : NA,
+        label: t('Kualitas udara (PM2.5)', 'Air quality (PM2.5)'),
+        displayValue: aq?.pm25 != null ? `${Math.round(aq.pm25)} µg/m³` : na(),
         normalized: air,
         weight: WEIGHTS.fire.airQuality,
         source: 'CAMS via Open-Meteo',
@@ -301,35 +319,38 @@ export function scoreSmoke(s: HazardSignals): HazardScore {
 
   const headline =
     aq?.pm25 != null
-      ? `PM2.5 ${Math.round(aq.pm25)} µg/m³${h && h.upwindCount150 > 0 ? `, ${h.upwindCount150} titik panas searah angin` : ''}.`
-      : 'Data kualitas udara tidak tersedia; penilaian memakai titik panas & jarak pandang.';
+      ? `PM2.5 ${Math.round(aq.pm25)} µg/m³${h && h.upwindCount150 > 0 ? t(`, ${h.upwindCount150} titik panas searah angin`, `, ${h.upwindCount150} upwind hotspots`) : ''}.`
+      : t(
+          'Data kualitas udara tidak tersedia; penilaian memakai titik panas & jarak pandang.',
+          'Air-quality data unavailable; assessment uses hotspots & visibility.',
+        );
 
   return combineFactors(
     'smoke',
     [
       {
         key: 'pm25',
-        label: 'Konsentrasi PM2.5',
+        label: t('Konsentrasi PM2.5', 'PM2.5 concentration'),
         displayValue:
           aq?.pm25 != null
             ? `${Math.round(aq.pm25)} µg/m³${aq.usAqi != null ? ` · AQI ${aq.usAqi}` : ''}`
-            : NA,
+            : na(),
         normalized: pm,
         weight: WEIGHTS.smoke.pm25,
         source: 'CAMS via Open-Meteo',
       },
       {
         key: 'upwind',
-        label: 'Titik panas searah angin (≤150 km)',
-        displayValue: upwind == null ? NA : `${h!.upwindCount150} titik`,
+        label: t('Titik panas searah angin (≤150 km)', 'Upwind hotspots (≤150 km)'),
+        displayValue: upwind == null ? na() : t(`${h!.upwindCount150} titik`, `${h!.upwindCount150} points`),
         normalized: upwind,
         weight: WEIGHTS.smoke.upwind,
-        source: 'NASA FIRMS + arah angin',
+        source: t('NASA FIRMS + arah angin', 'NASA FIRMS + wind direction'),
       },
       {
         key: 'visibility',
-        label: 'Jarak pandang',
-        displayValue: w?.visibility != null ? `${formatNumber(w.visibility / 1000, 1)} km` : NA,
+        label: t('Jarak pandang', 'Visibility'),
+        displayValue: w?.visibility != null ? `${formatNumber(w.visibility / 1000, 1)} km` : na(),
         normalized: visibility,
         weight: WEIGHTS.smoke.visibility,
         source: 'BMKG / Open-Meteo',
@@ -350,42 +371,55 @@ export function scoreFlood(s: HazardSignals): HazardScore {
   const warning = warn ? (warn.active ? 100 : 0) : null;
 
   const headline = warn?.active
-    ? `Peringatan dini BMKG aktif di provinsi ini (${warn.count}).`
+    ? t(
+        `Peringatan dini BMKG aktif di provinsi ini (${warn.count}).`,
+        `BMKG early warning active in this province (${warn.count}).`,
+      )
     : w
-      ? `Hujan diperkirakan ${formatNumber(w.precip24h, 1)} mm dalam 24 jam, puncak ${formatNumber(w.precipMaxHourly, 1)} mm/jam.`
-      : 'Data hujan tidak tersedia.';
+      ? t(
+          `Hujan diperkirakan ${formatNumber(w.precip24h, 1)} mm dalam 24 jam, puncak ${formatNumber(w.precipMaxHourly, 1)} mm/jam.`,
+          `Rain forecast ${formatNumber(w.precip24h, 1)} mm over 24 h, peaking at ${formatNumber(w.precipMaxHourly, 1)} mm/h.`,
+        )
+      : t('Data hujan tidak tersedia.', 'Rainfall data unavailable.');
 
   return combineFactors(
     'flood',
     [
       {
         key: 'rain24h',
-        label: 'Akumulasi hujan 24 jam',
-        displayValue: w ? `${formatNumber(w.precip24h, 1)} mm` : NA,
+        label: t('Akumulasi hujan 24 jam', '24-hour rainfall accumulation'),
+        displayValue: w ? `${formatNumber(w.precip24h, 1)} mm` : na(),
         normalized: rain,
         weight: WEIGHTS.flood.rain24h,
         source: 'BMKG / Open-Meteo',
       },
       {
         key: 'intensity',
-        label: 'Intensitas hujan puncak',
-        displayValue: w ? `${formatNumber(w.precipMaxHourly, 1)} mm/jam` : NA,
+        label: t('Intensitas hujan puncak', 'Peak rainfall intensity'),
+        displayValue: w ? `${formatNumber(w.precipMaxHourly, 1)} ${t('mm/jam', 'mm/h')}` : na(),
         normalized: intensity,
         weight: WEIGHTS.flood.intensity,
         source: 'Open-Meteo',
       },
       {
         key: 'river',
-        label: 'Anomali debit sungai terdekat',
-        displayValue: r?.ratio != null ? `${formatNumber(r.ratio, 1)}× rata-rata 30 hari` : NA,
+        label: t('Anomali debit sungai terdekat', 'Nearest river discharge anomaly'),
+        displayValue:
+          r?.ratio != null
+            ? t(`${formatNumber(r.ratio, 1)}× rata-rata 30 hari`, `${formatNumber(r.ratio, 1)}× 30-day average`)
+            : na(),
         normalized: river,
         weight: WEIGHTS.flood.river,
         source: 'GloFAS via Open-Meteo',
       },
       {
         key: 'warning',
-        label: 'Peringatan dini cuaca BMKG',
-        displayValue: warn ? (warn.active ? `${warn.count} peringatan aktif` : 'Tidak ada') : NA,
+        label: t('Peringatan dini cuaca BMKG', 'BMKG weather early warning'),
+        displayValue: warn
+          ? warn.active
+            ? t(`${warn.count} peringatan aktif`, `${warn.count} active warnings`)
+            : t('Tidak ada', 'None')
+          : na(),
         normalized: warning,
         weight: WEIGHTS.flood.warning,
         source: 'BMKG Nowcast',
@@ -408,46 +442,49 @@ export function scoreWeather(s: HazardSignals): HazardScore {
   const heat = w ? piecewise(w.tempMax, CURVES.tempMax) : null;
 
   const headline = !w
-    ? 'Data cuaca tidak tersedia.'
+    ? t('Data cuaca tidak tersedia.', 'Weather data unavailable.')
     : w.thunderstormHours > 0
-      ? `Potensi hujan petir ${w.thunderstormHours} jam dalam 24 jam ke depan.`
+      ? t(
+          `Potensi hujan petir ${w.thunderstormHours} jam dalam 24 jam ke depan.`,
+          `Possible thunderstorms for ${w.thunderstormHours} h in the next 24 hours.`,
+        )
       : w.gustMax >= 40
-        ? `Hembusan angin hingga ${Math.round(w.gustMax)} km/jam.`
+        ? t(`Hembusan angin hingga ${Math.round(w.gustMax)} km/jam.`, `Wind gusts up to ${Math.round(w.gustMax)} km/h.`)
         : w.tempMax >= 35
-          ? `Suhu maksimum mencapai ${Math.round(w.tempMax)}°C.`
-          : `Peluang hujan maksimum ${Math.round(w.precipProbMax)}%.`;
+          ? t(`Suhu maksimum mencapai ${Math.round(w.tempMax)}°C.`, `Maximum temperature reaches ${Math.round(w.tempMax)}°C.`)
+          : t(`Peluang hujan maksimum ${Math.round(w.precipProbMax)}%.`, `Maximum rain probability ${Math.round(w.precipProbMax)}%.`);
 
   return combineFactors(
     'weather',
     [
       {
         key: 'thunderstorm',
-        label: 'Potensi badai petir',
-        displayValue: w ? `${w.thunderstormHours} jam dalam 24 jam` : NA,
+        label: t('Potensi badai petir', 'Thunderstorm potential'),
+        displayValue: w ? t(`${w.thunderstormHours} jam dalam 24 jam`, `${w.thunderstormHours} h in 24 h`) : na(),
         normalized: storm,
         weight: WEIGHTS.weather.thunderstorm,
         source: 'BMKG / Open-Meteo',
       },
       {
         key: 'gust',
-        label: 'Hembusan angin maksimum',
-        displayValue: w ? `${Math.round(w.gustMax)} km/jam` : NA,
+        label: t('Hembusan angin maksimum', 'Maximum wind gust'),
+        displayValue: w ? `${Math.round(w.gustMax)} ${t('km/jam', 'km/h')}` : na(),
         normalized: gust,
         weight: WEIGHTS.weather.gust,
         source: 'Open-Meteo',
       },
       {
         key: 'rainProbability',
-        label: 'Peluang hujan maksimum',
-        displayValue: w ? `${Math.round(w.precipProbMax)}%` : NA,
+        label: t('Peluang hujan maksimum', 'Maximum rain probability'),
+        displayValue: w ? `${Math.round(w.precipProbMax)}%` : na(),
         normalized: prob,
         weight: WEIGHTS.weather.rainProbability,
         source: 'Open-Meteo',
       },
       {
         key: 'heat',
-        label: 'Suhu maksimum',
-        displayValue: w ? `${Math.round(w.tempMax)}°C` : NA,
+        label: t('Suhu maksimum', 'Maximum temperature'),
+        displayValue: w ? `${Math.round(w.tempMax)}°C` : na(),
         normalized: heat,
         weight: WEIGHTS.weather.heat,
         source: 'BMKG / Open-Meteo',

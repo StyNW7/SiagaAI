@@ -9,6 +9,7 @@ import { useDocumentTitle } from '@/hooks/use-misc';
 import { formatDateTime, timeAgo } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { AlertLevel, AlertOrigin } from '@/types/domain';
+import { t } from '@/lib/i18n';
 
 const ICON: Record<AlertLevel, typeof Info> = {
   critical: AlertOctagon,
@@ -18,7 +19,7 @@ const ICON: Record<AlertLevel, typeof Info> = {
 };
 
 export default function AlertsPage() {
-  useDocumentTitle('Pusat Peringatan');
+  useDocumentTitle(t('Pusat Peringatan', 'Alert Center'));
   const { alerts, counts, view } = useAlerts();
   const [origin, setOrigin] = useState<'all' | AlertOrigin>('all');
   const [level, setLevel] = useState<'all' | AlertLevel>('all');
@@ -35,19 +36,22 @@ export default function AlertsPage() {
             <Bell className="size-3.5" /> Alert Center
           </span>
         }
-        title="Pusat peringatan"
-        description="Peringatan resmi BMKG + sinyal indikatif SiagaAI untuk lokasimu."
+        title={t('Pusat peringatan', 'Alert center')}
+        description={t(
+          'Peringatan resmi BMKG + sinyal indikatif SiagaAI untuk lokasimu.',
+          'Official BMKG warnings + SiagaAI indicative signals for your location.',
+        )}
         mascot="alert"
         actions={
           <dl className="flex flex-col items-start gap-1.5 sm:items-end">
             <div className="flex items-center gap-2">
-              <dt className="telemetry">Cuaca</dt>
+              <dt className="telemetry">{t('Cuaca', 'Weather')}</dt>
               <dd>
                 <FreshnessBadge provenance={view.warnings.data?.provenance} />
               </dd>
             </div>
             <div className="flex items-center gap-2">
-              <dt className="telemetry">Gempa</dt>
+              <dt className="telemetry">{t('Gempa', 'Quakes')}</dt>
               <dd>
                 <FreshnessBadge provenance={view.earthquakes.data?.provenance} />
               </dd>
@@ -66,7 +70,7 @@ export default function AlertsPage() {
               onClick={() => setLevel(level === l ? 'all' : l)}
               aria-pressed={level === l}
               className={cn(
-                'relative flex flex-col gap-3 bg-white p-5 text-left transition-colors hover:bg-raised',
+                'relative flex flex-col gap-3 bg-surface p-5 text-left transition-colors hover:bg-raised',
                 level === l && 'bg-raised',
               )}
             >
@@ -85,25 +89,31 @@ export default function AlertsPage() {
 
       <Tabs value={origin} onValueChange={(v) => setOrigin(v as typeof origin)} className="mb-4">
         <TabsList>
-          <TabsTrigger value="all">Semua</TabsTrigger>
-          <TabsTrigger value="official">Resmi (BMKG)</TabsTrigger>
-          <TabsTrigger value="siaga">Indikatif SiagaAI</TabsTrigger>
+          <TabsTrigger value="all">{t('Semua', 'All')}</TabsTrigger>
+          <TabsTrigger value="official">{t('Resmi (BMKG)', 'Official (BMKG)')}</TabsTrigger>
+          <TabsTrigger value="siaga">{t('Indikatif SiagaAI', 'SiagaAI indicative')}</TabsTrigger>
         </TabsList>
       </Tabs>
 
       {view.warnings.state === 'error' && (
         <ErrorState
           className="mb-4"
-          title="Peringatan dini BMKG sementara tidak dapat dimuat"
-          description="Informasi gempa & sinyal indikatif tetap ditampilkan. Periksa langsung bmkg.go.id untuk peringatan terkini."
+          title={t('Peringatan dini BMKG sementara tidak dapat dimuat', 'BMKG early warnings temporarily could not be loaded')}
+          description={t(
+            'Informasi gempa & sinyal indikatif tetap ditampilkan. Periksa langsung bmkg.go.id untuk peringatan terkini.',
+            'Earthquake info & indicative signals are still shown. Check bmkg.go.id directly for the latest warnings.',
+          )}
         />
       )}
 
       {list.length === 0 ? (
         <EmptyState
           pose="rest"
-          title="Tidak ada peringatan di filter ini"
-          description="Kondisi relatif tenang. Ara terus memantau sumber resmi."
+          title={t('Tidak ada peringatan di filter ini', 'No alerts in this filter')}
+          description={t(
+            'Kondisi relatif tenang. Ara terus memantau sumber resmi.',
+            'Conditions are relatively calm. Ara keeps monitoring official sources.',
+          )}
         />
       ) : (
         <ul className="space-y-3">
@@ -127,10 +137,10 @@ export default function AlertsPage() {
                         <span
                           className={cn(
                             'rounded-full px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.06em]',
-                            a.origin === 'official' ? 'bg-ink text-white' : 'bg-ai-soft text-ai-deep',
+                            a.origin === 'official' ? 'bg-inverse text-on-inverse' : 'bg-ai-soft text-ai-deep',
                           )}
                         >
-                          {a.origin === 'official' ? 'Resmi' : '✦ Indikatif'}
+                          {a.origin === 'official' ? t('Resmi', 'Official') : t('✦ Indikatif', '✦ Indicative')}
                         </span>
                         <span className="text-[12.5px] font-medium text-muted">{a.category}</span>
                       </div>
@@ -164,7 +174,7 @@ export default function AlertsPage() {
                             className="font-semibold text-ink hover:underline"
                             onClick={() => setExpanded(open ? null : a.id)}
                           >
-                            {open ? 'Ringkas' : 'Selengkapnya'}
+                            {open ? t('Ringkas', 'Show less') : t('Selengkapnya', 'Read more')}
                           </button>
                         )}
                         {a.sourceUrl && (
@@ -174,7 +184,7 @@ export default function AlertsPage() {
                             rel="noreferrer noopener"
                             className="inline-flex items-center gap-1 font-semibold text-brand hover:underline"
                           >
-                            Sumber resmi <ExternalLink className="size-3" />
+                            {t('Sumber resmi', 'Official source')} <ExternalLink className="size-3" />
                           </a>
                         )}
                       </div>

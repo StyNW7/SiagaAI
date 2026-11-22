@@ -11,13 +11,13 @@ export const buttonVariants = cva(
         primary:
           'bg-brand text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.14),0_1px_2px_rgb(163_19_25/0.25)] hover:bg-brand-dark',
         secondary:
-          'bg-white text-ink border border-line-strong/80 shadow-soft hover:border-neutral-400 hover:bg-raised',
+          'bg-surface text-ink border border-line-strong/80 shadow-soft hover:border-neutral-400 hover:bg-raised',
         ghost: 'text-ink hover:bg-neutral-100',
         ai: 'bg-ai text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.14)] hover:bg-ai-deep',
-        'ai-soft': 'bg-ai-soft text-ai-deep hover:bg-[#E2E5FF]',
-        soft: 'bg-brand-soft text-brand-dark hover:bg-[#F8DCDD]',
-        dark: 'bg-ink text-white hover:bg-graphite',
-        critical: 'bg-risk-critical text-white hover:bg-brand-deep',
+        'ai-soft': 'bg-ai-soft text-ai-deep hover:bg-[#E2E5FF] dark:hover:bg-[#2a2c5c]',
+        soft: 'bg-brand-soft text-brand-dark hover:bg-[#F8DCDD] dark:hover:bg-[#4d1c1f]',
+        dark: 'bg-inverse text-on-inverse hover:bg-inverse-hover',
+        critical: 'bg-risk-critical text-white hover:brightness-90',
         link: 'text-brand underline-offset-4 hover:underline px-0 h-auto',
       },
       size: {

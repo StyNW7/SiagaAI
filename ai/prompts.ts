@@ -4,7 +4,7 @@
  */
 import type { AiContext, AiTask, ChatMessage } from "./contracts.ts";
 
-export const PROMPT_VERSION = "2026-11-22.1";
+export const PROMPT_VERSION = "2026-11-22.2";
 
 export const SYSTEM_PROMPT = `Anda adalah SiagaAI, asisten kecerdasan kebencanaan personal untuk masyarakat Indonesia.
 Misi: menjembatani peringatan dini dan tindakan dini — menjawab "Apa yang terjadi?", "Apa artinya bagi saya?", dan "Apa yang harus saya lakukan?".
@@ -16,7 +16,7 @@ ATURAN WAJIB:
 4. SiagaAI adalah alat bantu keputusan, BUKAN otoritas darurat. Bila ada peringatan resmi (BMKG/BNPB/BPBD), arahkan pengguna mengikutinya. Nomor darurat: 112.
 5. Jika dataMode = "scenario", sebutkan bahwa ini simulasi demonstrasi. Jika "snapshot"/"cached", sebutkan data bukan real-time.
 6. Jika data tidak tersedia, katakan dengan jujur. Jangan mengisi kekosongan dengan asumsi.
-7. Bahasa Indonesia yang hangat, tenang, jelas, tidak menakut-nakuti, kalimat pendek, mudah dipahami awam. Hindari jargon teknis.
+7. Gaya bahasa hangat, tenang, jelas, tidak menakut-nakuti, kalimat pendek, mudah dipahami awam. Hindari jargon teknis. Tulis dalam BAHASA KELUARAN yang diminta (default Bahasa Indonesia); jika "en", seluruh nilai teks wajib berbahasa Inggris dengan makna yang sama.
 8. Rekomendasi harus spesifik terhadap profil pengguna (pekerjaan, transportasi, paparan luar ruang) dan berlandaskan daftar "guidance" pada konteks.
 9. Tidak memberi diagnosis atau saran medis spesifik; untuk keluhan kesehatan, sarankan menghubungi tenaga kesehatan.
 10. Keluarkan HANYA JSON valid sesuai skema yang diminta, tanpa markdown code fence, tanpa teks lain.`;
@@ -48,9 +48,16 @@ SKEMA JSON:
 {"answer": string, "followUps": string[2–3] (pertanyaan lanjutan singkat yang relevan)}`,
 };
 
-/** Builds the user-turn payload: task instructions + compact JSON context. */
+const LANGUAGE_INSTRUCTION = {
+  id: "BAHASA KELUARAN: Bahasa Indonesia. Tulis semua nilai teks JSON dalam Bahasa Indonesia.",
+  en: 'OUTPUT LANGUAGE: English. Write EVERY JSON text value in clear, warm, plain English (keep proper nouns such as BMKG, BNPB, BPBD and place names; keep JSON keys and enum values like "flood" unchanged). Never switch to Indonesian.',
+} as const;
+
+/** Builds the user-turn payload: task instructions + output language + compact JSON context. */
 export function buildUserPrompt(task: AiTask, context: AiContext): string {
+  const lang = context.language === "en" ? "en" : "id";
   return `${TASK_INSTRUCTIONS[task]}
+${LANGUAGE_INSTRUCTION[lang]}
 
 KONTEKS (JSON, sumber kebenaran tunggal):
 ${JSON.stringify(context)}`;
@@ -80,12 +87,17 @@ export function buildPrompt(
     messages: [
       {
         role: "user",
-        content: `${base}\n\nPercakapan akan dimulai. Balas setiap pertanyaan dengan JSON sesuai skema.`,
+        content:
+          context.language === "en"
+            ? `${base}\n\nThe conversation starts now. Reply to every question with JSON matching the schema, in English.`
+            : `${base}\n\nPercakapan akan dimulai. Balas setiap pertanyaan dengan JSON sesuai skema.`,
       },
       {
         role: "assistant",
         content:
-          '{"answer":"Siap. Saya akan menjawab berdasarkan konteks.","followUps":[]}',
+          context.language === "en"
+            ? '{"answer":"Ready. I will answer based on the context, in English.","followUps":[]}'
+            : '{"answer":"Siap. Saya akan menjawab berdasarkan konteks.","followUps":[]}',
       },
       ...prior,
       { role: "user", content: last?.content ?? "" },

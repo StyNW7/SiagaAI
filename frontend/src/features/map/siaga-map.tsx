@@ -14,6 +14,9 @@ import { formatDateTime, timeAgo } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { weatherIconKey } from '@/lib/weather-codes';
 import type { CommunityReport, Earthquake, Hotspot, UserLocation } from '@/types/domain';
+import { t } from '@/lib/i18n';
+import { localizeQuakeText } from '@/features/alerts/use-alerts';
+import { useResolvedTheme, type ResolvedTheme } from '@/features/preferences/theme';
 
 export interface MapLayers {
   hotspots: boolean;
@@ -62,17 +65,26 @@ interface Props {
   padding?: { top: number; bottom: number; left: number; right: number };
 }
 
-const OFM = 'https://tiles.openfreemap.org/styles/positron';
-const CARTO = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
+/** Basemaps per theme — light "positron" and its dark counterpart, with a CARTO fallback each. */
+const BASEMAPS: Record<ResolvedTheme, string[]> = {
+  light: [
+    'https://tiles.openfreemap.org/styles/positron',
+    'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+  ],
+  dark: [
+    'https://tiles.openfreemap.org/styles/dark',
+    'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+  ],
+};
 const FONT = ['Noto Sans Regular'];
 
-async function loadStyle(): Promise<string | StyleSpecification> {
-  for (const url of [OFM, CARTO]) {
+async function loadStyle(theme: ResolvedTheme): Promise<string | StyleSpecification> {
+  for (const url of BASEMAPS[theme]) {
     try {
       const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 6000);
+      const timer = setTimeout(() => ctrl.abort(), 6000);
       const res = await fetch(url, { signal: ctrl.signal });
-      clearTimeout(t);
+      clearTimeout(timer);
       if (res.ok) return (await res.json()) as StyleSpecification;
     } catch {
       /* try next */
@@ -82,7 +94,9 @@ async function loadStyle(): Promise<string | StyleSpecification> {
   return {
     version: 8,
     sources: {},
-    layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#EEF1F4' } }],
+    layers: [
+      { id: 'bg', type: 'background', paint: { 'background-color': theme === 'dark' ? '#131517' : '#EEF1F4' } },
+    ],
     glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
   };
 }
@@ -140,17 +154,27 @@ const REPORT_PATH: Record<string, string> = {
 };
 const reportIcon = (h: string, size?: number) =>
   svg(REPORT_PATH[h] ?? REPORT_PATH.weather, REPORT_COLOR[h] ?? '#4E54D8', size);
-const REPORT_LABEL: Record<string, string> = {
-  fire: 'Kemungkinan api vegetasi',
-  smoke: 'Asap',
-  flood: 'Jalan tergenang/banjir',
-  weather: 'Cuaca ekstrem',
-};
+const reportLabel = (h: string) =>
+  (
+    ({
+      fire: t('Kemungkinan api vegetasi', 'Possible vegetation fire'),
+      smoke: t('Asap', 'Smoke'),
+      flood: t('Jalan tergenang/banjir', 'Flooded road/flood'),
+      weather: t('Cuaca ekstrem', 'Extreme weather'),
+    }) as Record<string, string>
+  )[h] ?? h;
 
 const esc = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
-export function SiagaMap({
+/** Re-creates the map when the theme flips so the basemap & overlays match light/dark. */
+export function SiagaMap(props: Props) {
+  const theme = useResolvedTheme();
+  return <SiagaMapInner key={theme} theme={theme} {...props} />;
+}
+
+function SiagaMapInner({
+  theme,
   hotspots,
   provinces,
   provinceStats,
@@ -167,7 +191,7 @@ export function SiagaMap({
   compact,
   initialView,
   padding,
-}: Props) {
+}: Props & { theme: ResolvedTheme }) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
   const [ready, setReady] = useState(false);
@@ -184,7 +208,7 @@ export function SiagaMap({
   useEffect(() => {
     let disposed = false;
     let map: MlMap | null = null;
-    loadStyle().then((style) => {
+    loadStyle(theme).then((style) => {
       if (disposed || !container.current) return;
       try {
         map = new maplibregl.Map({
@@ -211,7 +235,10 @@ export function SiagaMap({
         new maplibregl.AttributionControl({
           compact: true,
           customAttribution:
-            'Titik panas: NASA FIRMS · Cuaca: BMKG, Open-Meteo · Batas: BAKOSURTANAL/Dukcapil',
+            t(
+              'Titik panas: NASA FIRMS · Cuaca: BMKG, Open-Meteo · Batas: BAKOSURTANAL/Dukcapil',
+              'Hotspots: NASA FIRMS · Weather: BMKG, Open-Meteo · Boundaries: BAKOSURTANAL/Dukcapil',
+            ),
         }),
         'bottom-right',
       );
@@ -268,7 +295,12 @@ export function SiagaMap({
           type: 'line',
           source: 'provinces',
           paint: {
-            'line-color': ['case', ['boolean', ['feature-state', 'selected'], false], '#171717', '#94A3B8'],
+            'line-color': [
+              'case',
+              ['boolean', ['feature-state', 'selected'], false],
+              theme === 'dark' ? '#F4F3EF' : '#171717',
+              theme === 'dark' ? '#5B6472' : '#94A3B8',
+            ],
             'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], 2, 0.6],
             'line-opacity': 0.8,
           },
@@ -319,7 +351,7 @@ export function SiagaMap({
             'circle-radius': ['step', ['get', 'point_count'], 12, 20, 16, 100, 21, 500, 27],
             'circle-opacity': 0.88,
             'circle-stroke-width': 2,
-            'circle-stroke-color': '#fff',
+            'circle-stroke-color': theme === 'dark' ? '#171716' : '#fff',
           },
         });
         map.addLayer({
@@ -344,7 +376,7 @@ export function SiagaMap({
             'circle-color': FIRE_RAMP as never,
             'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 3.5, 10, 6, 14, 9],
             'circle-stroke-width': 1.5,
-            'circle-stroke-color': '#fff',
+            'circle-stroke-color': theme === 'dark' ? '#171716' : '#fff',
           },
         });
         map.addLayer({
@@ -410,12 +442,12 @@ export function SiagaMap({
             .setLngLat((f.geometry as Point).coordinates as [number, number])
             .setHTML(
               `<div style="font-size:13px;line-height:1.45">
-                <div style="font-weight:700;color:#171717">🔥 Titik Panas Satelit</div>
-                <div style="color:#6B6B6B;font-size:11px;margin-bottom:6px">Deteksi termal — bukan konfirmasi kebakaran</div>
+                <div style="font-weight:700;color:var(--color-ink)">🔥 ${t('Titik Panas Satelit', 'Satellite Hotspot')}</div>
+                <div style="color:var(--color-muted);font-size:11px;margin-bottom:6px">${t('Deteksi termal — bukan konfirmasi kebakaran', 'Thermal detection — not a confirmed fire')}</div>
                 <div><b>${esc(timeAgo(p.time))}</b> · ${esc(formatDateTime(p.time))}</div>
-                <div>Satelit ${esc(p.sat)} (VIIRS) · ${p.dn === 'N' ? 'malam' : 'siang'}</div>
-                <div>Keyakinan: ${p.conf === 'high' ? 'tinggi' : p.conf === 'low' ? 'rendah' : 'nominal'} · FRP ${p.frp} MW</div>
-                <div style="margin-top:6px;color:#6B6B6B;font-size:11px">Sumber: NASA FIRMS</div>
+                <div>${t('Satelit', 'Satellite')} ${esc(p.sat)} (VIIRS) · ${p.dn === 'N' ? t('malam', 'night') : t('siang', 'day')}</div>
+                <div>${t('Keyakinan', 'Confidence')}: ${p.conf === 'high' ? t('tinggi', 'high') : p.conf === 'low' ? t('rendah', 'low') : 'nominal'} · FRP ${p.frp} MW</div>
+                <div style="margin-top:6px;color:var(--color-muted);font-size:11px">${t('Sumber', 'Source')}: NASA FIRMS</div>
               </div>`,
             )
             .addTo(map);
@@ -433,7 +465,7 @@ export function SiagaMap({
           new maplibregl.Popup({ offset: 10, maxWidth: '260px' })
             .setLngLat((f.geometry as Point).coordinates as [number, number])
             .setHTML(
-              `<div style="font-size:13px;line-height:1.45"><div style="font-weight:700">Gempa M${p.mag}</div><div>${esc(p.region)}</div><div style="color:#6B6B6B">${esc(formatDateTime(p.time))} · kedalaman ${p.depth} km</div><div style="margin-top:4px">${esc(p.potential)}</div><div style="margin-top:6px;color:#6B6B6B;font-size:11px">Sumber: BMKG</div></div>`,
+              `<div style="font-size:13px;line-height:1.45"><div style="font-weight:700">${t('Gempa', 'Earthquake')} M${p.mag}</div><div>${esc(localizeQuakeText(p.region))}</div><div style="color:var(--color-muted)">${esc(formatDateTime(p.time))} · ${t('kedalaman', 'depth')} ${p.depth} km</div><div style="margin-top:4px">${esc(localizeQuakeText(p.potential))}</div><div style="margin-top:6px;color:var(--color-muted);font-size:11px">${t('Sumber', 'Source')}: BMKG</div></div>`,
             )
             .addTo(map);
         });
@@ -540,14 +572,14 @@ export function SiagaMap({
     if (!user) return;
     const el = document.createElement('div');
     el.className = 'relative grid size-5 place-items-center';
-    el.setAttribute('aria-label', `Lokasi Anda: ${user.name}`);
+    el.setAttribute('aria-label', `${t('Lokasi Anda', 'Your location')}: ${user.name}`);
     el.innerHTML =
-      '<span class="absolute inset-0 rounded-full bg-[#4E54D8]/40 animate-pulse-ring"></span><span class="relative size-4 rounded-full border-[3px] border-white bg-[#4E54D8] shadow-lg"></span>';
+      '<span class="absolute inset-0 rounded-full bg-ai/40 animate-pulse-ring"></span><span class="relative size-4 rounded-full border-[3px] border-surface bg-ai shadow-lg"></span>';
     markers.current.user = new maplibregl.Marker({ element: el })
       .setLngLat([user.lon, user.lat])
       .setPopup(
         new maplibregl.Popup({ offset: 14 }).setHTML(
-          `<b>${esc(user.name)}</b><br/><span style="color:#6B6B6B">${esc(user.region ?? '')}</span>`,
+          `<b>${esc(user.name)}</b><br/><span style="color:var(--color-muted)">${esc(user.region ?? '')}</span>`,
         ),
       )
       .addTo(map);
@@ -567,16 +599,16 @@ export function SiagaMap({
         );
       if (layers.air && s.pm25 != null)
         parts.push(
-          `<span style="display:inline-flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:9px;background:${pmColor(s.pm25)}"></span><b>${Math.round(s.pm25)}</b><span style="color:#6B6B6B;font-size:9px">PM2.5</span></span>`,
+          `<span style="display:inline-flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:9px;background:${pmColor(s.pm25)}"></span><b>${Math.round(s.pm25)}</b><span style="color:var(--color-muted);font-size:9px">PM2.5</span></span>`,
         );
       if (!parts.length) continue;
       const el = document.createElement('div');
       el.style.cssText =
-        'display:flex;gap:6px;align-items:center;background:#fff;border:1px solid #E6E5E1;border-radius:999px;padding:4px 9px;font:600 11px var(--font-sans);color:#171717;box-shadow:0 2px 6px rgba(0,0,0,.08);white-space:nowrap';
-      el.innerHTML = parts.join('<span style="width:1px;height:12px;background:#E5E7EB"></span>');
+        'display:flex;gap:6px;align-items:center;background:var(--color-surface);border:1px solid var(--color-line);border-radius:999px;padding:4px 9px;font:600 11px var(--font-sans);color:var(--color-ink);box-shadow:0 2px 6px rgba(0,0,0,.08);white-space:nowrap';
+      el.innerHTML = parts.join('<span style="width:1px;height:12px;background:var(--color-line)"></span>');
       el.title = city.name;
       const popup = new maplibregl.Popup({ offset: 12 }).setHTML(
-        `<div style="font-size:13px;line-height:1.5"><b>${esc(city.name)}</b><div style="color:#6B6B6B;font-size:11px">${esc(city.province)}</div>${s.temperature != null ? `<div>Suhu ${Math.round(s.temperature)}°C · RH ${s.humidity ?? '–'}%</div>` : ''}${s.windSpeed != null ? `<div>Angin ${Math.round(s.windSpeed)} km/jam</div>` : ''}${s.pm25 != null ? `<div>PM2.5 ${Math.round(s.pm25)} µg/m³ (model CAMS)</div>` : ''}<div style="color:#6B6B6B;font-size:11px;margin-top:4px">Sumber: Open-Meteo</div></div>`,
+        `<div style="font-size:13px;line-height:1.5"><b>${esc(city.name)}</b><div style="color:var(--color-muted);font-size:11px">${esc(city.province)}</div>${s.temperature != null ? `<div>${t('Suhu', 'Temperature')} ${Math.round(s.temperature)}°C · RH ${s.humidity ?? '–'}%</div>` : ''}${s.windSpeed != null ? `<div>${t('Angin', 'Wind')} ${Math.round(s.windSpeed)} ${t('km/jam', 'km/h')}</div>` : ''}${s.pm25 != null ? `<div>PM2.5 ${Math.round(s.pm25)} µg/m³ (${t('model CAMS', 'CAMS model')})</div>` : ''}<div style="color:var(--color-muted);font-size:11px;margin-top:4px">${t('Sumber', 'Source')}: Open-Meteo</div></div>`,
       );
       markers.current.cities.push(
         new maplibregl.Marker({ element: el }).setLngLat([city.lon, city.lat]).setPopup(popup).addTo(map),
@@ -592,11 +624,11 @@ export function SiagaMap({
     if (!layers.community || !reports) return;
     for (const r of reports) {
       const el = document.createElement('button');
-      el.style.cssText = `width:32px;height:32px;border-radius:999px;background:#fff;border:2px solid ${REPORT_COLOR[r.hazard] ?? '#4E54D8'};display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.14);cursor:pointer`;
+      el.style.cssText = `width:32px;height:32px;border-radius:999px;background:var(--color-surface);border:2px solid ${REPORT_COLOR[r.hazard] ?? '#4E54D8'};display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.14);cursor:pointer`;
       el.innerHTML = reportIcon(r.hazard);
-      el.setAttribute('aria-label', `Laporan komunitas: ${REPORT_LABEL[r.hazard]}`);
+      el.setAttribute('aria-label', `${t('Laporan komunitas', 'Community report')}: ${reportLabel(r.hazard)}`);
       const popup = new maplibregl.Popup({ offset: 16, maxWidth: '260px' }).setHTML(
-        `<div style="font-size:13px;line-height:1.45"><div style="display:inline-block;background:#FDF6E8;color:#8A5A0B;font:500 9.5px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;margin-bottom:6px">Laporan warga · belum terverifikasi</div><div style="font-weight:700;display:flex;align-items:center;gap:6px">${reportIcon(r.hazard, 14)} ${esc(REPORT_LABEL[r.hazard])}</div><div>${esc(r.description)}</div><div style="color:#6B6B6B;font-size:11px;margin-top:4px">${esc(r.locationName)} · ${esc(timeAgo(r.createdAt))}${r.isExample ? ' · contoh demo' : ''}</div></div>`,
+        `<div style="font-size:13px;line-height:1.45"><div style="display:inline-block;background:var(--risk-moderate-soft);color:var(--risk-moderate-text);font:500 9.5px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;margin-bottom:6px">${t('Laporan warga · belum terverifikasi', 'Community report · unverified')}</div><div style="font-weight:700;display:flex;align-items:center;gap:6px">${reportIcon(r.hazard, 14)} ${esc(reportLabel(r.hazard))}</div><div>${esc(r.description)}</div><div style="color:var(--color-muted);font-size:11px;margin-top:4px">${esc(r.locationName)} · ${esc(timeAgo(r.createdAt))}${r.isExample ? t(' · contoh demo', ' · demo example') : ''}</div></div>`,
       );
       markers.current.reports.push(
         new maplibregl.Marker({ element: el }).setLngLat([r.lon, r.lat]).setPopup(popup).addTo(map),
@@ -627,24 +659,29 @@ export function SiagaMap({
   }, [ready, focus?.key]);
 
   return (
-    <div className={cn('relative isolate overflow-hidden bg-[#EEF1F4]', className)}>
+    <div className={cn('relative isolate overflow-hidden bg-[#EEF1F4] dark:bg-[#131517]', className)}>
       <div
         ref={container}
         style={{ position: 'absolute', inset: 0 }}
         role="application"
-        aria-label="Peta interaktif SiagaAI: titik panas, peringatan, cuaca dan laporan komunitas"
+        aria-label={t(
+          'Peta interaktif SiagaAI: titik panas, peringatan, cuaca dan laporan komunitas',
+          'SiagaAI interactive map: hotspots, warnings, weather and community reports',
+        )}
       />
       {!ready && !failed && (
         <div className="absolute inset-0 grid place-items-center">
-          <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[13px] font-medium text-muted shadow-soft">
-            <span className="size-2 animate-pulse rounded-full bg-brand" /> Memuat peta Nusantara…
+          <div className="flex items-center gap-2 rounded-full bg-surface px-4 py-2 text-[13px] font-medium text-muted shadow-soft">
+            <span className="size-2 animate-pulse rounded-full bg-brand" /> {t('Memuat peta Nusantara…', 'Loading the Nusantara map…')}
           </div>
         </div>
       )}
       {failed && (
         <div className="absolute inset-0 grid place-items-center p-6 text-center text-sm text-muted">
-          Peta tidak dapat dimuat di perangkat ini (WebGL tidak tersedia). Data risiko tetap tersedia di
-          dashboard.
+          {t(
+            'Peta tidak dapat dimuat di perangkat ini (WebGL tidak tersedia). Data risiko tetap tersedia di dashboard.',
+            'The map cannot load on this device (WebGL unavailable). Risk data is still available on the dashboard.',
+          )}
         </div>
       )}
     </div>

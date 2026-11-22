@@ -8,6 +8,7 @@ import {
 } from 'radix-ui';
 import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { t } from '@/lib/i18n';
 
 /* ── Dialog ───────────────────────────────────────────────────────────── */
 
@@ -24,10 +25,10 @@ export function DialogContent({
 }: ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { title: string; description?: string }) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-neutral-950/35 backdrop-blur-[3px] data-[state=open]:animate-fade-in" />
+      <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-[#141413]/35 dark:bg-black/65 backdrop-blur-[3px] data-[state=open]:animate-fade-in" />
       <DialogPrimitive.Content
         className={cn(
-          'fixed left-1/2 top-1/2 z-[61] max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 scrollbar-thin overflow-y-auto rounded-[18px] border border-line bg-white p-6 shadow-float focus:outline-none data-[state=open]:animate-fade-up sm:p-7',
+          'fixed left-1/2 top-1/2 z-[61] max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 scrollbar-thin overflow-y-auto rounded-[18px] border border-line bg-surface p-6 shadow-float focus:outline-none data-[state=open]:animate-fade-up sm:p-7',
           className,
         )}
         {...p}
@@ -47,7 +48,7 @@ export function DialogContent({
         {children}
         <DialogPrimitive.Close
           className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full text-muted hover:bg-neutral-100 hover:text-ink"
-          aria-label="Tutup"
+          aria-label={t('Tutup', 'Close')}
         >
           <X className="size-4" />
         </DialogPrimitive.Close>
@@ -78,10 +79,10 @@ export function SheetContent({
         : 'inset-x-0 bottom-0 max-h-[88dvh] rounded-t-[22px] border-t';
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-neutral-950/30 backdrop-blur-[3px] data-[state=open]:animate-fade-in" />
+      <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-[#141413]/30 dark:bg-black/60 backdrop-blur-[3px] data-[state=open]:animate-fade-in" />
       <DialogPrimitive.Content
         className={cn(
-          'fixed z-[61] flex flex-col border-line bg-white shadow-float focus:outline-none',
+          'fixed z-[61] flex flex-col border-line bg-surface shadow-float focus:outline-none',
           side === 'bottom' ? 'animate-sheet-up' : 'animate-sheet-right',
           pos,
           className,
@@ -121,7 +122,7 @@ export function TabsTrigger({ className, ...p }: ComponentPropsWithoutRef<typeof
   return (
     <TabsPrimitive.Trigger
       className={cn(
-        'inline-flex h-8.5 items-center justify-center gap-1.5 rounded-lg px-3 text-[13px] font-semibold text-muted transition-all hover:text-ink data-[state=active]:bg-white data-[state=active]:text-ink data-[state=active]:shadow-[0_1px_3px_rgb(0_0_0/0.08)] [&_svg]:size-4 cursor-pointer',
+        'inline-flex h-8.5 items-center justify-center gap-1.5 rounded-lg px-3 text-[13px] font-semibold text-muted transition-all hover:text-ink data-[state=active]:bg-surface data-[state=active]:text-ink data-[state=active]:shadow-[0_1px_3px_rgb(0_0_0/0.08)] [&_svg]:size-4 cursor-pointer',
         className,
       )}
       {...p}
@@ -165,10 +166,10 @@ export function Tip({
         <TooltipPrimitive.Content
           side={side}
           sideOffset={6}
-          className="z-[70] max-w-64 rounded-lg bg-ink px-2.5 py-1.5 text-[12px] font-medium leading-snug text-white shadow-lift animate-fade-in"
+          className="z-[70] max-w-64 rounded-lg bg-inverse px-2.5 py-1.5 text-[12px] font-medium leading-snug text-on-inverse shadow-lift animate-fade-in"
         >
           {content}
-          <TooltipPrimitive.Arrow className="fill-ink" />
+          <TooltipPrimitive.Arrow className="fill-inverse" />
         </TooltipPrimitive.Content>
       </TooltipPrimitive.Portal>
     </TooltipPrimitive.Root>

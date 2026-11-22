@@ -1,29 +1,39 @@
 import { Chip } from '@/features/location/location-picker';
 import { useProfileStore } from '@/stores';
 import type { DailyActivity, ExposureLevel, Occupation, PersonalProfile, Transport } from '@/types/domain';
+import { t } from '@/lib/i18n';
 
-export const OCCUPATIONS: { value: Occupation; label: string; emoji: string }[] = [
-  { value: 'student', label: 'Pelajar / Mahasiswa', emoji: '🎓' },
-  { value: 'office', label: 'Pekerja kantor', emoji: '💼' },
-  { value: 'outdoor', label: 'Pekerja luar ruang', emoji: '👷' },
-  { value: 'merchant', label: 'Pedagang', emoji: '🛒' },
-  { value: 'other', label: 'Lainnya', emoji: '🙂' },
+/** Option with a label resolved in the active language on every access. */
+export const opt = <T extends string>(value: T, id: string, en: string, emoji?: string) => ({
+  value,
+  emoji,
+  get label() {
+    return t(id, en);
+  },
+});
+
+export const OCCUPATIONS: { value: Occupation; label: string; emoji?: string }[] = [
+  opt<Occupation>('student', 'Pelajar / Mahasiswa', 'Student', '🎓'),
+  opt<Occupation>('office', 'Pekerja kantor', 'Office worker', '💼'),
+  opt<Occupation>('outdoor', 'Pekerja luar ruang', 'Outdoor worker', '👷'),
+  opt<Occupation>('merchant', 'Pedagang', 'Trader / vendor', '🛒'),
+  opt<Occupation>('other', 'Lainnya', 'Other', '🙂'),
 ];
-export const TRANSPORTS: { value: Transport; label: string; emoji: string }[] = [
-  { value: 'motorcycle', label: 'Sepeda motor', emoji: '🛵' },
-  { value: 'walking', label: 'Jalan kaki', emoji: '🚶' },
-  { value: 'car', label: 'Mobil', emoji: '🚗' },
-  { value: 'public', label: 'Transportasi umum', emoji: '🚌' },
+export const TRANSPORTS: { value: Transport; label: string; emoji?: string }[] = [
+  opt<Transport>('motorcycle', 'Sepeda motor', 'Motorcycle', '🛵'),
+  opt<Transport>('walking', 'Jalan kaki', 'Walking', '🚶'),
+  opt<Transport>('car', 'Mobil', 'Car', '🚗'),
+  opt<Transport>('public', 'Transportasi umum', 'Public transport', '🚌'),
 ];
 export const EXPOSURES: { value: ExposureLevel; label: string }[] = [
-  { value: 'low', label: 'Rendah' },
-  { value: 'moderate', label: 'Sedang' },
-  { value: 'high', label: 'Tinggi' },
+  opt<ExposureLevel>('low', 'Rendah', 'Low'),
+  opt<ExposureLevel>('moderate', 'Sedang', 'Moderate'),
+  opt<ExposureLevel>('high', 'Tinggi', 'High'),
 ];
 export const ACTIVITIES: { value: DailyActivity; label: string }[] = [
-  { value: 'indoor', label: 'Dominan dalam ruang' },
-  { value: 'mixed', label: 'Campuran' },
-  { value: 'outdoor', label: 'Dominan luar ruang' },
+  opt<DailyActivity>('indoor', 'Dominan dalam ruang', 'Mostly indoor'),
+  opt<DailyActivity>('mixed', 'Campuran', 'Mixed'),
+  opt<DailyActivity>('outdoor', 'Dominan luar ruang', 'Mostly outdoor'),
 ];
 
 export function ChoiceRow<T extends string>({
@@ -62,25 +72,25 @@ export function ProfileQuickEdit({ compact }: { compact?: boolean }) {
   return (
     <div className={compact ? 'space-y-3' : 'space-y-4'}>
       <ChoiceRow
-        label="Pekerjaan"
+        label={t('Pekerjaan', 'Occupation')}
         options={OCCUPATIONS}
         value={profile.occupation}
         onChange={set('occupation')}
       />
       <ChoiceRow
-        label="Transportasi harian"
+        label={t('Transportasi harian', 'Daily transport')}
         options={TRANSPORTS}
         value={profile.transport}
         onChange={set('transport')}
       />
       <ChoiceRow
-        label="Paparan luar ruang"
+        label={t('Paparan luar ruang', 'Outdoor exposure')}
         options={EXPOSURES}
         value={profile.exposure}
         onChange={set('exposure')}
       />
       <ChoiceRow
-        label="Aktivitas harian"
+        label={t('Aktivitas harian', 'Daily activity')}
         options={ACTIVITIES}
         value={profile.activity}
         onChange={set('activity')}

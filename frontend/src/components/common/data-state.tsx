@@ -11,6 +11,7 @@ import type { ReactNode } from 'react';
 import { useNow } from '@/hooks/use-misc';
 import { formatTime, timeAgo } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { localizeSource, t } from '@/lib/i18n';
 import type { DataMode, FreshnessStatus, Provenance } from '@/types/domain';
 import { Button } from '../ui/button';
 import { Tip } from '../ui/overlays';
@@ -28,17 +29,46 @@ export function freshnessOf(p: Provenance | undefined, kind = 'default', now = D
   return ageH < fresh ? 'fresh' : ageH < aging ? 'aging' : 'stale';
 }
 
-const FRESH_META: Record<FreshnessStatus, { label: string; dot: string; text: string }> = {
-  fresh: { label: 'Terkini', dot: 'bg-risk-safe', text: 'text-[#17654A]' },
-  aging: { label: 'Menua', dot: 'bg-risk-moderate', text: 'text-[#8A5A0B]' },
-  stale: { label: 'Usang', dot: 'bg-risk-high', text: 'text-[#A4461A]' },
-  unavailable: { label: 'Tidak tersedia', dot: 'bg-neutral-300', text: 'text-neutral-500' },
+const FRESH_META: Record<FreshnessStatus, { readonly label: string; dot: string; text: string }> = {
+  fresh: {
+    get label() {
+      return t('Terkini', 'Fresh');
+    },
+    dot: 'bg-risk-safe',
+    text: 'text-[var(--risk-safe-text)]',
+  },
+  aging: {
+    get label() {
+      return t('Menua', 'Aging');
+    },
+    dot: 'bg-risk-moderate',
+    text: 'text-[var(--risk-moderate-text)]',
+  },
+  stale: {
+    get label() {
+      return t('Usang', 'Stale');
+    },
+    dot: 'bg-risk-high',
+    text: 'text-[var(--risk-high-text)]',
+  },
+  unavailable: {
+    get label() {
+      return t('Tidak tersedia', 'Unavailable');
+    },
+    dot: 'bg-neutral-300',
+    text: 'text-neutral-500',
+  },
 };
 
-const MODE_META: Record<DataMode, { label: string; icon: typeof Database }> = {
+const MODE_META: Record<DataMode, { readonly label: string; icon: typeof Database }> = {
   live: { label: 'Live', icon: SatelliteDish },
   snapshot: { label: 'Snapshot', icon: Database },
-  scenario: { label: 'Simulasi', icon: FlaskConical },
+  scenario: {
+    get label() {
+      return t('Simulasi', 'Simulation');
+    },
+    icon: FlaskConical,
+  },
   cached: { label: 'Offline', icon: CloudOff },
 };
 
@@ -67,13 +97,17 @@ export function FreshnessBadge({
       content={
         provenance ? (
           <span>
-            <b>{provenance.source}</b>
+            <b>{localizeSource(provenance.source)}</b>
             <br />
-            {provenance.issuedAt && <>Diterbitkan {formatTime(provenance.issuedAt)} · </>}Diambil{' '}
-            {formatTime(provenance.fetchedAt)}
+            {provenance.issuedAt && (
+              <>
+                {t('Diterbitkan', 'Issued')} {formatTime(provenance.issuedAt)} ·{' '}
+              </>
+            )}
+            {t('Diambil', 'Fetched')} {formatTime(provenance.fetchedAt)}
           </span>
         ) : (
-          'Sumber data tidak tersedia saat ini'
+          t('Sumber data tidak tersedia saat ini', 'Data source is currently unavailable')
         )
       }
     >
@@ -98,33 +132,33 @@ export function FreshnessBadge({
           {when ? (status === 'unavailable' ? meta.label : timeAgo(when, now)) : meta.label}
         </span>
         {showSource && provenance && (
-          <span className="hidden truncate sm:inline">· {provenance.source.split('—')[0].trim()}</span>
+          <span className="hidden truncate sm:inline">· {localizeSource(provenance.source).split('—')[0].trim()}</span>
         )}
       </span>
     </Tip>
   );
 }
 
-export function LoadingState({ label = 'Memuat data…', className }: { label?: string; className?: string }) {
+export function LoadingState({ label, className }: { label?: string; className?: string }) {
   return (
     <div role="status" className={cn('flex items-center gap-2.5 py-6 text-[13px] text-muted', className)}>
       <span className="relative grid size-4 place-items-center" aria-hidden>
         <span className="absolute inset-0 animate-ping rounded-full bg-brand/25" />
         <span className="size-2 rounded-full bg-brand" />
       </span>
-      {label}
+      {label ?? t('Memuat data…', 'Loading data…')}
     </div>
   );
 }
 
 /** Branded full-area loader with Ara — for route-level suspense. */
-export function PageLoader({ label = 'Memuat SiagaAI…', className }: { label?: string; className?: string }) {
+export function PageLoader({ label, className }: { label?: string; className?: string }) {
   return (
     <div role="status" className={cn('flex flex-col items-center justify-center gap-4 py-24', className)}>
       <Ara pose="radio" size={110} float priority />
       <div className="flex items-center gap-2.5">
         <Loader2 className="size-4 animate-spin text-brand" aria-hidden />
-        <span className="telemetry">{label}</span>
+        <span className="telemetry">{label ?? t('Memuat SiagaAI…', 'Loading SiagaAI…')}</span>
       </div>
     </div>
   );
@@ -145,18 +179,18 @@ export function ErrorState({
     <div
       role="alert"
       className={cn(
-        'flex flex-col items-start gap-2 rounded-xl border border-[#D99A22]/30 bg-[#FDF6E8]/70 p-4',
+        'flex flex-col items-start gap-2 rounded-xl border border-risk-moderate/30 bg-[var(--risk-moderate-soft)]/70 p-4',
         className,
       )}
     >
-      <div className="flex items-center gap-2 text-[14px] font-semibold text-[#6E4708]">
+      <div className="flex items-center gap-2 text-[14px] font-semibold text-[var(--risk-moderate-text)]">
         <AlertCircle className="size-4" aria-hidden />
         {title}
       </div>
-      {description && <p className="text-[13px] leading-relaxed text-[#6E4708]/80">{description}</p>}
+      {description && <p className="text-[13px] leading-relaxed text-[var(--risk-moderate-text)]/80">{description}</p>}
       {onRetry && (
         <Button size="sm" variant="secondary" onClick={onRetry} className="mt-1">
-          <RefreshCw /> Coba lagi
+          <RefreshCw /> {t('Coba lagi', 'Try again')}
         </Button>
       )}
     </div>
@@ -191,7 +225,7 @@ export function EmptyState({
         <Ara pose={pose} size={120} className="relative mb-3" />
       ) : (
         icon && (
-          <div className="relative mb-3 grid size-12 place-items-center rounded-full border border-line bg-white text-muted">
+          <div className="relative mb-3 grid size-12 place-items-center rounded-full border border-line bg-surface text-muted">
             {icon}
           </div>
         )

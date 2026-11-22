@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useAlerts } from '@/features/alerts/use-alerts';
 import { useHistoryStore, useSettings } from '@/stores';
+import { t } from '@/lib/i18n';
 
 /**
  * Side-effects only:
@@ -46,7 +47,7 @@ export function RiskRecorder() {
       for (const a of fresh) {
         notified.current.add(a.id);
         const opts = {
-          body: `${a.description.slice(0, 140)}\nSumber: ${a.source}`,
+          body: `${a.description.slice(0, 140)}\n${t('Sumber', 'Source')}: ${a.source}`,
           icon: '/icons/icon-192.png',
           badge: '/icons/icon-192.png',
           tag: a.id,

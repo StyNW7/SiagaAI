@@ -3,6 +3,8 @@ import {
   BellRing,
   Database,
   Download,
+  Languages,
+  Palette,
   FlaskConical,
   Server,
   Smartphone,
@@ -21,9 +23,11 @@ import { useInstallPrompt } from '@/features/pwa/install-prompt';
 import { useDocumentTitle } from '@/hooks/use-misc';
 import { isSupabaseEnabled } from '@/services/supabase/client';
 import { useSettings } from '@/stores';
+import { LanguageChooser, ThemeChooser } from '@/features/preferences/toggles';
+import { t } from '@/lib/i18n';
 
 export default function SettingsPage() {
-  useDocumentTitle('Pengaturan');
+  useDocumentTitle(t('Pengaturan', 'Settings'));
   const s = useSettings();
   const pwa = useInstallPrompt();
   const standalone =
@@ -40,40 +44,80 @@ export default function SettingsPage() {
 
   const toggleNotifications = async (on: boolean) => {
     if (!on) return s.setNotifications(false);
-    if (typeof Notification === 'undefined') return toast.error('Perangkat ini tidak mendukung notifikasi.');
+    if (typeof Notification === 'undefined') return toast.error(t('Perangkat ini tidak mendukung notifikasi.', 'This device does not support notifications.'));
     const perm = await Notification.requestPermission();
     if (perm === 'granted') {
       s.setNotifications(true);
       const reg = await navigator.serviceWorker?.getRegistration();
       const opts = {
-        body: 'Notifikasi aktif. Anda akan diberi tahu saat ada peringatan penting untuk lokasi Anda.',
+        body: t(
+          'Notifikasi aktif. Anda akan diberi tahu saat ada peringatan penting untuk lokasi Anda.',
+          "Notifications on. You'll be notified when there are important alerts for your location.",
+        ),
         icon: '/icons/icon-192.png',
       };
       if (reg) reg.showNotification('SiagaAI', opts);
       else new Notification('SiagaAI', opts);
-    } else toast.error('Izin notifikasi ditolak di browser.');
+    } else toast.error(t('Izin notifikasi ditolak di browser.', 'Notification permission was denied in the browser.'));
   };
 
   return (
     <div>
       <PageHeader
-        title="Pengaturan"
+        title={t('Pengaturan', 'Settings')}
         mascot="kit"
-        description="Aksesibilitas, notifikasi, simulasi & status sistem."
+        description={t(
+          'Tampilan, bahasa, aksesibilitas, notifikasi, simulasi & status sistem.',
+          'Appearance, language, accessibility, notifications, simulation & system status.',
+        )}
       />
       <div className="grid gap-5 lg:grid-cols-2 [&>*]:min-w-0">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Type className="size-4 text-brand" /> Ukuran teks
+              <Palette className="size-4 text-brand" /> {t('Tema tampilan', 'Display theme')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ThemeChooser />
+            <p className="mt-4 text-[12.5px] text-muted">
+              {t(
+                'Mode gelap nyaman untuk malam hari dan menghemat baterai di layar OLED.',
+                'Dark mode is comfortable at night and saves battery on OLED screens.',
+              )}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Languages className="size-4 text-brand" /> {t('Bahasa', 'Language')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LanguageChooser />
+            <p className="mt-4 text-[12.5px] text-muted">
+              {t(
+                'Berlaku untuk seluruh halaman, rekomendasi, dan jawaban AI. Teks resmi BMKG tetap ditampilkan apa adanya.',
+                'Applies to every page, recommendation, and AI answer. Official BMKG text is shown as published.',
+              )}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Type className="size-4 text-brand" /> {t('Ukuran teks', 'Text size')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {[
-                [1, 'Normal'],
-                [1.125, 'Besar'],
-                [1.25, 'Sangat besar'],
+                [1, t('Normal', 'Normal')],
+                [1.125, t('Besar', 'Large')],
+                [1.25, t('Sangat besar', 'Extra large')],
               ].map(([v, l]) => (
                 <Chip key={l} active={s.textScale === v} onClick={() => s.setTextScale(v as number)}>
                   {l}
@@ -81,7 +125,7 @@ export default function SettingsPage() {
               ))}
             </div>
             <p className="mt-4 text-[12.5px] text-muted">
-              Untuk lansia & pengguna dengan gangguan penglihatan.
+              {t('Untuk lansia & pengguna dengan gangguan penglihatan.', 'For older adults & users with visual impairments.')}
             </p>
           </CardContent>
         </Card>
@@ -89,20 +133,22 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BellRing className="size-4 text-brand" /> Notifikasi peringatan
+              <BellRing className="size-4 text-brand" /> {t('Notifikasi peringatan', 'Alert notifications')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <label className="flex items-center justify-between gap-4">
-              <span className="text-[13.5px]">Kabari saya saat ada peringatan penting di lokasi aktif</span>
+              <span className="text-[13.5px]">
+                {t('Kabari saya saat ada peringatan penting di lokasi aktif', 'Notify me about important alerts at my active location')}
+              </span>
               <Switch
                 checked={s.notifications}
                 onCheckedChange={toggleNotifications}
-                aria-label="Notifikasi peringatan"
+                aria-label={t('Notifikasi peringatan', 'Alert notifications')}
               />
             </label>
             <p className="mt-4 text-[12.5px] text-muted">
-              Notifikasi lokal PWA saat aplikasi terbuka atau di latar.
+              {t('Notifikasi lokal PWA saat aplikasi terbuka atau di latar.', 'Local PWA notifications while the app is open or in the background.')}
             </p>
           </CardContent>
         </Card>
@@ -110,16 +156,16 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FlaskConical className="size-4 text-ai" /> Mode skenario (demonstrasi)
+              <FlaskConical className="size-4 text-ai" /> {t('Mode skenario (demonstrasi)', 'Scenario mode (demo)')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <p className="text-[13px] text-muted">
-              Uji kondisi risiko tinggi dari mana saja — selalu ditandai simulasi.
+              {t('Uji kondisi risiko tinggi dari mana saja — selalu ditandai simulasi.', 'Test high-risk conditions from anywhere — always labelled as simulation.')}
             </p>
             <div className="flex flex-wrap gap-2">
               <Chip active={!s.scenario} onClick={() => s.setScenario(null)}>
-                Data live
+                {t('Data live', 'Live data')}
               </Chip>
               {Object.values(SCENARIOS).map((sc) => (
                 <Chip key={sc.id} active={s.scenario === sc.id} onClick={() => s.setScenario(sc.id)}>
@@ -133,14 +179,17 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Smartphone className="size-4 text-brand" /> Aplikasi (PWA)
+              <Smartphone className="size-4 text-brand" /> {t('Aplikasi (PWA)', 'App (PWA)')}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-[13px] text-muted">
               {standalone
-                ? 'SiagaAI sudah terpasang di perangkat ini.'
-                : 'Pasang ke layar utama — rencana aksi & tas siaga tetap tersedia offline.'}
+                ? t('SiagaAI sudah terpasang di perangkat ini.', 'SiagaAI is already installed on this device.')
+                : t(
+                    'Pasang ke layar utama — rencana aksi & tas siaga tetap tersedia offline.',
+                    'Add to your home screen — action plans & go-bag stay available offline.',
+                  )}
             </p>
             {!standalone && (
               <Button
@@ -148,10 +197,10 @@ export default function SettingsPage() {
                 variant="secondary"
                 disabled={!pwa.available}
                 onClick={async () => {
-                  if (await pwa.install()) toast.success('SiagaAI terpasang');
+                  if (await pwa.install()) toast.success(t('SiagaAI terpasang', 'SiagaAI installed'));
                 }}
               >
-                <Download /> {pwa.available ? 'Instal aplikasi' : 'Gunakan menu browser'}
+                <Download /> {pwa.available ? t('Instal aplikasi', 'Install app') : t('Gunakan menu browser', 'Use the browser menu')}
               </Button>
             )}
           </CardContent>
@@ -160,7 +209,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Server className="size-4 text-brand" /> Status integrasi
+              <Server className="size-4 text-brand" /> {t('Status integrasi', 'Integration status')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2.5 text-[13px]">
@@ -170,11 +219,11 @@ export default function SettingsPage() {
               value={
                 health.data
                   ? health.data.ai.length
-                    ? `Aktif: ${health.data.ai.join(', ')}`
-                    : 'Local Reasoner (kunci LLM belum diatur)'
+                    ? `${t('Aktif', 'Active')}: ${health.data.ai.join(', ')}`
+                    : t('Local Reasoner (kunci LLM belum diatur)', 'Local Reasoner (LLM key not set)')
                   : health.isError
-                    ? 'Local Reasoner (gateway tidak terjangkau)'
-                    : 'Memeriksa…'
+                    ? t('Local Reasoner (gateway tidak terjangkau)', 'Local Reasoner (gateway unreachable)')
+                    : t('Memeriksa…', 'Checking…')
               }
               ok={!!health.data?.ai.length}
             />
@@ -185,17 +234,17 @@ export default function SettingsPage() {
                 health.data
                   ? health.data.firms === 'area-api'
                     ? 'Area API (MAP_KEY)'
-                    : 'Feed publik NRT'
+                    : t('Feed publik NRT', 'Public NRT feed')
                   : health.isError
                     ? 'Snapshot'
-                    : 'Memeriksa…'
+                    : t('Memeriksa…', 'Checking…')
               }
               ok={!!health.data}
             />
             <Row
               icon={<Database className="size-4" />}
-              label="Supabase (akun & sinkronisasi)"
-              value={isSupabaseEnabled ? 'Terhubung' : 'Mode perangkat (localStorage)'}
+              label={t('Supabase (akun & sinkronisasi)', 'Supabase (accounts & sync)')}
+              value={isSupabaseEnabled ? t('Terhubung', 'Connected') : t('Mode perangkat (localStorage)', 'Device mode (localStorage)')}
               ok={isSupabaseEnabled}
             />
           </CardContent>
@@ -204,13 +253,15 @@ export default function SettingsPage() {
         <Card className="min-w-0 lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Trash2 className="size-4 text-muted" /> Privasi & data
+              <Trash2 className="size-4 text-muted" /> {t('Privasi & data', 'Privacy & data')}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <p className="flex-1 text-[13px] text-muted">
-              GPS presisi tidak pernah disimpan tanpa persetujuan. Hapus semua data SiagaAI dari perangkat ini
-              kapan saja.
+              {t(
+                'GPS presisi tidak pernah disimpan tanpa persetujuan. Hapus semua data SiagaAI dari perangkat ini kapan saja.',
+                'Precise GPS is never stored without consent. Delete all SiagaAI data from this device at any time.',
+              )}
             </p>
             <Button
               variant="secondary"
@@ -219,11 +270,11 @@ export default function SettingsPage() {
                   .filter((k) => k.startsWith('siaga.'))
                   .forEach((k) => localStorage.removeItem(k));
                 sessionStorage.clear();
-                toast.success('Data lokal dihapus');
+                toast.success(t('Data lokal dihapus', 'Local data deleted'));
                 setTimeout(() => window.location.assign('/'), 600);
               }}
             >
-              <Trash2 /> Hapus semua data lokal
+              <Trash2 /> {t('Hapus semua data lokal', 'Delete all local data')}
             </Button>
           </CardContent>
         </Card>

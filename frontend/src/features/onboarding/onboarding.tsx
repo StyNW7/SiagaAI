@@ -14,15 +14,32 @@ import {
 } from '@/features/profile/profile-quick-edit';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import { cn } from '@/lib/utils';
+import { t } from '@/lib/i18n';
 import { useLocationStore, useProfileStore, useSettings } from '@/stores';
 import type { PersonalProfile } from '@/types/domain';
 
 const KEY = 'siaga.onboarded';
-const STEPS: { title: string; text: string; pose: AraPose }[] = [
-  { title: 'Di mana lokasimu?', text: 'Risiko dihitung untuk titik ini. GPS tidak disimpan.', pose: 'map' },
-  { title: 'Aktivitas harianmu', text: 'Pekerjaan & transportasi mengubah paparan.', pose: 'tablet' },
-  { title: 'Seberapa sering di luar?', text: 'Dipakai untuk menyesuaikan skor personal.', pose: 'explain' },
-  { title: 'Kamu siap!', text: 'Dashboard sudah disesuaikan untukmu.', pose: 'success' },
+const steps = (): { title: string; text: string; pose: AraPose }[] => [
+  {
+    title: t('Di mana lokasimu?', 'Where are you?'),
+    text: t('Risiko dihitung untuk titik ini. GPS tidak disimpan.', 'Risk is calculated for this point. GPS is not stored.'),
+    pose: 'map',
+  },
+  {
+    title: t('Aktivitas harianmu', 'Your daily activity'),
+    text: t('Pekerjaan & transportasi mengubah paparan.', 'Occupation & transport change your exposure.'),
+    pose: 'tablet',
+  },
+  {
+    title: t('Seberapa sering di luar?', 'How often are you outdoors?'),
+    text: t('Dipakai untuk menyesuaikan skor personal.', 'Used to tailor your personal score.'),
+    pose: 'explain',
+  },
+  {
+    title: t('Kamu siap!', "You're all set!"),
+    text: t('Dashboard sudah disesuaikan untukmu.', 'Your dashboard has been tailored for you.'),
+    pose: 'success',
+  },
 ];
 
 const REQUEST = 'siaga.onboarding.request';
@@ -53,8 +70,8 @@ export function Onboarding() {
     const requested = !!localStorage.getItem(REQUEST);
     const fresh = !localStorage.getItem(KEY) && !customized && (!current || current.source === 'default');
     if (!requested && !fresh) return;
-    const t = setTimeout(() => setOpen(true), 600);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setOpen(true), 600);
+    return () => clearTimeout(timer);
     // Decide once on mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -83,6 +100,7 @@ export function Onboarding() {
     });
   };
 
+  const STEPS = steps();
   const s = STEPS[step];
   const last = step === STEPS.length - 1;
   const locationChosen = current && current.source !== 'default';
@@ -90,8 +108,8 @@ export function Onboarding() {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={(o) => (o ? setOpen(true) : close())}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-neutral-950/35 backdrop-blur-[3px] data-[state=open]:animate-fade-in" />
-        <DialogPrimitive.Content className="fixed inset-x-0 bottom-0 z-[61] max-h-[92dvh] overflow-y-auto rounded-t-[22px] border border-line bg-white shadow-float focus:outline-none data-[state=open]:animate-sheet-up sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-[10vh] sm:w-[560px] sm:-translate-x-1/2 sm:rounded-[20px]">
+        <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-[#141413]/35 dark:bg-black/65 backdrop-blur-[3px] data-[state=open]:animate-fade-in" />
+        <DialogPrimitive.Content className="fixed inset-x-0 bottom-0 z-[61] max-h-[92dvh] overflow-y-auto rounded-t-[22px] border border-line bg-surface shadow-float focus:outline-none data-[state=open]:animate-sheet-up sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-[10vh] sm:w-[560px] sm:-translate-x-1/2 sm:rounded-[20px]">
           {/* Stepper */}
           <div className="flex items-center gap-2 border-b border-line px-6 py-4">
             {STEPS.map((_, i) => (
@@ -131,10 +149,10 @@ export function Onboarding() {
                     disabled={busy}
                   >
                     {busy ? <Loader2 className="animate-spin" /> : <LocateFixed className="text-brand" />}{' '}
-                    Gunakan lokasi saya (GPS)
+                    {t('Gunakan lokasi saya (GPS)', 'Use my location (GPS)')}
                   </Button>
                   <div>
-                    <p className="data-label mb-2">Atau pilih kota</p>
+                    <p className="data-label mb-2">{t('Atau pilih kota', 'Or choose a city')}</p>
                     <div className="flex flex-wrap gap-1.5">
                       {EXPLORE_PRESETS.map((p) => {
                         const c = CITY_BY_SLUG[p.slug];
@@ -151,7 +169,7 @@ export function Onboarding() {
                     </div>
                   </div>
                   {locationChosen && (
-                    <p className="flex items-center gap-2 rounded-lg bg-[#EEF7F2] px-3 py-2 text-[13px] font-semibold text-[#17654A]">
+                    <p className="flex items-center gap-2 rounded-lg bg-[var(--risk-safe-soft)] px-3 py-2 text-[13px] font-semibold text-[var(--risk-safe-text)]">
                       <MapPin className="size-4" /> {current.name}
                       {current.region ? `, ${current.region}` : ''}
                     </p>
@@ -161,13 +179,13 @@ export function Onboarding() {
               {step === 1 && (
                 <div className="space-y-5">
                   <ChoiceRow
-                    label="Pekerjaan"
+                    label={t('Pekerjaan', 'Occupation')}
                     options={OCCUPATIONS}
                     value={profile.occupation}
                     onChange={set('occupation')}
                   />
                   <ChoiceRow
-                    label="Transportasi harian"
+                    label={t('Transportasi harian', 'Daily transport')}
                     options={TRANSPORTS}
                     value={profile.transport}
                     onChange={set('transport')}
@@ -177,13 +195,13 @@ export function Onboarding() {
               {step === 2 && (
                 <div className="space-y-5">
                   <ChoiceRow
-                    label="Paparan luar ruang"
+                    label={t('Paparan luar ruang', 'Outdoor exposure')}
                     options={EXPOSURES}
                     value={profile.exposure}
                     onChange={set('exposure')}
                   />
                   <ChoiceRow
-                    label="Aktivitas harian"
+                    label={t('Aktivitas harian', 'Daily activity')}
                     options={ACTIVITIES}
                     value={profile.activity}
                     onChange={set('activity')}
@@ -193,18 +211,23 @@ export function Onboarding() {
               {step === 3 && (
                 <ul className="space-y-2.5">
                   {[
-                    current ? `Lokasi: ${current.name}` : 'Lokasi bawaan',
+                    current ? `${t('Lokasi', 'Location')}: ${current.name}` : t('Lokasi bawaan', 'Default location'),
                     `${OCCUPATIONS.find((o) => o.value === profile.occupation)?.label} · ${TRANSPORTS.find((o) => o.value === profile.transport)?.label}`,
-                    `Paparan luar ruang ${EXPOSURES.find((o) => o.value === profile.exposure)?.label.toLowerCase()}`,
-                  ].map((t) => (
-                    <li key={t} className="flex items-center gap-3 text-[14px] font-medium">
+                    t(
+                      `Paparan luar ruang ${EXPOSURES.find((o) => o.value === profile.exposure)?.label.toLowerCase()}`,
+                      `${EXPOSURES.find((o) => o.value === profile.exposure)?.label} outdoor exposure`,
+                    ),
+                  ].map((item) => (
+                    <li key={item} className="flex items-center gap-3 text-[14px] font-medium">
                       <span className="grid size-6 place-items-center rounded-full bg-risk-safe text-white">
                         <Check className="size-3.5" strokeWidth={3} />
                       </span>
-                      {t}
+                      {item}
                     </li>
                   ))}
-                  <li className="pt-2 text-[13px] text-muted">Bisa diubah kapan saja di halaman Profil.</li>
+                  <li className="pt-2 text-[13px] text-muted">
+                    {t('Bisa diubah kapan saja di halaman Profil.', 'You can change this anytime on the Profile page.')}
+                  </li>
                 </ul>
               )}
             </div>
@@ -213,21 +236,21 @@ export function Onboarding() {
           <div className="safe-bottom flex items-center gap-2 border-t border-line bg-raised px-6 py-4">
             {step === 0 ? (
               <Button variant="ghost" onClick={close}>
-                Lewati
+                {t('Lewati', 'Skip')}
               </Button>
             ) : (
               <Button variant="ghost" onClick={() => setStep((n) => n - 1)}>
-                <ArrowLeft /> Kembali
+                <ArrowLeft /> {t('Kembali', 'Back')}
               </Button>
             )}
             <div className="flex-1" />
             {last ? (
               <Button onClick={close}>
-                Lihat dashboard <ArrowRight />
+                {t('Lihat dashboard', 'View dashboard')} <ArrowRight />
               </Button>
             ) : (
               <Button onClick={() => setStep((n) => n + 1)}>
-                Lanjut <ArrowRight />
+                {t('Lanjut', 'Next')} <ArrowRight />
               </Button>
             )}
           </div>

@@ -61,6 +61,7 @@ export function useAiQuery<T extends AiTask>(task: T, context: AiContext | null,
     queryKey: [
       'ai',
       task,
+      context?.language,
       context?.location.name,
       context?.risk.personal.score,
       context?.risk.location.score,

@@ -15,6 +15,26 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>SiagaAI — Kenali Risiko. Pahami Dampaknya. Ambil Tindakan.</title>
+    <script>
+      // Apply saved theme & language before first paint (no light flash in dark mode).
+      (function () {
+        try {
+          var s = JSON.parse(localStorage.getItem('siaga.settings') || '{}').state || {};
+          var t = s.theme || 'system';
+          var dark = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          var r = document.documentElement;
+          if (dark) {
+            r.classList.add('dark');
+            r.style.colorScheme = 'dark';
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0E0E0D');
+          }
+          if (s.lang === 'en') {
+            r.lang = 'en';
+            document.title = 'SiagaAI — Know the Risk. Understand the Impact. Take Action.';
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <noscript>SiagaAI membutuhkan JavaScript untuk berjalan.</noscript>
