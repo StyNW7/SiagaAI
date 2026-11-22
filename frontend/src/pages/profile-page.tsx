@@ -52,7 +52,10 @@ export default function ProfilePage() {
       <PageHeader
         title={t('Profil & riwayat', 'Profile & history')}
         mascot="tablet"
-        description={t('Profil, lokasi tersimpan & riwayat skormu.', 'Your profile, saved locations & score history.')}
+        description={t(
+          'Profil, lokasi tersimpan & riwayat skormu.',
+          'Your profile, saved locations & score history.',
+        )}
       />
 
       <div className="grid gap-5 lg:grid-cols-12">
@@ -72,7 +75,9 @@ export default function ProfilePage() {
                 </p>
                 {user && (
                   <Badge className="mt-1.5" variant={user.backend === 'supabase' ? 'success' : 'neutral'}>
-                    {user.backend === 'supabase' ? t('Tersinkron Supabase', 'Synced with Supabase') : t('Akun perangkat', 'Device account')}
+                    {user.backend === 'supabase'
+                      ? t('Tersinkron Supabase', 'Synced with Supabase')
+                      : t('Akun perangkat', 'Device account')}
                   </Badge>
                 )}
               </div>
@@ -147,7 +152,9 @@ export default function ProfilePage() {
                 <CardTitle className="flex items-center gap-2">
                   <Bookmark className="size-4 text-brand" /> {t('Lokasi tersimpan', 'Saved locations')}
                 </CardTitle>
-                <p className="mt-1 text-[12.5px] text-muted">{t('Hanya atas pilihanmu', 'Only by your choice')}</p>
+                <p className="mt-1 text-[12.5px] text-muted">
+                  {t('Hanya atas pilihanmu', 'Only by your choice')}
+                </p>
               </div>
               {active.source !== 'saved' && !active.id.startsWith('scenario') && (
                 <Button
@@ -158,9 +165,7 @@ export default function ProfilePage() {
                     toast.success(t(`${active.name} disimpan`, `${active.name} saved`));
                   }}
                 >
-                  <Bookmark /> <span className="max-w-32 truncate">
-                    {t('Simpan', 'Save')} {active.name}
-                  </span>
+                  <Bookmark /> {t('Simpan lokasi ini', 'Save this location')}
                 </Button>
               )}
             </CardHeader>
@@ -203,8 +208,15 @@ export default function ProfilePage() {
                   ))}
                 </ul>
               ) : (
-                <AraSays pose="map" size={80} title={t('Belum ada lokasi tersimpan', 'No saved locations yet')}>
-                  {t('Simpan rumah, kampus, atau kantor untuk akses cepat.', 'Save your home, campus, or office for quick access.')}
+                <AraSays
+                  pose="map"
+                  size={80}
+                  title={t('Belum ada lokasi tersimpan', 'No saved locations yet')}
+                >
+                  {t(
+                    'Simpan rumah, kampus, atau kantor untuk akses cepat.',
+                    'Save your home, campus, or office for quick access.',
+                  )}
                 </AraSays>
               )}
             </CardContent>
@@ -233,7 +245,8 @@ export default function ProfilePage() {
                       <span className="min-w-0">
                         <span className="block truncate font-semibold">{s.locationName}</span>
                         <span className="font-mono text-[11px] text-subtle">
-                          {formatDateTime(s.time)} · {t('utama', 'main')} {HAZARDS[s.primaryHazard].label.toLowerCase()}
+                          {formatDateTime(s.time)} · {t('utama', 'main')}{' '}
+                          {HAZARDS[s.primaryHazard].label.toLowerCase()}
                         </span>
                       </span>
                       <span className="flex items-center gap-2">

@@ -34,14 +34,54 @@ import { getMultiPointSnapshot } from '@/services/weather/open-meteo';
 import { locale, t } from '@/lib/i18n';
 
 const layerMeta = (): { key: keyof MapLayers; label: string; hint: string; color: string }[] => [
-  { key: 'hotspots', label: t('Titik panas', 'Hotspots'), hint: t('NASA FIRMS VIIRS · 7 hari', 'NASA FIRMS VIIRS · 7 days'), color: '#E66B24' },
-  { key: 'heatmap', label: t('Kepadatan titik panas', 'Hotspot density'), hint: t('Heatmap skala nasional', 'National-scale heatmap'), color: '#C62A1F' },
-  { key: 'risk', label: t('Aktivitas per provinsi', 'Activity by province'), hint: t('Choropleth deteksi 24 jam', '24-hour detection choropleth'), color: '#D99A22' },
-  { key: 'warnings', label: t('Peringatan BMKG', 'BMKG warnings'), hint: t('Garis putus-putus = aktif', 'Dashed outline = active'), color: '#D99A22' },
-  { key: 'weather', label: t('Cuaca kota', 'City weather'), hint: t('Suhu & kondisi · Open-Meteo', 'Temperature & conditions · Open-Meteo'), color: '#3478C6' },
-  { key: 'air', label: t('Kualitas udara', 'Air quality'), hint: t('PM2.5 model CAMS', 'PM2.5 CAMS model'), color: '#208A61' },
-  { key: 'quakes', label: t('Gempabumi', 'Earthquakes'), hint: t('BMKG · M5+ terkini', 'BMKG · latest M5+'), color: '#A51E22' },
-  { key: 'community', label: t('Laporan komunitas', 'Community reports'), hint: t('Belum terverifikasi', 'Unverified'), color: '#4E54D8' },
+  {
+    key: 'hotspots',
+    label: t('Titik panas', 'Hotspots'),
+    hint: t('NASA FIRMS VIIRS · 7 hari', 'NASA FIRMS VIIRS · 7 days'),
+    color: '#E66B24',
+  },
+  {
+    key: 'heatmap',
+    label: t('Kepadatan titik panas', 'Hotspot density'),
+    hint: t('Heatmap skala nasional', 'National-scale heatmap'),
+    color: '#C62A1F',
+  },
+  {
+    key: 'risk',
+    label: t('Aktivitas per provinsi', 'Activity by province'),
+    hint: t('Choropleth deteksi 24 jam', '24-hour detection choropleth'),
+    color: '#D99A22',
+  },
+  {
+    key: 'warnings',
+    label: t('Peringatan BMKG', 'BMKG warnings'),
+    hint: t('Garis putus-putus = aktif', 'Dashed outline = active'),
+    color: '#D99A22',
+  },
+  {
+    key: 'weather',
+    label: t('Cuaca kota', 'City weather'),
+    hint: t('Suhu & kondisi · Open-Meteo', 'Temperature & conditions · Open-Meteo'),
+    color: '#3478C6',
+  },
+  {
+    key: 'air',
+    label: t('Kualitas udara', 'Air quality'),
+    hint: t('PM2.5 model CAMS', 'PM2.5 CAMS model'),
+    color: '#208A61',
+  },
+  {
+    key: 'quakes',
+    label: t('Gempabumi', 'Earthquakes'),
+    hint: t('BMKG · M5+ terkini', 'BMKG · latest M5+'),
+    color: '#A51E22',
+  },
+  {
+    key: 'community',
+    label: t('Laporan komunitas', 'Community reports'),
+    hint: t('Belum terverifikasi', 'Unverified'),
+    color: '#4E54D8',
+  },
 ];
 
 const AGE_LEGEND = (): [string, string][] => [
@@ -64,7 +104,10 @@ export default function MapPage() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [layersOpen, setLayersOpen] = useState(false);
   const [deviceKey] = useState(() => (isDesktop() ? 'd' : 'm'));
-  const [statsOpen, setStatsOpen] = usePersistentToggle(`map-stats-${deviceKey}`, isDesktop() && window.innerHeight >= 640);
+  const [statsOpen, setStatsOpen] = usePersistentToggle(
+    `map-stats-${deviceKey}`,
+    isDesktop() && window.innerHeight >= 640,
+  );
   // Phones always start with the legend folded — it shares the screen with the summary card.
   const [legendOpen, setLegendOpen] = usePersistentToggle(
     `map-legend-${deviceKey}`,
@@ -201,7 +244,8 @@ export default function MapPage() {
                   left: statsVisible ? 370 : 40,
                   right: selected ? 40 : layersOpen ? 300 : 70,
                 }
-              : { top: statsVisible ? 200 : 70, bottom: 120, left: 16, right: 16 }
+              : // Mobile: the stats panel is a compact pill, and the toolbar + bottom nav sit over the map.
+                { top: statsVisible ? 120 : 70, bottom: 190, left: 12, right: 12 }
           }
         />
 
@@ -220,7 +264,11 @@ export default function MapPage() {
                   <h1 className="mt-0.5 text-[19px] font-bold tracking-[-0.02em]">Siaga Map</h1>
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
-                  <FreshnessBadge provenance={hotspots.data?.provenance} kind="hotspots" className="hidden sm:inline-flex" />
+                  <FreshnessBadge
+                    provenance={hotspots.data?.provenance}
+                    kind="hotspots"
+                    className="hidden sm:inline-flex"
+                  />
                   <CollapseButton
                     onClick={() => {
                       setStatsOpen(false);
@@ -234,7 +282,10 @@ export default function MapPage() {
               <div className="mt-4 grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-line bg-line">
                 <MiniStat label={t('24 jam', '24 h')} value={hotspotsLoading ? null : total24} />
                 <MiniStat label={t('7 hari', '7 days')} value={hotspotsLoading ? null : total7} />
-                <MiniStat label={t('Peringatan', 'Warnings')} value={warnings.state === 'loading' ? null : warningList.length} />
+                <MiniStat
+                  label={t('Peringatan', 'Warnings')}
+                  value={warnings.state === 'loading' ? null : warningList.length}
+                />
               </div>
               <div className="mt-3">
                 <p className="data-label mb-1.5 flex items-center gap-1.5">
@@ -264,7 +315,11 @@ export default function MapPage() {
                   ))}
                   {hotspotsLoading &&
                     [0, 1, 2].map((i) => (
-                      <li key={i} className="mx-2 my-1.5 h-5 animate-pulse rounded-md bg-neutral-100" aria-hidden />
+                      <li
+                        key={i}
+                        className="mx-2 my-1.5 h-5 animate-pulse rounded-md bg-neutral-100"
+                        aria-hidden
+                      />
                     ))}
                   {!hotspotsLoading && !topProvinces.length && (
                     <li className="px-2 text-[12px] text-muted">
@@ -293,7 +348,9 @@ export default function MapPage() {
               <span className="h-4 w-px shrink-0 bg-line-strong" aria-hidden />
               <span className="flex min-w-0 items-center gap-1 font-mono text-[11.5px] text-muted">
                 <Flame className="size-3.5 shrink-0 text-hz-fire" />
-                <b className="font-semibold text-ink">{hotspotsLoading ? '…' : total24.toLocaleString(locale())}</b>
+                <b className="font-semibold text-ink">
+                  {hotspotsLoading ? '…' : total24.toLocaleString(locale())}
+                </b>
                 <span className="truncate">/ {t('24 jam', '24 h')}</span>
               </span>
               {warningList.length > 0 && (
@@ -341,7 +398,12 @@ export default function MapPage() {
               if (l) setFocus({ kind: 'point', lat: l.lat, lon: l.lon, zoom: 11, key: Date.now() });
             }}
           />
-          <JourneyButton compact={narrowMap} icon={<Search />} label={t('Cari', 'Search')} onClick={() => setPicker(true)} />
+          <JourneyButton
+            compact={narrowMap}
+            icon={<Search />}
+            label={t('Cari', 'Search')}
+            onClick={() => setPicker(true)}
+          />
         </div>
 
         {/* Layer control */}
@@ -376,7 +438,11 @@ export default function MapPage() {
                 {layerMeta().map((l) => (
                   <li key={l.key}>
                     <label className="flex cursor-pointer items-center gap-3 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-surface/80">
-                      <span className="size-2.5 shrink-0 rounded-full" style={{ background: l.color }} aria-hidden />
+                      <span
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{ background: l.color }}
+                        aria-hidden
+                      />
                       <span className="min-w-0 flex-1">
                         <span className="block text-[13px] font-semibold">{l.label}</span>
                         <span className="block truncate font-mono text-[10px] text-subtle">{l.hint}</span>
@@ -391,7 +457,9 @@ export default function MapPage() {
                 ))}
               </ul>
               {cityQ.isFetching && (
-                <p className="px-1 pt-1 text-[11px] text-muted">{t('Memuat cuaca kota…', 'Loading city weather…')}</p>
+                <p className="px-1 pt-1 text-[11px] text-muted">
+                  {t('Memuat cuaca kota…', 'Loading city weather…')}
+                </p>
               )}
             </div>
           )}
@@ -431,7 +499,11 @@ export default function MapPage() {
             >
               <span className="flex -space-x-1" aria-hidden>
                 {AGE_LEGEND().map(([c]) => (
-                  <span key={c} className="size-2.5 rounded-full ring-2 ring-surface" style={{ background: c }} />
+                  <span
+                    key={c}
+                    className="size-2.5 rounded-full ring-2 ring-surface"
+                    style={{ background: c }}
+                  />
                 ))}
               </span>
               {t('Legenda', 'Legend')}
@@ -444,7 +516,9 @@ export default function MapPage() {
       {/* Province detail: side panel on desktop, bottom sheet on mobile */}
       {desktop ? (
         panel && (
-          <aside className="w-[400px] shrink-0 border-l border-line bg-surface animate-fade-up">{panel}</aside>
+          <aside className="w-[400px] shrink-0 border-l border-line bg-surface animate-fade-up">
+            {panel}
+          </aside>
         )
       ) : (
         <DialogPrimitive.Root

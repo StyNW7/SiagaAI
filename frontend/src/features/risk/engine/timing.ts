@@ -102,14 +102,32 @@ export function findOutdoorWindows(points: HourlyOutdoorPoint[], maxWindows = 2)
     const end = new Date(new Date(slice[slice.length - 1].time).getTime() + 3_600_000).toISOString();
     candidates.push({ start: slice[0].time, end, index: Math.round(mean), reason });
   }
+  // Compare instants, never ISO strings: forecast times and toISOString() use different formats.
+  const ms = (iso: string) => new Date(iso).getTime();
   candidates.sort((a, b) => a.index - b.index);
   const picked: OutdoorWindow[] = [];
   for (const c of candidates) {
-    const overlaps = picked.some((p) => !(c.end <= p.start || c.start >= p.end));
+    const overlaps = picked.some((p) => !(ms(c.end) <= ms(p.start) || ms(c.start) >= ms(p.end)));
     if (!overlaps) picked.push(c);
     if (picked.length >= maxWindows) break;
   }
-  return picked.sort((a, b) => a.start.localeCompare(b.start));
+  picked.sort((a, b) => ms(a.start) - ms(b.start));
+  // Back-to-back windows read better as one span ("07:00–13:00", not "07:00–10:00 · 10:00–13:00").
+  const merged: OutdoorWindow[] = [];
+  for (const w of picked) {
+    const prev = merged.at(-1);
+    if (prev && ms(w.start) <= ms(prev.end)) {
+      const a = ms(prev.end) - ms(prev.start);
+      const b = ms(w.end) - ms(w.start);
+      merged[merged.length - 1] = {
+        start: prev.start,
+        end: ms(w.end) > ms(prev.end) ? w.end : prev.end,
+        index: Math.round((prev.index * a + w.index * b) / (a + b)),
+        reason: prev.index <= w.index ? w.reason : prev.reason,
+      };
+    } else merged.push(w);
+  }
+  return merged;
 }
 
 export const describeWindow = (w: OutdoorWindow) => `${formatHour(w.start)}–${formatHour(w.end)}`;

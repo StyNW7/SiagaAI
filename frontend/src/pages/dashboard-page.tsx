@@ -155,7 +155,10 @@ export default function DashboardPage() {
             </Button>
           }
         >
-          {t('Pilih lokasimu agar analisis risikonya personal.', 'Choose your location so the risk analysis is personal.')}
+          {t(
+            'Pilih lokasimu agar analisis risikonya personal.',
+            'Choose your location so the risk analysis is personal.',
+          )}
         </AraSays>
       )}
 
@@ -214,7 +217,9 @@ export default function DashboardPage() {
                           </p>
                         ) : (
                           <p className="telemetry mt-2">
-                            {mode === 'personal' ? t('Disesuaikan profil Anda', 'Tailored to your profile') : t('Bahaya lingkungan', 'Environmental hazard')}
+                            {mode === 'personal'
+                              ? t('Disesuaikan profil Anda', 'Tailored to your profile')
+                              : t('Bahaya lingkungan', 'Environmental hazard')}
                           </p>
                         )}
                       </div>
@@ -237,7 +242,8 @@ export default function DashboardPage() {
                         {w ? (
                           <>
                             <WeatherIcon code={w.weatherCode} className="size-4 text-muted" />
-                            {w.temperature != null ? `${Math.round(w.temperature)}°C` : ''} · {describeWeather(w)}
+                            {w.temperature != null ? `${Math.round(w.temperature)}°C` : ''} ·{' '}
+                            {describeWeather(w)}
                           </>
                         ) : (
                           '–'
@@ -253,7 +259,8 @@ export default function DashboardPage() {
                       </Button>
                       <Button asChild variant="secondary">
                         <Link to="/app/risk">
-                          <Sparkles className="text-ai" /> {t('Apa artinya bagi saya?', 'What does it mean for me?')}
+                          <Sparkles className="text-ai" />{' '}
+                          {t('Apa artinya bagi saya?', 'What does it mean for me?')}
                         </Link>
                       </Button>
                     </div>
@@ -390,9 +397,13 @@ export default function DashboardPage() {
               <CardHeader>
                 <div>
                   <CardTitle>{t('Ringkasan bahaya', 'Hazard summary')}</CardTitle>
-                  <p className="mt-1 text-[12.5px] text-muted">{t('Ketuk untuk melihat penjelasan', 'Tap to see the explanation')}</p>
+                  <p className="mt-1 text-[12.5px] text-muted">
+                    {t('Ketuk untuk melihat penjelasan', 'Tap to see the explanation')}
+                  </p>
                 </div>
-                <span className="telemetry">{mode === 'personal' ? 'Personal' : t('Lokasi', 'Location')}</span>
+                <span className="telemetry">
+                  {mode === 'personal' ? 'Personal' : t('Lokasi', 'Location')}
+                </span>
               </CardHeader>
               <div className="divide-y divide-line px-3 pb-3 sm:px-4">
                 {assessment
@@ -467,7 +478,9 @@ export default function DashboardPage() {
                     <HourlyWeatherCharts hourly={weather.data!.hourly} />
                     {windows && windows.length > 0 && (
                       <p className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-risk-safe/20 bg-[var(--risk-safe-soft)] px-3.5 py-2.5 text-[13px] text-[var(--risk-safe-text)]">
-                        <span className="font-semibold">{t('Waktu luar ruang lebih aman:', 'Safer outdoor times:')}</span>
+                        <span className="font-semibold">
+                          {t('Waktu luar ruang lebih aman:', 'Safer outdoor times:')}
+                        </span>
                         <span className="font-mono text-[12px]">
                           {windows.map(describeWindow).join(' · ')} WIB
                         </span>
@@ -487,7 +500,9 @@ export default function DashboardPage() {
               <CardHeader>
                 <div>
                   <CardTitle>{t('Peringatan resmi', 'Official warnings')}</CardTitle>
-                  <p className="mt-1 text-[12.5px] text-muted">{t('BMKG · diperbarui otomatis', 'BMKG · updated automatically')}</p>
+                  <p className="mt-1 text-[12.5px] text-muted">
+                    {t('BMKG · diperbarui otomatis', 'BMKG · updated automatically')}
+                  </p>
                 </div>
                 <TextLink to="/app/alerts">
                   {t('Semua', 'All')} <ArrowRight className="size-3.5" />
@@ -539,7 +554,9 @@ export default function DashboardPage() {
                 <CardHeader className="pb-2">
                   <div>
                     <CardTitle>{t('Kualitas udara', 'Air quality')}</CardTitle>
-                    <p className="mt-1 text-[12.5px] text-muted">{t('Model CAMS · indikatif', 'CAMS model · indicative')}</p>
+                    <p className="mt-1 text-[12.5px] text-muted">
+                      {t('Model CAMS · indikatif', 'CAMS model · indicative')}
+                    </p>
                   </div>
                   <FreshnessBadge provenance={airQuality.data?.provenance} />
                 </CardHeader>
@@ -562,14 +579,19 @@ export default function DashboardPage() {
                         {airQuality.data.pm25 <= 15
                           ? t('Baik untuk aktivitas luar.', 'Good for outdoor activities.')
                           : airQuality.data.pm25 <= 35
-                            ? t('Sedang — kelompok sensitif hati-hati.', 'Moderate — sensitive groups take care.')
+                            ? t(
+                                'Sedang — kelompok sensitif hati-hati.',
+                                'Moderate — sensitive groups take care.',
+                              )
                             : t('Tidak sehat — pakai masker.', 'Unhealthy — wear a mask.')}
                       </p>
                     </div>
                   ) : airQuality.state === 'loading' ? (
                     <Skeleton className="h-14" />
                   ) : (
-                    <p className="text-[13px] text-muted">{t('Data kualitas udara tidak tersedia.', 'Air-quality data unavailable.')}</p>
+                    <p className="text-[13px] text-muted">
+                      {t('Data kualitas udara tidak tersedia.', 'Air-quality data unavailable.')}
+                    </p>
                   )}
                 </CardContent>
               </Card>
@@ -604,46 +626,63 @@ export default function DashboardPage() {
 
           {/* Explore & data */}
           <div className="grid gap-5 lg:grid-cols-12 lg:gap-6">
-            <section className="min-w-0 lg:col-span-7">
-              <SectionTitle eyebrow={t('Eksplorasi', 'Explore')}>
-                {t('Coba wilayah atau simulasi lain', 'Try another region or simulation')}
-              </SectionTitle>
-              <div className="snap-row -mx-4 flex gap-2 overflow-x-auto px-4 pb-2 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">
-                {EXPLORE_PRESETS.map((p) => {
-                  const c = CITY_BY_SLUG[p.slug];
-                  return (
-                    <Chip
-                      key={p.slug}
-                      active={location.id === `preset-${c.slug}`}
-                      onClick={() => {
-                        setScenario(null);
-                        setCurrent({
-                          id: `preset-${c.slug}`,
-                          name: c.name,
-                          region: c.province,
-                          provinceCode: c.provinceCode,
-                          lat: c.lat,
-                          lon: c.lon,
-                          source: 'preset',
-                        });
-                      }}
-                    >
-                      <MapPin className="size-3.5" /> {c.name}
-                    </Chip>
-                  );
-                })}
-                {Object.values(SCENARIOS).map((s) => (
-                  <Chip
-                    key={s.id}
-                    active={scenario === s.id}
-                    onClick={() => setScenario(s.id)}
-                    className="border-ai/20 text-ai-deep"
-                  >
-                    {s.emoji} {s.title}
-                  </Chip>
-                ))}
-              </div>
-            </section>
+            <Card className="relative min-w-0 overflow-hidden lg:col-span-7">
+              <Ara
+                pose="explore"
+                size={170}
+                className="pointer-events-none absolute -bottom-3 right-4 hidden opacity-95 sm:block"
+              />
+              <CardContent className="relative flex h-full flex-col gap-5 p-5 sm:p-6 sm:pr-44">
+                <SectionTitle eyebrow={t('Eksplorasi', 'Explore')} className="mb-0">
+                  {t('Coba wilayah atau simulasi lain', 'Try another region or simulation')}
+                </SectionTitle>
+                <div>
+                  <p className="data-label mb-2.5">{t('Wilayah rawan', 'High-risk regions')}</p>
+                  <div className="snap-row -mx-5 flex gap-2 overflow-x-auto px-5 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">
+                    {EXPLORE_PRESETS.map((p) => {
+                      const c = CITY_BY_SLUG[p.slug];
+                      return (
+                        <Chip
+                          key={p.slug}
+                          active={location.id === `preset-${c.slug}`}
+                          onClick={() => {
+                            setScenario(null);
+                            setCurrent({
+                              id: `preset-${c.slug}`,
+                              name: c.name,
+                              region: c.province,
+                              provinceCode: c.provinceCode,
+                              lat: c.lat,
+                              lon: c.lon,
+                              source: 'preset',
+                            });
+                          }}
+                        >
+                          <MapPin className="size-3.5" /> {c.name}
+                        </Chip>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <p className="data-label mb-2.5">
+                    {t('Simulasi kondisi ekstrem', 'Extreme-condition simulation')}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.values(SCENARIOS).map((s) => (
+                      <Chip
+                        key={s.id}
+                        active={scenario === s.id}
+                        onClick={() => setScenario(s.id)}
+                        className="border-ai/20 text-ai-deep"
+                      >
+                        {s.emoji} {s.title}
+                      </Chip>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
             <Card className="min-w-0 lg:col-span-5">
               <CardHeader className="pb-1">
                 <div>
@@ -681,7 +720,10 @@ export default function DashboardPage() {
 function ScoreNumber({ value }: { value: number }) {
   const v = useCountUp(value);
   return (
-    <p className="display-metric text-[88px] text-ink sm:text-[104px]" aria-label={t(`Skor ${value} dari 100`, `Score ${value} out of 100`)}>
+    <p
+      className="display-metric text-[88px] text-ink sm:text-[104px]"
+      aria-label={t(`Skor ${value} dari 100`, `Score ${value} out of 100`)}
+    >
       {v}
       <span className="ml-1.5 font-mono text-[15px] font-medium tracking-normal text-subtle">/100</span>
     </p>

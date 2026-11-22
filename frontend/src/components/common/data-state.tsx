@@ -114,12 +114,12 @@ export function FreshnessBadge({
       <span
         tabIndex={0}
         className={cn(
-          'inline-flex items-center gap-1.5 font-mono text-[10.5px] font-medium uppercase tracking-[0.04em] text-muted',
+          'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap font-mono text-[10.5px] font-medium uppercase tracking-[0.04em] text-muted',
           className,
         )}
       >
         <span
-          className={cn('size-1.5 rounded-full', meta.dot, status === 'fresh' && 'animate-pulse')}
+          className={cn('size-1.5 shrink-0 rounded-full', meta.dot, status === 'fresh' && 'animate-pulse')}
           aria-hidden
         />
         {mode && provenance?.mode !== 'live' && (
@@ -132,7 +132,9 @@ export function FreshnessBadge({
           {when ? (status === 'unavailable' ? meta.label : timeAgo(when, now)) : meta.label}
         </span>
         {showSource && provenance && (
-          <span className="hidden truncate sm:inline">· {localizeSource(provenance.source).split('—')[0].trim()}</span>
+          <span className="hidden truncate sm:inline">
+            · {localizeSource(provenance.source).split('—')[0].trim()}
+          </span>
         )}
       </span>
     </Tip>
@@ -187,7 +189,9 @@ export function ErrorState({
         <AlertCircle className="size-4" aria-hidden />
         {title}
       </div>
-      {description && <p className="text-[13px] leading-relaxed text-[var(--risk-moderate-text)]/80">{description}</p>}
+      {description && (
+        <p className="text-[13px] leading-relaxed text-[var(--risk-moderate-text)]/80">{description}</p>
+      )}
       {onRetry && (
         <Button size="sm" variant="secondary" onClick={onRetry} className="mt-1">
           <RefreshCw /> {t('Coba lagi', 'Try again')}

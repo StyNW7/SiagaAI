@@ -84,9 +84,14 @@ export default function CommunityPage() {
 
   const onImage = async (file?: File) => {
     if (!file) return;
-    if (!file.type.startsWith('image/')) return toast.error(t('File harus berupa gambar (JPG/PNG/WebP).', 'File must be an image (JPG/PNG/WebP).'));
+    if (!file.type.startsWith('image/'))
+      return toast.error(
+        t('File harus berupa gambar (JPG/PNG/WebP).', 'File must be an image (JPG/PNG/WebP).'),
+      );
     if (file.size > MAX_IMAGE_MB * 1024 * 1024)
-      return toast.error(t(`Ukuran gambar maksimal ${MAX_IMAGE_MB} MB.`, `Maximum image size is ${MAX_IMAGE_MB} MB.`));
+      return toast.error(
+        t(`Ukuran gambar maksimal ${MAX_IMAGE_MB} MB.`, `Maximum image size is ${MAX_IMAGE_MB} MB.`),
+      );
     try {
       const blob = await compressImage(file);
       setImage({ blob, preview: await blobToDataUrl(blob) });
@@ -104,11 +109,21 @@ export default function CommunityPage() {
           lon: Math.round(p.coords.longitude * 1000) / 1000,
         });
         setLocating(false);
-        toast.success(t('Lokasi laporan menggunakan GPS (dibulatkan ±100 m)', 'Report location uses GPS (rounded to ±100 m)'));
+        toast.success(
+          t(
+            'Lokasi laporan menggunakan GPS (dibulatkan ±100 m)',
+            'Report location uses GPS (rounded to ±100 m)',
+          ),
+        );
       },
       () => {
         setLocating(false);
-        toast.error(t('Izin lokasi ditolak — laporan memakai lokasi aktif.', 'Location permission denied — the report uses your active location.'));
+        toast.error(
+          t(
+            'Izin lokasi ditolak — laporan memakai lokasi aktif.',
+            'Location permission denied — the report uses your active location.',
+          ),
+        );
       },
       { timeout: 10_000 },
     );
@@ -197,7 +212,9 @@ export default function CommunityPage() {
               ) : (
                 <form onSubmit={submit} className="space-y-4" noValidate>
                   <fieldset>
-                    <legend className="mb-2 text-[13px] font-semibold">{t('Apa yang terjadi?', 'What is happening?')}</legend>
+                    <legend className="mb-2 text-[13px] font-semibold">
+                      {t('Apa yang terjadi?', 'What is happening?')}
+                    </legend>
                     <div className="grid grid-cols-2 gap-2">
                       {hazardOptions().map((o) => (
                         <button
@@ -243,7 +260,8 @@ export default function CommunityPage() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <label className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-line-strong/80 bg-surface px-3.5 text-[13px] font-semibold transition-colors hover:bg-raised">
-                      <ImagePlus className="size-4" /> {image ? t('Ganti foto', 'Change photo') : t('Tambah foto', 'Add photo')}
+                      <ImagePlus className="size-4" />{' '}
+                      {image ? t('Ganti foto', 'Change photo') : t('Tambah foto', 'Add photo')}
                       <input
                         type="file"
                         accept="image/*"
@@ -260,7 +278,8 @@ export default function CommunityPage() {
                       onClick={useGps}
                       disabled={locating}
                     >
-                      {locating ? <Loader2 className="animate-spin" /> : <LocateFixed />} {t('Pakai GPS', 'Use GPS')}
+                      {locating ? <Loader2 className="animate-spin" /> : <LocateFixed />}{' '}
+                      {t('Pakai GPS', 'Use GPS')}
                     </Button>
                   </div>
                   {image && (
@@ -312,17 +331,26 @@ export default function CommunityPage() {
             <EmptyState
               pose="explore"
               title={t('Belum ada laporan di sekitar', 'No reports nearby yet')}
-              description={t('Jadilah yang pertama berbagi kondisi lapangan.', 'Be the first to share on-the-ground conditions.')}
+              description={t(
+                'Jadilah yang pertama berbagi kondisi lapangan.',
+                'Be the first to share on-the-ground conditions.',
+              )}
             />
           ) : (
             <ul className="space-y-3">
               {shown.map((r) => (
                 <li key={r.id}>
                   <Card className="overflow-hidden">
-                    <div className="flex items-center gap-2 border-b border-line bg-raised px-5 py-2 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-[var(--risk-moderate-text)]">
-                      <ShieldQuestion className="size-3.5" /> {t('Laporan warga · belum terverifikasi', 'Community report · unverified')}
+                    <div className="flex items-center gap-2 whitespace-nowrap border-b border-line bg-raised px-4 py-2 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-[var(--risk-moderate-text)] sm:px-5">
+                      <ShieldQuestion className="size-3.5 shrink-0" />
+                      <span className="truncate">
+                        <span className="hidden sm:inline">
+                          {t('Laporan warga · ', 'Community report · ')}
+                        </span>
+                        {t('Belum terverifikasi', 'Unverified')}
+                      </span>
                       {r.isExample && (
-                        <span className="ml-auto rounded-full bg-neutral-100 px-2 py-0.5 text-subtle">
+                        <span className="ml-auto shrink-0 rounded-full bg-neutral-100 px-2 py-0.5 text-subtle">
                           {t('contoh demo', 'demo example')}
                         </span>
                       )}
@@ -383,8 +411,10 @@ export default function CommunityPage() {
                               disabled={confirmed.includes(r.id)}
                             >
                               <CheckCircle2 />{' '}
-                              {confirmed.includes(r.id) ? t('Dikonfirmasi', 'Confirmed') : t('Saya juga melihat', 'I see it too')} ·{' '}
-                              {r.confirmations}
+                              {confirmed.includes(r.id)
+                                ? t('Dikonfirmasi', 'Confirmed')
+                                : t('Saya juga melihat', 'I see it too')}{' '}
+                              · {r.confirmations}
                             </Button>
                           )}
                         </div>

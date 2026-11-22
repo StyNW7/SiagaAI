@@ -210,7 +210,9 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
         >
           <Ara pose="explain" size={64} className="-mb-1" />
           <span className="min-w-0 pb-3">
-            <span className="block text-[13px] font-bold leading-tight text-ink">{t('Tanya Ara', 'Ask Ara')}</span>
+            <span className="block text-[13px] font-bold leading-tight text-ink">
+              {t('Tanya Ara', 'Ask Ara')}
+            </span>
             <span className="mt-0.5 block text-[11.5px] leading-snug text-muted">
               {t('Asisten siaga berbasis AI', 'AI-powered preparedness assistant')}
             </span>
@@ -221,7 +223,9 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
       <button
         onClick={onToggle}
         className="flex h-11 items-center justify-center gap-2 border-t border-line font-mono text-[11px] uppercase tracking-[0.08em] text-subtle transition-colors hover:bg-surface/60 hover:text-ink"
-        aria-label={collapsed ? t('Perluas sidebar', 'Expand sidebar') : t('Ciutkan sidebar', 'Collapse sidebar')}
+        aria-label={
+          collapsed ? t('Perluas sidebar', 'Expand sidebar') : t('Ciutkan sidebar', 'Collapse sidebar')
+        }
       >
         {collapsed ? <ChevronsRight className="size-4" /> : <ChevronsLeft className="size-4" />}
         {!collapsed && t('Ciutkan', 'Collapse')}
@@ -268,7 +272,10 @@ function Topbar() {
         <button
           onClick={() => setPicker(true)}
           className="group flex min-w-0 items-center gap-2.5 rounded-full border border-line bg-surface py-1.5 pl-1.5 pr-3 text-left transition-colors hover:border-line-strong"
-          aria-label={t(`Lokasi aktif: ${location.name}. Ubah lokasi`, `Active location: ${location.name}. Change location`)}
+          aria-label={t(
+            `Lokasi aktif: ${location.name}. Ubah lokasi`,
+            `Active location: ${location.name}. Change location`,
+          )}
         >
           <span
             className={cn(
@@ -301,7 +308,10 @@ function Topbar() {
           variant="ghost"
           size="icon"
           className="relative rounded-full"
-          aria-label={t(`Pusat peringatan, ${urgent} peringatan penting`, `Alert center, ${urgent} important alerts`)}
+          aria-label={t(
+            `Pusat peringatan, ${urgent} peringatan penting`,
+            `Alert center, ${urgent} important alerts`,
+          )}
         >
           <Link to="/app/alerts">
             <Bell className="!size-[19px]" />
@@ -376,7 +386,10 @@ function BottomNav() {
 
 export function AppLayout({ children }: { children?: ReactNode }) {
   const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1199px)');
+  // Mirrors the sidebar "Tanya Ara" card, which is shown only on md+ screens taller than 780px.
+  const sidebarAraVisible = useMediaQuery('(min-width: 768px) and (min-height: 781px)');
   const [collapsed, setCollapsed] = useState<boolean | null>(null);
+  const sidebarCollapsed = collapsed ?? isTablet;
   const textScale = useSettings((s) => s.textScale);
   const { pathname } = useLocation();
 
@@ -397,7 +410,7 @@ export function AppLayout({ children }: { children?: ReactNode }) {
       >
         {t('Lewati ke konten utama', 'Skip to main content')}
       </a>
-      <Sidebar collapsed={collapsed ?? isTablet} onToggle={() => setCollapsed(!(collapsed ?? isTablet))} />
+      <Sidebar collapsed={sidebarCollapsed} onToggle={() => setCollapsed(!sidebarCollapsed)} />
       <div className="flex min-w-0 flex-1 flex-col overflow-x-clip">
         <ScenarioBanner />
         <OfflineBanner />
@@ -406,7 +419,7 @@ export function AppLayout({ children }: { children?: ReactNode }) {
           id="main"
           className={cn(
             'mx-auto w-full flex-1',
-            isMap ? 'max-w-none' : 'max-w-[1600px] px-4 pb-32 pt-6 sm:px-6 md:pb-16 lg:px-10 lg:pt-9',
+            isMap ? 'max-w-none' : 'max-w-[1600px] px-4 pb-32 pt-6 sm:px-6 md:pb-24 lg:px-10 lg:pt-9',
           )}
         >
           <Suspense fallback={<PageLoader label={t('Memuat halaman…', 'Loading page…')} />}>
@@ -417,7 +430,8 @@ export function AppLayout({ children }: { children?: ReactNode }) {
         </main>
       </div>
       <BottomNav />
-      <AssistantLauncher />
+      {/* The expanded sidebar already has a "Tanya Ara" card — no need for a second floating button. */}
+      <AssistantLauncher hideTrigger={sidebarAraVisible && !sidebarCollapsed} />
       <RiskRecorder />
       <SyncManager />
       <Onboarding />

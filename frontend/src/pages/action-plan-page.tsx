@@ -166,7 +166,10 @@ export default function ActionPlanPage() {
           <AiThinking
             steps={[
               t('Membaca bahaya utama & level risiko', 'Reading the main hazard & risk level'),
-              t(`Menyesuaikan profil (${context?.profile.transport ?? ''})`, `Tailoring to your profile (${context?.profile.transport ?? ''})`),
+              t(
+                `Menyesuaikan profil (${context?.profile.transport ?? ''})`,
+                `Tailoring to your profile (${context?.profile.transport ?? ''})`,
+              ),
               t('Memilih langkah dari panduan BNPB/BMKG', 'Choosing steps from BNPB/BMKG guidance'),
               t('Memvalidasi struktur rencana', 'Validating the plan structure'),
             ]}
@@ -203,9 +206,17 @@ export default function ActionPlanPage() {
                     <span className="font-mono text-[12px] text-subtle">%</span>
                   </span>
                 </div>
-                <Progress value={progress} color="#208A61" label={t('Progres rencana aksi', 'Action plan progress')} className="mt-2" />
+                <Progress
+                  value={progress}
+                  color="#208A61"
+                  label={t('Progres rencana aksi', 'Action plan progress')}
+                  className="mt-2"
+                />
                 <p className="telemetry mt-2 normal-case tracking-normal">
-                  {t(`${active.checked.length} dari ${total} langkah selesai`, `${active.checked.length} of ${total} steps done`)}
+                  {t(
+                    `${active.checked.length} dari ${total} langkah selesai`,
+                    `${active.checked.length} of ${total} steps done`,
+                  )}
                 </p>
               </div>
               <div className="flex gap-2">
@@ -224,6 +235,37 @@ export default function ActionPlanPage() {
             </div>
           </div>
 
+          {(active.locationName !== location.name ||
+            Date.now() - new Date(active.createdAt).getTime() > 12 * 3_600_000) && (
+            <div
+              role="status"
+              className="mb-5 flex flex-col gap-3 rounded-[16px] border border-risk-moderate/30 bg-[var(--risk-moderate-soft)] px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+            >
+              <p className="flex items-start gap-2.5 text-[14px] leading-snug">
+                <History className="mt-0.5 size-4 shrink-0 text-[var(--risk-moderate-text)]" aria-hidden />
+                <span>
+                  {active.locationName !== location.name
+                    ? t(
+                        `Rencana ini untuk ${active.locationName}. Lokasi aktif sekarang ${location.name}.`,
+                        `This plan is for ${active.locationName}. Your active location is now ${location.name}.`,
+                      )
+                    : t(
+                        'Rencana ini dibuat lebih dari 12 jam lalu.',
+                        'This plan was made over 12 hours ago.',
+                      )}
+                </span>
+              </p>
+              <Button
+                size="sm"
+                onClick={() => generate(true)}
+                disabled={!context || gen.isPending}
+                className="shrink-0"
+              >
+                <Sparkles /> {t(`Buat untuk ${location.name}`, `Create for ${location.name}`)}
+              </Button>
+            </div>
+          )}
+
           {progress === 100 && (
             <AraSays
               pose="success"
@@ -232,7 +274,10 @@ export default function ActionPlanPage() {
               className="mb-5"
               title={t('Semua langkah selesai! 🎉', 'All steps done! 🎉')}
             >
-              {t('Kamu sudah siap. Tetap pantau info resmi BMKG & BPBD.', "You're prepared. Keep monitoring official BMKG & BPBD updates.")}
+              {t(
+                'Kamu sudah siap. Tetap pantau info resmi BMKG & BPBD.',
+                "You're prepared. Keep monitoring official BMKG & BPBD updates.",
+              )}
             </AraSays>
           )}
 
@@ -336,7 +381,10 @@ export default function ActionPlanPage() {
       )}
       {!online && (
         <p className="telemetry mt-3 normal-case tracking-normal">
-          {t('Offline — rencana dibuat Local Reasoner dari data terakhir.', 'Offline — plans are made by the Local Reasoner from the latest data.')}
+          {t(
+            'Offline — rencana dibuat Local Reasoner dari data terakhir.',
+            'Offline — plans are made by the Local Reasoner from the latest data.',
+          )}
         </p>
       )}
 
@@ -435,7 +483,9 @@ export default function ActionPlanPage() {
 function GoBag() {
   // Items are keyed by position ("group:item") so checks survive a language switch.
   const [checked, setChecked] = useState<string[]>(() =>
-    (JSON.parse(localStorage.getItem('siaga.gobag.v2') ?? '[]') as string[]).filter((k) => /^\d+:\d+$/.test(k)),
+    (JSON.parse(localStorage.getItem('siaga.gobag.v2') ?? '[]') as string[]).filter((k) =>
+      /^\d+:\d+$/.test(k),
+    ),
   );
   useEffect(() => {
     localStorage.setItem('siaga.gobag.v2', JSON.stringify(checked));
@@ -449,7 +499,10 @@ function GoBag() {
             <Backpack className="size-4 text-brand" /> {t('Tas Siaga Bencana', 'Disaster Go-Bag')}
           </CardTitle>
           <p className="mt-1 text-[12.5px] text-muted">
-            {t('Konsep Tas Siaga Bencana BNPB · tersedia offline', 'Based on the BNPB Go-Bag concept · available offline')}
+            {t(
+              'Konsep Tas Siaga Bencana BNPB · tersedia offline',
+              'Based on the BNPB Go-Bag concept · available offline',
+            )}
           </p>
         </div>
         <span className="font-mono text-[12px] font-medium text-muted">
@@ -477,9 +530,7 @@ function GoBag() {
                         <input
                           type="checkbox"
                           checked={done}
-                          onChange={() =>
-                            setChecked((c) => (done ? c.filter((x) => x !== id) : [...c, id]))
-                          }
+                          onChange={() => setChecked((c) => (done ? c.filter((x) => x !== id) : [...c, id]))}
                           className="mt-0.5 size-4 accent-risk-safe"
                         />
                         <span className={cn(done && 'text-muted line-through')}>{item}</span>

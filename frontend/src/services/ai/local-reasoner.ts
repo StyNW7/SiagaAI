@@ -93,7 +93,10 @@ function weatherSentence(c: AiContext): string {
   const w = c.weather;
   if (!w) return t('Data cuaca sedang tidak tersedia.', 'Weather data is currently unavailable.');
   const temp = w.temperature != null ? `${Math.round(w.temperature)}°C` : '';
-  const rh = w.humidity != null ? t(`, kelembapan ${Math.round(w.humidity)}%`, `, humidity ${Math.round(w.humidity)}%`) : '';
+  const rh =
+    w.humidity != null
+      ? t(`, kelembapan ${Math.round(w.humidity)}%`, `, humidity ${Math.round(w.humidity)}%`)
+      : '';
   const rain =
     w.rain24hMm >= 1
       ? t(
@@ -113,7 +116,9 @@ function hotspotSentence(c: AiContext): string {
   const parts: string[] = [];
   if (h) {
     if (h.nearestKm == null)
-      parts.push(t('Tidak ada titik panas satelit dalam radius 150 km', 'No satellite hotspots within 150 km'));
+      parts.push(
+        t('Tidak ada titik panas satelit dalam radius 150 km', 'No satellite hotspots within 150 km'),
+      );
     else
       parts.push(
         t(
@@ -122,7 +127,8 @@ function hotspotSentence(c: AiContext): string {
         ),
       );
   } else parts.push(t('Data titik panas tidak tersedia', 'Hotspot data unavailable'));
-  if (aq?.pm25 != null) parts.push(t(`PM2.5 sekitar ${Math.round(aq.pm25)} µg/m³`, `PM2.5 around ${Math.round(aq.pm25)} µg/m³`));
+  if (aq?.pm25 != null)
+    parts.push(t(`PM2.5 sekitar ${Math.round(aq.pm25)} µg/m³`, `PM2.5 around ${Math.round(aq.pm25)} µg/m³`));
   return `${parts.join('; ')}.`;
 }
 
@@ -150,6 +156,18 @@ function tagsFrom(c: AiContext): ActionTag[] {
 const pickText = (c: AiContext, phase: 'now' | 'hours' | 'worsen', n: number) =>
   selectActions(levels(c), tagsFrom(c), phase, n).map((a) => a.text);
 
+/** On-the-road tips only: travel-tagged actions first, then untagged weather/smoke/general ones
+ *  (never home-bound steps like "move valuables to a higher place"). */
+const TRAVEL_TAGS: ActionTag[] = ['motorcycle', 'car', 'public', 'walking'];
+const pickTravelText = (c: AiContext, n: number) => {
+  const pool = selectActions(levels(c), tagsFrom(c), undefined, 40).filter((a) => a.phase !== 'worsen');
+  const travel = pool.filter((a) => a.tags?.some((tag) => TRAVEL_TAGS.includes(tag)));
+  const general = pool.filter(
+    (a) => !a.tags && (a.hazard === 'weather' || a.hazard === 'smoke' || a.hazard === 'general'),
+  );
+  return [...new Set([...travel, ...general])].slice(0, n).map((a) => a.text);
+};
+
 /* ── Tasks ───────────────────────────────────────────────────────────────── */
 
 function brief(c: AiContext): BriefOutput {
@@ -158,7 +176,10 @@ function brief(c: AiContext): BriefOutput {
   const primary = loc.primaryHazard;
   const calm = RANK[loc.level] <= 1;
   const headline = calm
-    ? t(`Kondisi relatif tenang di ${c.location.name} hari ini`, `Relatively calm conditions in ${c.location.name} today`)
+    ? t(
+        `Kondisi relatif tenang di ${c.location.name} hari ini`,
+        `Relatively calm conditions in ${c.location.name} today`,
+      )
     : t(`Waspada ${HZ(primary)} di ${c.location.name}`, `Watch out for ${HZ(primary)} in ${c.location.name}`);
   const summary = t(
     `Siaga Score lokasi ${loc.score}/100 (${LEVEL(loc.level)}), dipicu terutama oleh ${HZ(primary)}: ${c.risk.hazards[primary].headline} ` +
@@ -169,7 +190,10 @@ function brief(c: AiContext): BriefOutput {
   const keyPoints = [weatherSentence(c), hotspotSentence(c)];
   keyPoints.push(
     c.officialWarnings.length
-      ? t(`Peringatan resmi BMKG aktif: ${c.officialWarnings[0]}.`, `Active official BMKG warning: ${c.officialWarnings[0]}.`)
+      ? t(
+          `Peringatan resmi BMKG aktif: ${c.officialWarnings[0]}.`,
+          `Active official BMKG warning: ${c.officialWarnings[0]}.`,
+        )
       : c.earthquake
         ? t(
             `Gempa M${c.earthquake.magnitude} tercatat ±${c.earthquake.distanceKm} km dari lokasi (${c.earthquake.region}).`,
@@ -259,7 +283,8 @@ function impact(c: AiContext): ImpactOutput {
   const impacts = list.map((h) => {
     const advice = ACTIONS.filter((a) => a.hazard === h && RANK[lv[h]] >= RANK[a.minLevel]).sort(
       (a, b) =>
-        Number(!!b.tags?.some((tag) => tags.includes(tag))) - Number(!!a.tags?.some((tag) => tags.includes(tag))),
+        Number(!!b.tags?.some((tag) => tags.includes(tag))) -
+        Number(!!a.tags?.some((tag) => tags.includes(tag))),
     )[0];
     return {
       hazard: h,
@@ -305,13 +330,28 @@ function impact(c: AiContext): ImpactOutput {
         ),
     watchFor: [
       ...(lv.smoke !== 'safe'
-        ? [t('Bau asap menyengat, mata perih, atau jarak pandang turun', 'Strong smoke smell, stinging eyes, or dropping visibility')]
+        ? [
+            t(
+              'Bau asap menyengat, mata perih, atau jarak pandang turun',
+              'Strong smoke smell, stinging eyes, or dropping visibility',
+            ),
+          ]
         : []),
       ...(lv.flood !== 'safe'
-        ? [t('Air naik di saluran/jalan dan hujan deras >1 jam', 'Water rising in drains/roads and heavy rain lasting >1 hour')]
+        ? [
+            t(
+              'Air naik di saluran/jalan dan hujan deras >1 jam',
+              'Water rising in drains/roads and heavy rain lasting >1 hour',
+            ),
+          ]
         : []),
       ...(lv.weather !== 'safe'
-        ? [t('Awan gelap, kilat, dan angin kencang mendadak', 'Dark clouds, lightning, and sudden strong winds')]
+        ? [
+            t(
+              'Awan gelap, kilat, dan angin kencang mendadak',
+              'Dark clouds, lightning, and sudden strong winds',
+            ),
+          ]
         : []),
       t('Pembaruan peringatan dini dari BMKG/BPBD', 'Early-warning updates from BMKG/BPBD'),
     ].slice(0, 4),
@@ -336,7 +376,10 @@ function actionPlan(c: AiContext): ActionPlanOutput {
             `Rencana aksi: ${HZ_TITLE(p.primaryHazard)} — ${c.location.name}`,
             `Action plan: ${HZ_TITLE(p.primaryHazard)} — ${c.location.name}`,
           )
-        : t(`Rencana kesiapsiagaan harian — ${c.location.name}`, `Daily preparedness plan — ${c.location.name}`),
+        : t(
+            `Rencana kesiapsiagaan harian — ${c.location.name}`,
+            `Daily preparedness plan — ${c.location.name}`,
+          ),
     summary: t(
       `Disusun untuk ${personaPhrase(c)} dengan skor personal ${p.score}/100 (${LEVEL(p.level)}).${modeNote(c)}`,
       `Prepared for a ${personaPhrase(c)} with a personal score of ${p.score}/100 (${LEVEL(p.level)}).${modeNote(c)}`,
@@ -346,12 +389,21 @@ function actionPlan(c: AiContext): ActionPlanOutput {
       t('Simpan nomor darurat 112 di ponsel', 'Save the emergency number 112 on your phone'),
     ]),
     nextHours: ensure(hours, [
-      t('Cek kembali SiagaAI dalam 3 jam untuk pembaruan kondisi', 'Check SiagaAI again within 3 hours for updated conditions'),
+      t(
+        'Cek kembali SiagaAI dalam 3 jam untuk pembaruan kondisi',
+        'Check SiagaAI again within 3 hours for updated conditions',
+      ),
       t('Periksa kesiapan Tas Siaga Bencana', 'Check that your Disaster Go-Bag is ready'),
     ]),
     ifWorsens: ensure(worsen, [
-      t('Ikuti arahan resmi BPBD/aparat; hubungi 112 bila dalam bahaya', 'Follow official BPBD/authority instructions; call 112 if in danger'),
-      t('Utamakan keselamatan anggota keluarga yang rentan', 'Prioritise the safety of vulnerable family members'),
+      t(
+        'Ikuti arahan resmi BPBD/aparat; hubungi 112 bila dalam bahaya',
+        'Follow official BPBD/authority instructions; call 112 if in danger',
+      ),
+      t(
+        'Utamakan keselamatan anggota keluarga yang rentan',
+        'Prioritise the safety of vulnerable family members',
+      ),
     ]),
     officialNote: t(
       'SiagaAI adalah alat bantu keputusan. Selalu utamakan informasi & instruksi resmi BMKG, BNPB, dan BPBD setempat.',
@@ -392,10 +444,18 @@ function familyPlan(c: AiContext): FamilyPlanOutput {
     } else if (isElder(m.ageGroup)) {
       if (RANK[lv.smoke] >= 1)
         advice.push(
-          t('Kurangi aktivitas luar & sediakan masker yang nyaman', 'Reduce outdoor activity & provide a comfortable mask'),
+          t(
+            'Kurangi aktivitas luar & sediakan masker yang nyaman',
+            'Reduce outdoor activity & provide a comfortable mask',
+          ),
         );
       if (RANK[lv.weather] >= 2)
-        advice.push(t('Pastikan cukup minum dan hindari terik siang', 'Make sure they drink enough and avoid the midday sun'));
+        advice.push(
+          t(
+            'Pastikan cukup minum dan hindari terik siang',
+            'Make sure they drink enough and avoid the midday sun',
+          ),
+        );
       advice.push(
         t(
           'Siapkan obat rutin & rencana pendampingan saat evakuasi',
@@ -404,7 +464,12 @@ function familyPlan(c: AiContext): FamilyPlanOutput {
       );
     } else {
       if (m.priority !== 'normal')
-        advice.push(t(`Waspadai ${HZ(primary)} saat beraktivitas di luar`, `Watch out for ${HZ(primary)} when outdoors`));
+        advice.push(
+          t(
+            `Waspadai ${HZ(primary)} saat beraktivitas di luar`,
+            `Watch out for ${HZ(primary)} when outdoors`,
+          ),
+        );
       advice.push(
         t(
           'Bantu memantau informasi resmi & kondisi anggota keluarga lain',
@@ -425,12 +490,20 @@ function familyPlan(c: AiContext): FamilyPlanOutput {
       : [
           {
             name: t('Anda', 'You'),
-            advice: [t('Tambahkan anggota keluarga untuk rencana yang lebih personal', 'Add family members for a more personal plan')],
+            advice: [
+              t(
+                'Tambahkan anggota keluarga untuk rencana yang lebih personal',
+                'Add family members for a more personal plan',
+              ),
+            ],
           },
         ],
     household: [
       ...selectActions(lv, ['family'], 'now', 2).map((a) => a.text),
-      t('Sepakati titik kumpul & cara saling mengabari dengan keluarga', 'Agree on a meeting point & how to keep in touch with your family'),
+      t(
+        'Sepakati titik kumpul & cara saling mengabari dengan keluarga',
+        'Agree on a meeting point & how to keep in touch with your family',
+      ),
       t(
         'Periksa kesiapan Tas Siaga Bencana (dokumen, obat, air, senter)',
         'Check your Disaster Go-Bag is ready (documents, medicine, water, flashlight)',
@@ -439,8 +512,14 @@ function familyPlan(c: AiContext): FamilyPlanOutput {
       .filter((v, i, a) => a.indexOf(v) === i)
       .slice(0, 5),
     ifWorsens: [
-      t('Evakuasi lebih awal bersama anak, lansia & penyandang disabilitas', 'Evacuate early with children, older adults & people with disabilities'),
-      t('Ikuti arahan resmi BPBD/aparat; hubungi 112 bila dalam bahaya', 'Follow official BPBD/authority instructions; call 112 if in danger'),
+      t(
+        'Evakuasi lebih awal bersama anak, lansia & penyandang disabilitas',
+        'Evacuate early with children, older adults & people with disabilities',
+      ),
+      t(
+        'Ikuti arahan resmi BPBD/aparat; hubungi 112 bila dalam bahaya',
+        'Follow official BPBD/authority instructions; call 112 if in danger',
+      ),
     ],
   };
 }
@@ -450,7 +529,10 @@ function region(c: AiContext): RegionOutput {
   if (!r)
     return {
       headline: t('Data regional tidak tersedia', 'Regional data unavailable'),
-      summary: t('Pilih provinsi pada peta untuk melihat ringkasan.', 'Select a province on the map to see a summary.'),
+      summary: t(
+        'Pilih provinsi pada peta untuk melihat ringkasan.',
+        'Select a province on the map to see a summary.',
+      ),
       outlook: t('Pantau informasi resmi BMKG.', 'Monitor official BMKG information.'),
     };
   const trend =
@@ -533,8 +615,12 @@ function assistant(c: AiContext, messages: ChatMessage[] = []): AssistantOutput 
       followUps: pick(0),
     };
   }
-  if (/motor|berangkat|kampus|perjalanan|jalan|commut|kerja besok|pergi|trip|travel|campus|ride|drive|go out/.test(q)) {
-    const tips = pickText(c, 'now', 3);
+  if (
+    /motor|berangkat|kampus|perjalanan|jalan|commut|kerja besok|pergi|trip|travel|campus|ride|drive|go out/.test(
+      q,
+    )
+  ) {
+    const tips = pickTravelText(c, 3);
     const win = c.saferOutdoorWindows.length
       ? t(
           `Waktu yang relatif lebih aman: **${c.saferOutdoorWindows.join(or())} WIB**.\n`,
@@ -584,7 +670,9 @@ function assistant(c: AiContext, messages: ChatMessage[] = []): AssistantOutput 
     };
   }
   if (/anak|lansia|keluarga|orang tua|nenek|kakek|bayi|child|kid|elder|family|parent|baby|grand/.test(q)) {
-    const list = bullets(selectActions(levels(c), ['family', 'child', 'elderly'], undefined, 3).map((a) => a.text));
+    const list = bullets(
+      selectActions(levels(c), ['family', 'child', 'elderly'], undefined, 3).map((a) => a.text),
+    );
     return {
       answer: t(
         `Anak-anak dan lansia lebih rentan terhadap asap, panas, dan banjir. Saat ini bahaya utama adalah **${HZ(c.risk.location.primaryHazard)}**.\n${list}\nTambahkan anggota keluarga di menu **Keluarga** untuk mendapat ringkasan risiko masing-masing.`,
@@ -597,7 +685,10 @@ function assistant(c: AiContext, messages: ChatMessage[] = []): AssistantOutput 
     const f = c.risk.hazards.flood;
     return {
       answer:
-        t(`Potensi banjir: **${f.score}/100 (${LEVEL(f.level)})** — `, `Flood potential: **${f.score}/100 (${LEVEL(f.level)})** — `) +
+        t(
+          `Potensi banjir: **${f.score}/100 (${LEVEL(f.level)})** — `,
+          `Flood potential: **${f.score}/100 (${LEVEL(f.level)})** — `,
+        ) +
         `${f.headline}${c.officialWarnings.length ? t(` Peringatan BMKG aktif: ${c.officialWarnings[0]}.`, ` Active BMKG warning: ${c.officialWarnings[0]}.`) : ''}\n${bullets(pickText(c, 'now', 2))}`,
       followUps: pick(-1),
     };

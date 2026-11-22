@@ -7,7 +7,7 @@ import { AiThinking, RichText } from '@/components/common/layout-bits';
 import { Button } from '@/components/ui/button';
 import { SheetContent } from '@/components/ui/overlays';
 import { useAiContext } from '@/hooks/use-ai';
-import { useMediaQuery } from '@/hooks/use-misc';
+import { useHideOnScroll, useMediaQuery } from '@/hooks/use-misc';
 import { RISK_LEVELS } from '@/lib/risk-levels';
 import { cn, sanitizeText } from '@/lib/utils';
 import { t } from '@/lib/i18n';
@@ -16,7 +16,10 @@ import { useAssistantStore } from '@/stores';
 
 const suggestions = () => [
   t('Kenapa skor saya seperti ini?', 'Why is my score like this?'),
-  t('Saya naik motor ke kampus jam 8 besok. Bagaimana?', "I'm riding a motorcycle to campus at 8 tomorrow. How does it look?"),
+  t(
+    'Saya naik motor ke kampus jam 8 besok. Bagaimana?',
+    "I'm riding a motorcycle to campus at 8 tomorrow. How does it look?",
+  ),
   t('Apa yang perlu saya siapkan?', 'What should I prepare?'),
   t('Bagaimana skor dihitung?', 'How is the score calculated?'),
   t('Kapan waktu aman keluar rumah?', 'When is it safe to go out?'),
@@ -47,31 +50,42 @@ export function AraAvatar({ className, online }: { className?: string; online?: 
   );
 }
 
-export function AssistantLauncher() {
+/**
+ * Floating "Ask Ara" button + the assistant sheet. `hideTrigger` drops the floating button
+ * (e.g. when the expanded desktop sidebar already shows a "Tanya Ara" entry) while keeping the
+ * sheet available to every other opener.
+ */
+export function AssistantLauncher({ hideTrigger = false }: { hideTrigger?: boolean }) {
   const { open, setOpen, offsetRight } = useAssistantStore();
   const { pathname } = useLocation();
   const desktop = useMediaQuery('(min-width: 768px)');
   const onMap = pathname.startsWith('/app/map');
+  const scrolledAway = useHideOnScroll();
+  const tucked = scrolledAway && !onMap && !open;
   return (
     <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
-      <DialogPrimitive.Trigger asChild>
-        <button
-          className={cn(
-            'group fixed right-4 z-40 flex items-center gap-2.5 rounded-full border border-line bg-surface py-1.5 pl-1.5 pr-4 text-[14px] font-semibold text-ink shadow-lift transition-all duration-200 hover:-translate-y-0.5 hover:border-ai/30 hover:shadow-float sm:right-6',
-            onMap ? 'bottom-40 md:bottom-12' : 'bottom-20 md:bottom-6',
-          )}
-          style={desktop && offsetRight ? { right: offsetRight + 24 } : undefined}
-          aria-label={t('Tanya Ara, asisten SiagaAI', 'Ask Ara, the SiagaAI assistant')}
-        >
-          <AraAvatar className="size-10" />
-          <span className={cn('hidden flex-col items-start leading-tight', !onMap && 'sm:flex')}>
-            {t('Tanya Ara', 'Ask Ara')}
-            <span className="flex items-center gap-1 font-mono text-[9.5px] font-medium uppercase tracking-[0.08em] text-ai">
-              <Sparkles className="size-2.5" aria-hidden /> AI Assistant
+      {!hideTrigger && (
+        <DialogPrimitive.Trigger asChild>
+          <button
+            className={cn(
+              'group fixed right-4 z-40 flex items-center gap-2.5 rounded-full border border-line bg-surface py-1.5 pl-1.5 text-[14px] font-semibold text-ink shadow-lift transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-ai/30 hover:shadow-float sm:right-6',
+              onMap ? 'bottom-40 pr-1.5 md:bottom-12' : 'bottom-20 pr-1.5 sm:pr-4 md:bottom-6',
+              tucked && 'pointer-events-none translate-y-6 scale-90 opacity-0',
+            )}
+            style={desktop && offsetRight ? { right: offsetRight + 24 } : undefined}
+            aria-label={t('Tanya Ara, asisten SiagaAI', 'Ask Ara, the SiagaAI assistant')}
+            tabIndex={tucked ? -1 : undefined}
+          >
+            <AraAvatar className="size-10" />
+            <span className={cn('hidden flex-col items-start leading-tight', !onMap && 'sm:flex')}>
+              {t('Tanya Ara', 'Ask Ara')}
+              <span className="flex items-center gap-1 font-mono text-[9.5px] font-medium uppercase tracking-[0.08em] text-ai">
+                <Sparkles className="size-2.5" aria-hidden /> AI Assistant
+              </span>
             </span>
-          </span>
-        </button>
-      </DialogPrimitive.Trigger>
+          </button>
+        </DialogPrimitive.Trigger>
+      )}
       {open && (
         <SheetContent
           side={desktop ? 'right' : 'bottom'}
@@ -97,11 +111,19 @@ function AssistantPanel() {
     const el = scroller.current;
     if (!el) return;
     const last = messages.at(-1);
-    if (!last) return el.scrollTo({ top: 0 });
+    // NB: never `return el.scrollTo(...)` from an effect — newer browsers return a Promise from
+    // scrollTo, which React would then try to call as the effect cleanup and crash.
+    if (!last) {
+      el.scrollTo({ top: 0 });
+      return;
+    }
     // A fresh answer is read from its first line; everything else follows the bottom of the thread.
     if (last.role === 'assistant' && !busy) {
       const node = el.querySelector<HTMLElement>(`[data-msg="${last.id}"]`);
-      if (node) return el.scrollTo({ top: node.offsetTop - 16, behavior: 'smooth' });
+      if (node) {
+        el.scrollTo({ top: node.offsetTop - 16, behavior: 'smooth' });
+        return;
+      }
     }
     el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
   }, [messages, busy]);
@@ -159,7 +181,9 @@ function AssistantPanel() {
         <div className="flex items-center gap-3">
           <AraAvatar className="size-11" online />
           <div>
-            <h2 className="text-[16px] font-bold tracking-[-0.02em]">{t('Ara · Asisten SiagaAI', 'Ara · SiagaAI Assistant')}</h2>
+            <h2 className="text-[16px] font-bold tracking-[-0.02em]">
+              {t('Ara · Asisten SiagaAI', 'Ara · SiagaAI Assistant')}
+            </h2>
             <p className="flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-muted">
               <span className="size-1.5 rounded-full bg-risk-safe" aria-hidden />{' '}
               {t('Paham lokasi, skor & profil Anda', 'Knows your location, score & profile')}
@@ -168,11 +192,21 @@ function AssistantPanel() {
         </div>
         <div className="flex gap-1">
           {messages.length > 0 && (
-            <Button variant="ghost" size="icon-sm" onClick={clear} aria-label={t('Mulai percakapan baru', 'Start a new conversation')}>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={clear}
+              aria-label={t('Mulai percakapan baru', 'Start a new conversation')}
+            >
               <RotateCcw />
             </Button>
           )}
-          <Button variant="ghost" size="icon-sm" onClick={() => setOpen(false)} aria-label={t('Tutup asisten', 'Close assistant')}>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setOpen(false)}
+            aria-label={t('Tutup asisten', 'Close assistant')}
+          >
             <X />
           </Button>
         </div>
@@ -184,7 +218,10 @@ function AssistantPanel() {
           aria-label={t('Konteks yang dipahami AI', 'Context understood by the AI')}
         >
           <Ctx icon={<MapPin />} text={context.location.name} />
-          <Ctx icon={<Gauge />} text={`${t('Skor', 'Score')} ${context.risk.personal.score} · ${level?.label}`} />
+          <Ctx
+            icon={<Gauge />}
+            text={`${t('Skor', 'Score')} ${context.risk.personal.score} · ${level?.label}`}
+          />
           {context.weather && (
             <Ctx
               icon={<ThermometerSun />}
@@ -201,7 +238,9 @@ function AssistantPanel() {
             <div className="flex items-end gap-3">
               <Ara pose="wave" size={92} />
               <div className="mb-2 rounded-2xl rounded-bl-md border border-line bg-raised px-4 py-3">
-                <p className="text-[15px] font-bold leading-snug">{t('Halo, aku Ara! 👋', "Hi, I'm Ara! 👋")}</p>
+                <p className="text-[15px] font-bold leading-snug">
+                  {t('Halo, aku Ara! 👋', "Hi, I'm Ara! 👋")}
+                </p>
                 <p className="mt-0.5 text-[13px] leading-relaxed text-muted">
                   {t(
                     `Mau tahu kondisi di ${context?.location.name ?? 'lokasimu'}? Tanya saja.`,
@@ -241,7 +280,9 @@ function AssistantPanel() {
                 <div
                   className={cn(
                     'rounded-2xl rounded-tl-md border px-4 py-3',
-                    m.error ? 'border-risk-moderate/30 bg-[var(--risk-moderate-soft)]' : 'border-line bg-surface',
+                    m.error
+                      ? 'border-risk-moderate/30 bg-[var(--risk-moderate-soft)]'
+                      : 'border-line bg-surface',
                   )}
                 >
                   <RichText text={m.content} />

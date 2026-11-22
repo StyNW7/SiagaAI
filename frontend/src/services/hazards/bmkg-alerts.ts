@@ -5,6 +5,7 @@
  */
 import type { Earthquake, OfficialWarning, Provenance } from '@/types/domain';
 import { fetchJson, nowIso } from '../http';
+import { prettifyBmkgRegion } from '@/lib/bmkg-region';
 
 export interface WarningsResponse {
   warnings: OfficialWarning[];
@@ -56,7 +57,7 @@ const parseQuake = (q: TewsQuake): Earthquake => {
     lon,
     magnitude: Number(q.Magnitude),
     depthKm: Number.parseFloat(q.Kedalaman),
-    region: q.Wilayah,
+    region: prettifyBmkgRegion(q.Wilayah),
     potential: q.Potensi ?? '',
     felt: q.Dirasakan,
     shakemapUrl: q.Shakemap ? `https://data.bmkg.go.id/DataMKG/TEWS/${q.Shakemap}` : undefined,

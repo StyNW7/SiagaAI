@@ -55,6 +55,35 @@ export function useMediaQuery(query: string) {
   );
 }
 
+/**
+ * True while the user is scrolling down (past `offset` px); false on scroll up, near the top,
+ * or at the very bottom of the page. Used to tuck floating buttons away so they never sit on
+ * top of the content being read.
+ */
+export function useHideOnScroll(offset = 120) {
+  const [hidden, setHidden] = useState(false);
+  useEffect(() => {
+    let last = window.scrollY;
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const y = window.scrollY;
+        const atBottom = window.innerHeight + y >= document.documentElement.scrollHeight - 8;
+        if (y < offset || atBottom) setHidden(false);
+        else if (Math.abs(y - last) > 6) setHidden(y > last);
+        last = y;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, [offset]);
+  return hidden;
+}
+
 /** Re-render every `ms` so relative timestamps ("12 menit lalu") stay accurate. */
 export function useNow(ms = 60_000) {
   const [now, setNow] = useState(() => Date.now());

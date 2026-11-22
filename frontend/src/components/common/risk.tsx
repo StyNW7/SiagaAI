@@ -113,51 +113,59 @@ export function ScoreGauge({
   const circ = Math.PI * r;
   const segments: RiskLevel[] = ['safe', 'low', 'moderate', 'high', 'critical'];
   return (
-    <div
-      className="relative mx-auto"
-      style={{ width: size, height: size * 0.62 }}
-      role="img"
-      aria-label={t(`${label}: ${score} dari 100, kategori ${m.label}`, `${label}: ${score} out of 100, category ${m.label}`)}
-    >
-      <svg viewBox="0 0 200 124" className="h-full w-full overflow-visible">
-        {segments.map((s, i) => {
-          const len = circ / 5;
-          return (
-            <path
-              key={s}
-              d="M 16 108 A 84 84 0 0 1 184 108"
-              fill="none"
-              stroke={RISK_LEVELS[s].color}
-              strokeOpacity={0.16}
-              strokeWidth={14}
-              strokeDasharray={`${len - 2} ${circ}`}
-              strokeDashoffset={-i * len}
-            />
-          );
-        })}
-        <path
-          d="M 16 108 A 84 84 0 0 1 184 108"
-          fill="none"
-          stroke={m.color}
-          strokeWidth={14}
-          strokeLinecap="round"
-          strokeDasharray={`${(value / 100) * circ} ${circ}`}
-          style={{ transition: 'stroke 0.4s' }}
-        />
-        {(() => {
-          const a = Math.PI * (1 - value / 100);
-          const x = 100 + r * Math.cos(a);
-          const y = 108 - r * Math.sin(a);
-          return <circle cx={x} cy={y} r={9} fill="var(--color-surface)" stroke={m.color} strokeWidth={4} />;
-        })()}
-      </svg>
-      <div className="absolute inset-x-0 bottom-0 text-center">
-        <div className="display-metric text-[48px] text-ink">
-          {value}
-          <span className="ml-0.5 text-[17px] font-semibold tracking-normal text-subtle">/100</span>
+    <div className="mx-auto" style={{ width: size }}>
+      <div
+        className="relative"
+        style={{ width: size, height: size * 0.62 }}
+        role="img"
+        aria-label={t(
+          `${label}: ${score} dari 100, kategori ${m.label}`,
+          `${label}: ${score} out of 100, category ${m.label}`,
+        )}
+      >
+        <svg viewBox="0 0 200 124" className="h-full w-full overflow-visible">
+          {segments.map((s, i) => {
+            const len = circ / 5;
+            return (
+              <path
+                key={s}
+                d="M 16 108 A 84 84 0 0 1 184 108"
+                fill="none"
+                stroke={RISK_LEVELS[s].color}
+                strokeOpacity={0.16}
+                strokeWidth={14}
+                strokeDasharray={`${len - 2} ${circ}`}
+                strokeDashoffset={-i * len}
+              />
+            );
+          })}
+          <path
+            d="M 16 108 A 84 84 0 0 1 184 108"
+            fill="none"
+            stroke={m.color}
+            strokeWidth={14}
+            strokeLinecap="round"
+            strokeDasharray={`${(value / 100) * circ} ${circ}`}
+            style={{ transition: 'stroke 0.4s' }}
+          />
+          {(() => {
+            const a = Math.PI * (1 - value / 100);
+            const x = 100 + r * Math.cos(a);
+            const y = 108 - r * Math.sin(a);
+            return (
+              <circle cx={x} cy={y} r={9} fill="var(--color-surface)" stroke={m.color} strokeWidth={4} />
+            );
+          })()}
+        </svg>
+        <div className="absolute inset-x-0 bottom-0 text-center">
+          <div className="display-metric text-[48px] text-ink">
+            {value}
+            <span className="ml-0.5 text-[17px] font-semibold tracking-normal text-subtle">/100</span>
+          </div>
         </div>
-        {sublabel && <div className="telemetry mt-1.5 normal-case tracking-normal">{sublabel}</div>}
       </div>
+      {/* Below the arc, not inside it — inside, it collided with the arc's end caps. */}
+      {sublabel && <div className="telemetry mt-3 text-center normal-case tracking-normal">{sublabel}</div>}
     </div>
   );
 }
