@@ -128,13 +128,13 @@ export function ThemeChooser() {
             aria-checked={active}
             onClick={() => setTheme(o.value)}
             className={cn(
-              'group flex flex-col overflow-hidden rounded-xl border text-left transition-all',
+              'group flex min-w-0 flex-col overflow-hidden rounded-xl border text-left transition-all',
               active ? 'border-brand ring-2 ring-brand/20' : 'border-line hover:border-line-strong',
             )}
           >
             <ThemePreview kind={o.value} />
-            <span className="flex items-center gap-2 border-t border-line bg-surface px-3 py-2.5">
-              <o.icon className={cn('size-4 shrink-0', active ? 'text-brand' : 'text-muted')} aria-hidden />
+            <span className="flex flex-1 items-start gap-2 border-t border-line bg-surface px-2.5 py-2.5 sm:px-3">
+              <o.icon className={cn('mt-px hidden size-4 shrink-0 min-[420px]:block', active ? 'text-brand' : 'text-muted')} aria-hidden />
               <span className="min-w-0">
                 <span className="block text-[13px] font-semibold leading-tight text-ink">{o.label}</span>
                 <span className="block text-[11px] leading-snug text-muted">{o.hint}</span>
@@ -193,13 +193,13 @@ export function LanguageChooser() {
             aria-checked={active}
             onClick={() => !active && setLang(l.value)}
             className={cn(
-              'flex items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-all',
+              'flex min-w-0 items-center gap-2.5 rounded-xl border px-3 py-3 text-left transition-all sm:gap-3 sm:px-3.5',
               active ? 'border-brand bg-brand-pale ring-2 ring-brand/20' : 'border-line bg-surface hover:border-line-strong',
             )}
           >
             <span
               className={cn(
-                'grid size-9 shrink-0 place-items-center rounded-full font-mono text-[12px] font-bold',
+                'grid size-8 shrink-0 place-items-center rounded-full font-mono sm:size-9 text-[12px] font-bold',
                 active ? 'bg-brand text-white' : 'bg-neutral-100 text-neutral-700',
               )}
               aria-hidden

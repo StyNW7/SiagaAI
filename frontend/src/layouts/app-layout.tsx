@@ -16,7 +16,7 @@ import {
   Users,
 } from 'lucide-react';
 import { Suspense, useEffect, useState, type ReactNode } from 'react';
-import { Link, NavLink, Outlet, useLocation } from 'react-router';
+import { Link, NavLink, Outlet, useLocation, useMatch, useResolvedPath } from 'react-router';
 import { Ara } from '@/components/common/ara';
 import { Logo, LogoMark, NusantaraBackdrop } from '@/components/common/brand';
 import { PageLoader } from '@/components/common/data-state';
@@ -103,46 +103,44 @@ function NavItem({
   collapsed: boolean;
   badge?: number;
 }) {
+  // Resolve "active" here rather than with NavLink's render-prop className: the tooltip trigger's
+  // Slot stringifies function classNames, which made every collapsed item look active.
+  const resolved = useResolvedPath(to);
+  const isActive = !!useMatch({ path: resolved.pathname, end: !!end });
   const link = (
     <NavLink
       to={to}
       end={end}
-      className={({ isActive }) =>
-        cn(
-          'group relative flex h-10 items-center gap-3 rounded-[10px] px-3 text-[14px] font-medium transition-colors duration-150',
-          isActive
-            ? 'bg-surface text-ink shadow-[0_1px_2px_rgb(0_0_0/0.05)] ring-1 ring-line'
-            : 'text-neutral-600 hover:bg-surface/60 hover:text-ink',
-          collapsed && 'justify-center px-0',
-        )
-      }
+      className={cn(
+        'group relative flex h-10 items-center gap-3 rounded-[10px] px-3 text-[14px] font-medium transition-colors duration-150',
+        isActive
+          ? 'bg-surface text-ink shadow-[0_1px_2px_rgb(0_0_0/0.05)] ring-1 ring-line'
+          : 'text-neutral-600 hover:bg-surface/60 hover:text-ink',
+        collapsed && 'justify-center px-0',
+      )}
     >
-      {({ isActive }) => (
-        <>
-          {isActive && (
-            <span
-              className="absolute -left-3 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand"
-              aria-hidden
-            />
-          )}
-          <Icon
-            className={cn(
-              'size-[18px] shrink-0 transition-colors',
-              isActive ? 'text-brand' : 'text-neutral-500 group-hover:text-ink',
-            )}
-            strokeWidth={isActive ? 2.2 : 1.9}
-            aria-hidden
-          />
-          <span className={cn('flex-1 truncate', collapsed && 'sr-only')}>{label}</span>
-          {!!badge && !collapsed && (
-            <span className="grid min-w-5 place-items-center rounded-full bg-brand px-1.5 font-mono text-[10px] font-semibold leading-5 text-white">
-              {badge > 9 ? '9+' : badge}
-            </span>
-          )}
-          {!!badge && collapsed && (
-            <span className="absolute right-2.5 top-2 size-2 rounded-full bg-brand ring-2 ring-sidebar" />
-          )}
-        </>
+      {isActive && (
+        <span
+          className="absolute -left-3 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand"
+          aria-hidden
+        />
+      )}
+      <Icon
+        className={cn(
+          'size-[18px] shrink-0 transition-colors',
+          isActive ? 'text-brand' : 'text-neutral-500 group-hover:text-ink',
+        )}
+        strokeWidth={isActive ? 2.2 : 1.9}
+        aria-hidden
+      />
+      <span className={cn('flex-1 truncate', collapsed && 'sr-only')}>{label}</span>
+      {!!badge && !collapsed && (
+        <span className="grid min-w-5 place-items-center rounded-full bg-brand px-1.5 font-mono text-[10px] font-semibold leading-5 text-white">
+          {badge > 9 ? '9+' : badge}
+        </span>
+      )}
+      {!!badge && collapsed && (
+        <span className="absolute right-2.5 top-2 size-2 rounded-full bg-brand ring-2 ring-sidebar" />
       )}
     </NavLink>
   );

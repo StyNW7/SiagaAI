@@ -640,6 +640,9 @@ function SiagaMapInner({
   useEffect(() => {
     const map = mapRef.current;
     if (!ready || !map || !focus) return;
+    // The container may have just changed size (e.g. the province side panel opened in the same
+    // render) — sync the canvas first so the camera frames the target in the visible area.
+    map.resize();
     if (focus.kind === 'indonesia')
       map.fitBounds(INDONESIA_BOUNDS, { padding: padding ?? 24, duration: 1400 });
     else if (focus.kind === 'point')

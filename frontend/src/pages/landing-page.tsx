@@ -758,7 +758,7 @@ function LandingNav() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2 md:ml-0">
-          <PreferenceToggles className="gap-1.5" />
+          <PreferenceToggles className="hidden gap-1.5 sm:flex" />
           <Button asChild variant="ghost" size="sm" className="hidden rounded-full lg:inline-flex">
             <Link to="/auth">{t('Masuk', 'Sign in')}</Link>
           </Button>
@@ -795,6 +795,10 @@ function LandingNav() {
           <Link to="/auth" className="rounded-xl px-4 py-3 text-[15px] font-semibold text-ink hover:bg-surface">
             {t('Masuk', 'Sign in')}
           </Link>
+          <div className="mt-1 flex items-center justify-between border-t border-line px-4 pb-1 pt-3 sm:hidden">
+            <span className="text-[13px] font-semibold text-muted">{t('Bahasa & tema', 'Language & theme')}</span>
+            <PreferenceToggles className="gap-1.5" />
+          </div>
         </nav>
       )}
     </header>

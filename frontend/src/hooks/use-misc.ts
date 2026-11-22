@@ -70,3 +70,31 @@ export function useDocumentTitle(title: string) {
     document.title = `${title} · SiagaAI`;
   }, [title]);
 }
+
+/**
+ * Boolean UI preference remembered in localStorage (e.g. collapsed map panels).
+ * `fallback` is used until the user makes an explicit choice, so it can depend on viewport size.
+ */
+export function usePersistentToggle(key: string, fallback: boolean, initialOverride?: boolean) {
+  const storageKey = `siagaai:ui:${key}`;
+  const [value, setValue] = useState<boolean>(() => {
+    if (initialOverride !== undefined) return initialOverride;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      return raw === null ? fallback : raw === '1';
+    } catch {
+      return fallback;
+    }
+  });
+  const set = (next: boolean | ((v: boolean) => boolean)) =>
+    setValue((prev) => {
+      const v = typeof next === 'function' ? next(prev) : next;
+      try {
+        localStorage.setItem(storageKey, v ? '1' : '0');
+      } catch {
+        /* storage unavailable (private mode) — keep in memory only */
+      }
+      return v;
+    });
+  return [value, set] as const;
+}

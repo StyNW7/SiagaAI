@@ -343,11 +343,11 @@ function StoryPanel() {
       <NusantaraBackdrop variant="red" />
       <IndonesiaSilhouette className="absolute -right-24 bottom-24 w-[120%] max-w-none text-white/[0.06]" />
 
-      <div className="relative flex items-center justify-between p-5 sm:p-8 lg:p-12">
-        <Link to="/" aria-label={t('SiagaAI beranda', 'SiagaAI home')} className="rounded-full bg-surface py-1.5 pl-1.5 pr-4">
-          <Logo />
+      <div className="relative flex items-center justify-between gap-2 p-4 sm:p-8 lg:p-12">
+        <Link to="/" aria-label={t('SiagaAI beranda', 'SiagaAI home')} className="shrink-0 rounded-full bg-surface py-1.5 pl-1.5 pr-1.5 min-[400px]:pr-4">
+          <Logo className="[&>span:last-child]:max-[399px]:hidden" />
         </Link>
-        <div className="flex items-center gap-3 lg:hidden">
+        <div className="flex items-center gap-2 sm:gap-3 lg:hidden">
           <PreferenceToggles tone="onDark" />
           <Link to="/app" className="text-[13px] font-semibold text-white/80 hover:text-white">
             {t('Lewati', 'Skip')}

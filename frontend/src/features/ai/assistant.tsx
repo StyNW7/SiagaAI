@@ -23,22 +23,26 @@ const suggestions = () => [
   t('Apakah anak dan orang tua saya perlu waspada?', 'Should my children and parents be cautious?'),
 ];
 
-/** Ara's face, cropped from the waving pose — used as the assistant avatar. */
-export function AraAvatar({ className }: { className?: string }) {
+/**
+ * Ara's head-and-shoulders portrait (pre-cropped square asset, see scripts/generate-avatar.mjs)
+ * used as the assistant avatar. `online` adds a small presence dot.
+ */
+export function AraAvatar({ className, online }: { className?: string; online?: boolean }) {
   return (
-    <span
-      className={cn(
-        'relative block shrink-0 overflow-hidden rounded-full bg-gradient-to-b from-brand-pale to-brand-soft ring-1 ring-brand/15',
-        className,
+    <span className={cn('relative block shrink-0', className)} aria-hidden>
+      <span className="absolute inset-0 overflow-hidden rounded-full bg-gradient-to-b from-brand-pale to-brand-soft ring-1 ring-brand/15">
+        <img
+          src="/mascot/ara-avatar.webp"
+          alt=""
+          width={256}
+          height={256}
+          className="size-full object-cover"
+          draggable={false}
+        />
+      </span>
+      {online && (
+        <span className="absolute bottom-0 right-0 size-[28%] min-h-2 min-w-2 rounded-full border-2 border-surface bg-risk-safe" />
       )}
-      aria-hidden
-    >
-      <img
-        src="/mascot/ara-hero-wave.webp"
-        alt=""
-        className="absolute left-1/2 top-[6%] w-[175%] max-w-none -translate-x-[46%]"
-        draggable={false}
-      />
     </span>
   );
 }
@@ -54,7 +58,7 @@ export function AssistantLauncher() {
         <button
           className={cn(
             'group fixed right-4 z-40 flex items-center gap-2.5 rounded-full border border-line bg-surface py-1.5 pl-1.5 pr-4 text-[14px] font-semibold text-ink shadow-lift transition-all duration-200 hover:-translate-y-0.5 hover:border-ai/30 hover:shadow-float sm:right-6',
-            onMap ? 'bottom-40 md:bottom-6' : 'bottom-20 md:bottom-6',
+            onMap ? 'bottom-40 md:bottom-12' : 'bottom-20 md:bottom-6',
           )}
           style={desktop && offsetRight ? { right: offsetRight + 24 } : undefined}
           aria-label={t('Tanya Ara, asisten SiagaAI', 'Ask Ara, the SiagaAI assistant')}
@@ -90,7 +94,16 @@ function AssistantPanel() {
   const scroller = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: 'smooth' });
+    const el = scroller.current;
+    if (!el) return;
+    const last = messages.at(-1);
+    if (!last) return el.scrollTo({ top: 0 });
+    // A fresh answer is read from its first line; everything else follows the bottom of the thread.
+    if (last.role === 'assistant' && !busy) {
+      const node = el.querySelector<HTMLElement>(`[data-msg="${last.id}"]`);
+      if (node) return el.scrollTo({ top: node.offsetTop - 16, behavior: 'smooth' });
+    }
+    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
   }, [messages, busy]);
 
   const ask = async (q: string) => {
@@ -144,7 +157,7 @@ function AssistantPanel() {
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center justify-between border-b border-line px-5 py-4">
         <div className="flex items-center gap-3">
-          <AraAvatar className="size-11" />
+          <AraAvatar className="size-11" online />
           <div>
             <h2 className="text-[16px] font-bold tracking-[-0.02em]">{t('Ara · Asisten SiagaAI', 'Ara · SiagaAI Assistant')}</h2>
             <p className="flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-muted">
@@ -182,7 +195,7 @@ function AssistantPanel() {
         </div>
       )}
 
-      <div ref={scroller} className="flex-1 space-y-4 overflow-y-auto px-5 py-5" aria-live="polite">
+      <div ref={scroller} className="relative flex-1 space-y-4 overflow-y-auto px-5 py-5" aria-live="polite">
         {messages.length === 0 && (
           <div className="animate-fade-up">
             <div className="flex items-end gap-3">
@@ -222,30 +235,36 @@ function AssistantPanel() {
               {m.content}
             </div>
           ) : (
-            <div key={m.id} className="mr-4 animate-fade-up">
-              <div
-                className={cn(
-                  'rounded-2xl rounded-bl-md border px-4 py-3',
-                  m.error ? 'border-risk-moderate/30 bg-[var(--risk-moderate-soft)]' : 'border-line bg-surface',
+            <div key={m.id} data-msg={m.id} className="flex items-start gap-2.5 animate-fade-up">
+              <AraAvatar className="mt-0.5 size-8" />
+              <div className="min-w-0 flex-1">
+                <div
+                  className={cn(
+                    'rounded-2xl rounded-tl-md border px-4 py-3',
+                    m.error ? 'border-risk-moderate/30 bg-[var(--risk-moderate-soft)]' : 'border-line bg-surface',
+                  )}
+                >
+                  <RichText text={m.content} />
+                </div>
+                {m.provider && (
+                  <p className="mt-1.5 pl-1 font-mono text-[10px] uppercase tracking-[0.06em] text-ai">
+                    ✦ {m.provider}
+                  </p>
                 )}
-              >
-                <RichText text={m.content} />
               </div>
-              {m.provider && (
-                <p className="mt-1.5 pl-1 font-mono text-[10px] uppercase tracking-[0.06em] text-ai">
-                  ✦ {m.provider}
-                </p>
-              )}
             </div>
           ),
         )}
         {busy && (
-          <div className="mr-4 rounded-2xl rounded-bl-md border border-line bg-surface px-4 py-3">
-            <AiThinking />
+          <div className="flex items-start gap-2.5">
+            <AraAvatar className="mt-0.5 size-8" />
+            <div className="rounded-2xl rounded-tl-md border border-line bg-surface px-4 py-3">
+              <AiThinking />
+            </div>
           </div>
         )}
         {!busy && last?.role === 'assistant' && last.followUps && last.followUps.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 pl-[42px]">
             {last.followUps.map((f) => (
               <button
                 key={f}
