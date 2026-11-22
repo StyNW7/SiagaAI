@@ -1,0 +1,34 @@
+# Supabase CLI project config for SiagaAI (local development: `supabase start`).
+project_id = "siagaai"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage"]
+
+[db]
+port = 54322
+major_version = 15
+
+[realtime]
+enabled = true
+
+[storage]
+enabled = true
+file_size_limit = "5MiB"
+
+[auth]
+enabled = true
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["https://siagaai.vercel.app"]
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false
+
+[functions.siaga-ai]
+verify_jwt = false
+
+[functions.hotspots]
+verify_jwt = false

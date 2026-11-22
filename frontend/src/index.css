@@ -1,0 +1,145 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import 'maplibre-gl/dist/maplibre-gl.css';
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SiagaAI Design System — "Modern Indonesian Disaster Intelligence"
+   Red–white = brand · Semantic colours = risk · Indigo = AI
+   ───────────────────────────────────────────────────────────────────────── */
+
+@theme {
+  --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Brand */
+  --color-brand: #d71920;
+  --color-brand-dark: #a61017;
+  --color-brand-soft: #fdecec;
+
+  /* Neutrals */
+  --color-canvas: #fafafa;
+  --color-surface: #ffffff;
+  --color-ink: #171717;
+  --color-muted: #6b7280;
+  --color-line: #e5e7eb;
+
+  /* AI */
+  --color-ai: #4f46e5;
+  --color-ai-soft: #eef2ff;
+
+  /* Risk semantics */
+  --color-risk-safe: #16a34a;
+  --color-risk-low: #2563eb;
+  --color-risk-moderate: #f59e0b;
+  --color-risk-high: #f97316;
+  --color-risk-critical: #991b1b;
+
+  --radius-card: 16px;
+
+  --shadow-soft: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.06);
+  --shadow-lift: 0 4px 6px -2px rgb(16 24 40 / 0.05), 0 12px 24px -4px rgb(16 24 40 / 0.08);
+  --shadow-float: 0 12px 32px -8px rgb(16 24 40 / 0.18);
+
+  --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+
+  @keyframes pulse-ring {
+    0% { transform: scale(0.6); opacity: 0.7; }
+    80%, 100% { transform: scale(2.4); opacity: 0; }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes shimmer {
+    from { background-position: -400px 0; }
+    to { background-position: 400px 0; }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+    font-size: calc(100% * var(--text-scale, 1));
+  }
+  body {
+    @apply bg-canvas font-sans text-ink antialiased;
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+  }
+  :focus-visible {
+    outline: 2.5px solid var(--color-ai);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  ::selection {
+    background: var(--color-brand-soft);
+    color: var(--color-brand-dark);
+  }
+  h1, h2, h3, h4 {
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  /* Batik-inspired kawung geometry — used at 2–6 % opacity only. */
+  .bg-batik {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23171717' stroke-width='1'%3E%3Cellipse cx='14' cy='14' rx='9' ry='5' transform='rotate(45 14 14)'/%3E%3Cellipse cx='14' cy='14' rx='9' ry='5' transform='rotate(-45 14 14)'/%3E%3Cellipse cx='42' cy='42' rx='9' ry='5' transform='rotate(45 42 42)'/%3E%3Cellipse cx='42' cy='42' rx='9' ry='5' transform='rotate(-45 42 42)'/%3E%3Ccircle cx='42' cy='14' r='2'/%3E%3Ccircle cx='14' cy='42' r='2'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 56px 56px;
+  }
+  /* Topographic contour lines */
+  .bg-topo {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='%23171717' stroke-width='1'%3E%3Cpath d='M-20 120 C 80 60 160 180 280 120 S 480 40 620 110'/%3E%3Cpath d='M-20 160 C 90 100 170 220 290 160 S 490 80 620 150'/%3E%3Cpath d='M-20 205 C 100 145 180 265 300 205 S 500 125 620 195'/%3E%3Cpath d='M-20 330 C 70 290 150 390 260 340 S 470 270 620 330'/%3E%3Cpath d='M-20 372 C 80 332 160 432 270 382 S 480 312 620 372'/%3E%3Cpath d='M-20 418 C 90 378 170 478 280 428 S 490 358 620 418'/%3E%3Cpath d='M-20 520 C 110 470 200 560 320 520 S 500 470 620 515'/%3E%3Cellipse cx='450' cy='250' rx='60' ry='30'/%3E%3Cellipse cx='450' cy='250' rx='34' ry='16'/%3E%3Cellipse cx='130' cy='470' rx='44' ry='20'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 600px 600px;
+  }
+  .skeleton {
+    background: linear-gradient(90deg, #f1f2f4 0px, #e7e9ec 80px, #f1f2f4 160px);
+    background-size: 800px 100%;
+    animation: var(--animate-shimmer);
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* MapLibre polish */
+.maplibregl-popup-content {
+  border-radius: 14px !important;
+  padding: 12px 14px !important;
+  box-shadow: var(--shadow-float) !important;
+  font-family: var(--font-sans);
+}
+.maplibregl-ctrl-group {
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-lift) !important;
+  overflow: hidden;
+}
+.maplibregl-ctrl-group button {
+  width: 36px !important;
+  height: 36px !important;
+}
+.maplibregl-ctrl-attrib {
+  font-size: 10px;
+  border-radius: 8px 0 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
