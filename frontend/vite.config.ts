@@ -72,15 +72,17 @@ export default defineConfig(({ mode }) => {
           theme_color: '#D71920',
           background_color: '#F6F6F3',
           categories: ['weather', 'utilities', 'health'],
+          // `?v=2`: icons were regenerated fully opaque (the old ones had transparent side strips that
+          // Android drew as vertical bars). A new URL makes installed WebAPKs pick up the new icon.
           icons: [
-            { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-            { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-            { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+            { src: '/icons/icon-192.png?v=2', sizes: '192x192', type: 'image/png' },
+            { src: '/icons/icon-512.png?v=2', sizes: '512x512', type: 'image/png' },
+            { src: '/icons/icon-maskable-512.png?v=2', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
           ],
           shortcuts: [
-            { name: 'Dashboard', url: '/app', icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }] },
-            { name: 'Siaga Map', url: '/app/map', icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }] },
-            { name: 'Rencana Aksi', url: '/app/action-plan', icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }] },
+            { name: 'Dashboard', url: '/app', icons: [{ src: '/icons/icon-192.png?v=2', sizes: '192x192' }] },
+            { name: 'Siaga Map', url: '/app/map', icons: [{ src: '/icons/icon-192.png?v=2', sizes: '192x192' }] },
+            { name: 'Rencana Aksi', url: '/app/action-plan', icons: [{ src: '/icons/icon-192.png?v=2', sizes: '192x192' }] },
           ],
         },
         workbox: {

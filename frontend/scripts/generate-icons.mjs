@@ -66,12 +66,28 @@ await square(256).toFile(join(brand, 'siagaai-logo-256.png'));
 await sharp(await square(512).toBuffer()).webp({ quality: 90 }).toFile(join(brand, 'siagaai-logo.webp'));
 await square(64).toFile(join(root, 'public', 'favicon.png'));
 
-/* ── 3. PWA icons ── */
-const WHITE = { r: 255, g: 255, b: 255, alpha: 1 };
-await square(192, 0.06, WHITE).toFile(join(icons, 'icon-192.png'));
-await square(512, 0.06, WHITE).toFile(join(icons, 'icon-512.png'));
-await square(512, 0.18, WHITE).toFile(join(icons, 'icon-maskable-512.png')); // safe zone ≥ 80 %
-await square(180, 0.1, WHITE).toFile(join(icons, 'apple-touch-icon.png'));
+/* ── 3. PWA icons ──
+ * Installed-app icons must be fully opaque. The shield is taller than it is wide, so `fit: contain`
+ * leaves transparent strips left and right of it — and sharp runs `flatten()` *before* resize/extend
+ * regardless of call order, so flattening in the same pipeline does NOT fill them. Android launchers
+ * then render those strips as vertical bars. Instead, composite the logo onto a solid white canvas
+ * and drop the alpha channel entirely. */
+const WHITE = { r: 255, g: 255, b: 255 };
+const opaqueIcon = async (size, pad) => {
+  const inner = Math.round(size * (1 - pad * 2));
+  const logo = await sharp(trimmed)
+    .resize(inner, inner, { fit: 'contain', background: { ...WHITE, alpha: 0 } })
+    .png()
+    .toBuffer();
+  return sharp({ create: { width: size, height: size, channels: 3, background: WHITE } })
+    .composite([{ input: logo, gravity: 'centre' }])
+    .removeAlpha()
+    .png({ compressionLevel: 9 });
+};
+await (await opaqueIcon(192, 0.1)).toFile(join(icons, 'icon-192.png'));
+await (await opaqueIcon(512, 0.1)).toFile(join(icons, 'icon-512.png'));
+await (await opaqueIcon(512, 0.2)).toFile(join(icons, 'icon-maskable-512.png')); // inside the 80 % safe zone
+await (await opaqueIcon(180, 0.1)).toFile(join(icons, 'apple-touch-icon.png'));
 
 /* ── 4. Open Graph image (1200×630) ── */
 const silhouette = readFileSync(join(root, 'src', 'data', 'silhouette.ts'), 'utf8').match(/'(M[^']+)'/)[1];
