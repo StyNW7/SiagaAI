@@ -1,11 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { Bookmark, Compass, Loader2, LocateFixed, MapPin, Search, Sparkles } from 'lucide-react';
+import { Bookmark, Compass, Loader2, LocateFixed, MapPin, Search } from 'lucide-react';
 import { useEffect, useId, useState, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/overlays';
 import { Input } from '@/components/ui/primitives';
 import { CITY_BY_SLUG, EXPLORE_PRESETS } from '@/data/cities';
-import { SCENARIOS, type ScenarioId } from '@/data/scenarios';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import { searchPlaces, type PlaceResult } from '@/services/geo/geocoding';
 import { useLocationStore, useSettings } from '@/stores';
@@ -63,12 +62,6 @@ export function LocationPicker({
     lon: p.lon,
     source: 'search',
   });
-
-  const startScenario = (id: ScenarioId) => {
-    setScenario(id);
-    onPicked?.(SCENARIOS[id].location);
-    onOpenChange(false);
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -211,22 +204,6 @@ export function LocationPicker({
           </div>
         </Group>
 
-        <Group title={t('Skenario demonstrasi (simulasi)', 'Demo scenarios (simulation)')} icon={<Sparkles className="size-3.5" />}>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {Object.values(SCENARIOS).map((s) => (
-              <button
-                key={s.id}
-                onClick={() => startScenario(s.id)}
-                className="rounded-xl border border-ai/15 bg-ai-soft/50 px-3 py-2.5 text-left transition-colors hover:bg-ai-soft"
-              >
-                <span className="block text-sm font-semibold">
-                  {s.emoji} {s.title}
-                </span>
-                <span className="block text-xs text-muted">{s.subtitle}</span>
-              </button>
-            ))}
-          </div>
-        </Group>
       </DialogContent>
     </Dialog>
   );

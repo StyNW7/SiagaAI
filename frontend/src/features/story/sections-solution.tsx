@@ -5,9 +5,9 @@ import {
   Binary,
   Bookmark,
   Check,
-  FlaskConical,
   Gauge,
   Layers,
+  MapPin,
   Megaphone,
   MessageSquareQuote,
   Shuffle,
@@ -300,7 +300,7 @@ function FeaturePanel({
         </div>
         <div className="relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-line bg-raised p-4">
           <div className="bg-dots absolute inset-0 opacity-60" aria-hidden />
-          <p className="telemetry relative">{t('Pratinjau', 'Preview')}</p>
+          <p className="telemetry relative">{t('Ilustrasi', 'Illustration')}</p>
           <div className="relative">
             <Preview id={f.id} />
           </div>
@@ -344,12 +344,12 @@ function DemoToggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => v
       )}
     >
       <span className={cn('grid size-9 shrink-0 place-items-center rounded-xl', on ? 'bg-ai text-white' : 'bg-neutral-100 text-muted')}>
-        <FlaskConical className="size-4" />
+        <MapPin className="size-4" />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block text-[13.5px] font-bold leading-tight">{t('Buka sebagai Ara', 'Open as Ara')}</span>
         <span className="mt-0.5 block text-[12px] leading-snug text-muted">
-          {t('Simulasi karhutla · Palangka Raya', 'Wildfire simulation · Palangka Raya')}
+          {t('Palangka Raya · data live', 'Palangka Raya · live data')}
         </span>
       </span>
       <span className={cn('relative h-6 w-10 shrink-0 rounded-full transition-colors', on ? 'bg-ai' : 'bg-line-strong')} aria-hidden>

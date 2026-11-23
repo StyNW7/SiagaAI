@@ -34,7 +34,6 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/overlays';
 import { Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui/primitives';
 import { CITY_BY_SLUG, EXPLORE_PRESETS } from '@/data/cities';
-import { SCENARIOS } from '@/data/scenarios';
 import { ALERT_LEVELS, useAlerts } from '@/features/alerts/use-alerts';
 import { HourlyWeatherCharts } from '@/features/charts/charts';
 import { Chip, LocationPicker } from '@/features/location/location-picker';
@@ -649,7 +648,7 @@ export default function DashboardPage() {
               />
               <CardContent className="relative flex h-full flex-col gap-5 p-5 sm:p-6 sm:pr-44">
                 <SectionTitle eyebrow={t('Eksplorasi', 'Explore')} className="mb-0">
-                  {t('Coba wilayah atau simulasi lain', 'Try another region or simulation')}
+                  {t('Coba wilayah lain', 'Try another region')}
                 </SectionTitle>
                 <div>
                   <p className="data-label mb-2.5">{t('Wilayah rawan', 'High-risk regions')}</p>
@@ -677,23 +676,6 @@ export default function DashboardPage() {
                         </Chip>
                       );
                     })}
-                  </div>
-                </div>
-                <div>
-                  <p className="data-label mb-2.5">
-                    {t('Simulasi kondisi ekstrem', 'Extreme-condition simulation')}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.values(SCENARIOS).map((s) => (
-                      <Chip
-                        key={s.id}
-                        active={scenario === s.id}
-                        onClick={() => setScenario(s.id)}
-                        className="border-ai/20 text-ai-deep"
-                      >
-                        {s.emoji} {s.title}
-                      </Chip>
-                    ))}
                   </div>
                 </div>
               </CardContent>

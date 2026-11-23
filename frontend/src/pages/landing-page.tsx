@@ -26,14 +26,12 @@ import { Disclaimer } from '@/components/common/layout-bits';
 import { BackToTop, Reveal } from '@/components/common/reveal';
 import { RiskSpectrum } from '@/components/common/risk';
 import { Button } from '@/components/ui/button';
-import { SCENARIOS } from '@/data/scenarios';
 import { SILHOUETTE_VIEWBOX } from '@/data/silhouette';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import { useDocumentTitle } from '@/hooks/use-misc';
 import { useEarthquakesQuery, useHotspotsQuery, useWarningsQuery } from '@/hooks/use-siaga-data';
 import { timeAgo } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import { useSettings } from '@/stores';
 import { locale, t } from '@/lib/i18n';
 import { PreferenceToggles } from '@/features/preferences/toggles';
 
@@ -113,7 +111,6 @@ export default function LandingPage() {
   useDocumentTitle(t('Kenali Risiko. Pahami Dampaknya. Ambil Tindakan.', 'Know the Risk. Understand the Impact. Take Action.'));
   const navigate = useNavigate();
   const { locate, busy } = useGeolocation();
-  const setScenario = useSettings((s) => s.setScenario);
   const hotspots = useHotspotsQuery();
   const warnings = useWarningsQuery();
   const quakes = useEarthquakesQuery();
@@ -539,21 +536,6 @@ export default function LandingPage() {
                     </p>
                   </div>
                 </Reveal>
-              ))}
-            </div>
-            <div className="flex flex-wrap items-center gap-2 pt-6">
-              <span className="data-label mr-2">{t('Coba simulasi', 'Try a simulation')}</span>
-              {Object.values(SCENARIOS).map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => {
-                    setScenario(s.id);
-                    navigate('/app');
-                  }}
-                  className="rounded-full border border-line bg-surface px-3.5 py-2 text-[13px] font-semibold text-ink transition-colors hover:border-ai/30 hover:bg-ai-soft/50"
-                >
-                  {s.emoji} {s.title}
-                </button>
               ))}
             </div>
           </div>

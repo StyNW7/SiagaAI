@@ -80,6 +80,21 @@ export function loadAraPersona() {
     family.add({ name: 'Adik Rafa', relation: 'Saudara', ageGroup: 'child', activity: 'mixed', exposure: 'moderate' });
   }
 
+  // Ara lives in Palangka Raya — show that city with LIVE data (scenario mode is retired).
+  const city = CITY_BY_SLUG['palangka-raya'];
+  if (city) {
+    useSettings.getState().setScenario(null);
+    useLocationStore.getState().setCurrent({
+      id: `preset-${city.slug}`,
+      name: city.name,
+      region: city.province,
+      provinceCode: city.provinceCode,
+      lat: city.lat,
+      lon: city.lon,
+      source: 'preset',
+    });
+  }
+
   // The persona is already "onboarded" — don't interrupt the demo with the setup dialog
   // (same keys as markOnboarded() in features/onboarding, without pulling that module in).
   try {

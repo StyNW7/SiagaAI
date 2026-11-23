@@ -378,8 +378,8 @@ export function SourcesSection() {
             </ol>
             <p className="mt-3 rounded-xl bg-raised p-3 text-[12.5px] leading-relaxed text-muted">
               {t(
-                'Statistik dikutip dari rilis resmi dan media yang memberitakannya; data BNPB 2025 masih bersifat sementara. Ara adalah persona representatif yang disusun dari riset di atas. Mode demo memakai data simulasi yang selalu diberi label.',
-                'Statistics are quoted from official releases and the media that reported them; BNPB 2025 data is still provisional. Ara is a representative persona built from the research above. Demo mode uses simulated data that is always labelled.',
+                'Statistik dikutip dari rilis resmi dan media yang memberitakannya; data BNPB 2025 masih bersifat sementara. Ara adalah persona representatif yang disusun dari riset di atas. Semua fitur di demo memakai data live.',
+                'Statistics are quoted from official releases and the media that reported them; BNPB 2025 data is still provisional. Ara is a representative persona built from the research above. Every feature in the demo runs on live data.',
               )}
             </p>
           </div>

@@ -5,7 +5,6 @@ import {
   Download,
   Languages,
   Palette,
-  FlaskConical,
   Server,
   Smartphone,
   Sparkles,
@@ -17,7 +16,6 @@ import { PageHeader } from '@/components/common/layout-bits';
 import { Button } from '@/components/ui/button';
 import { Badge, Card, CardContent, CardHeader, CardTitle } from '@/components/ui/primitives';
 import { Switch } from '@/components/ui/overlays';
-import { SCENARIOS } from '@/data/scenarios';
 import { Chip } from '@/features/location/location-picker';
 import { useInstallPrompt } from '@/features/pwa/install-prompt';
 import { useDocumentTitle } from '@/hooks/use-misc';
@@ -67,8 +65,8 @@ export default function SettingsPage() {
         title={t('Pengaturan', 'Settings')}
         mascot="kit"
         description={t(
-          'Tampilan, bahasa, aksesibilitas, notifikasi, simulasi & status sistem.',
-          'Appearance, language, accessibility, notifications, simulation & system status.',
+          'Tampilan, bahasa, aksesibilitas, notifikasi & status sistem.',
+          'Appearance, language, accessibility, notifications & system status.',
         )}
       />
       <div className="grid gap-5 lg:grid-cols-2 [&>*]:min-w-0">
@@ -150,29 +148,6 @@ export default function SettingsPage() {
             <p className="mt-4 text-[12.5px] text-muted">
               {t('Notifikasi lokal PWA saat aplikasi terbuka atau di latar.', 'Local PWA notifications while the app is open or in the background.')}
             </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FlaskConical className="size-4 text-ai" /> {t('Mode skenario (demonstrasi)', 'Scenario mode (demo)')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="text-[13px] text-muted">
-              {t('Uji kondisi risiko tinggi dari mana saja — selalu ditandai simulasi.', 'Test high-risk conditions from anywhere — always labelled as simulation.')}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <Chip active={!s.scenario} onClick={() => s.setScenario(null)}>
-                {t('Data live', 'Live data')}
-              </Chip>
-              {Object.values(SCENARIOS).map((sc) => (
-                <Chip key={sc.id} active={s.scenario === sc.id} onClick={() => s.setScenario(sc.id)}>
-                  {sc.emoji} {sc.title}
-                </Chip>
-              ))}
-            </div>
           </CardContent>
         </Card>
 

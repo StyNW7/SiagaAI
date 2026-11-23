@@ -355,8 +355,8 @@ export default function AboutPage() {
               {t('6 jam', '6 h')}), <b>{t('Usang', 'Stale')}</b> (&gt; {t('6 jam', '6 h')}),{' '}
               <b>{t('Tidak tersedia', 'Unavailable')}</b>.{' '}
               {t(
-                'Titik panas: terkini < 6 jam, menua < 24 jam. Snapshot & data offline selalu diberi label dan tidak pernah ditampilkan sebagai live. Mode skenario memakai data simulasi yang ditandai banner permanen.',
-                'Hotspots: fresh < 6 h, aging < 24 h. Snapshots & offline data are always labelled and never shown as live. Scenario mode uses simulated data marked with a permanent banner.',
+                'Titik panas: terkini < 6 jam, menua < 24 jam. Snapshot & data offline selalu diberi label dan tidak pernah ditampilkan sebagai live.',
+                'Hotspots: fresh < 6 h, aging < 24 h. Snapshots & offline data are always labelled and never shown as live.',
               )}
             </AccordionItem>
             <AccordionItem value="limits" title={t('Batasan yang perlu diketahui', 'Limitations to be aware of')}>

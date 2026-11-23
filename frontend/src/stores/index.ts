@@ -64,6 +64,10 @@ export const useSettings = create<SettingsState>()(
     {
       name: 'siaga.settings',
       storage,
+      // Scenario (simulation) mode is retired: the app always runs on live data, so an old
+      // persisted scenario is dropped on load and never written back.
+      partialize: ({ scenario: _scenario, ...rest }) => rest,
+      merge: (persisted, current) => ({ ...current, ...(persisted as Partial<SettingsState>), scenario: null }),
       onRehydrateStorage: () => (state) => {
         if (state?.lang) setRuntimeLang(state.lang);
       },
