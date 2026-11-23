@@ -220,7 +220,7 @@ export default function MapPage() {
   );
 
   return (
-    <div className="relative flex h-[calc(100dvh-4rem-1px)] overflow-hidden">
+    <div className="relative flex h-[calc(100dvh-4rem-1px-var(--safe-top))] overflow-hidden">
       <div className="relative flex-1">
         <SiagaMap
           className="absolute inset-0"
@@ -253,7 +253,7 @@ export default function MapPage() {
         <div className="pointer-events-none absolute left-3 right-16 top-3 flex flex-col items-start gap-2 sm:left-4 sm:right-auto">
           {statsVisible ? (
             <section
-              className="glass pointer-events-auto max-h-[calc(100dvh-15rem)] w-full overflow-y-auto rounded-[16px] p-4 scrollbar-none animate-fade-up sm:w-[340px] sm:p-5 md:max-h-[calc(100dvh-11rem)]"
+              className="glass pointer-events-auto max-h-[calc(100dvh-15rem-var(--safe-top)-var(--safe-bottom))] w-full overflow-y-auto rounded-[16px] p-4 scrollbar-none animate-fade-up sm:w-[340px] sm:p-5 md:max-h-[calc(100dvh-11rem-var(--safe-top)-var(--safe-bottom))]"
               aria-label={t('Ringkasan nasional', 'National summary')}
             >
               <div className="flex items-start justify-between gap-2">
@@ -366,7 +366,7 @@ export default function MapPage() {
         </div>
 
         {/* Camera journey controls */}
-        <div className="glass absolute bottom-24 left-1/2 flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 items-center gap-0.5 rounded-full p-1 md:bottom-6">
+        <div className="glass absolute bottom-[calc(6rem+var(--safe-bottom))] left-1/2 flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 items-center gap-0.5 rounded-full p-1 md:bottom-[calc(1.5rem+var(--safe-bottom))]">
           <JourneyButton
             compact={narrowMap}
             icon={<Globe2 />}
@@ -427,7 +427,7 @@ export default function MapPage() {
             )}
           </Button>
           {layersOpen && (
-            <div className="glass mt-2 max-h-[calc(100dvh-27rem)] min-h-40 w-[272px] overflow-y-auto rounded-[16px] p-3 scrollbar-thin animate-fade-up md:max-h-[calc(100dvh-20rem)]">
+            <div className="glass mt-2 max-h-[calc(100dvh-27rem-var(--safe-top)-var(--safe-bottom))] min-h-40 w-[272px] overflow-y-auto rounded-[16px] p-3 scrollbar-thin animate-fade-up md:max-h-[calc(100dvh-20rem-var(--safe-top)-var(--safe-bottom))]">
               <div className="mb-1.5 flex items-center justify-between px-1.5">
                 <p className="data-label">{t('Lapisan peta', 'Map layers')}</p>
                 <span className="font-mono text-[10.5px] text-subtle">
@@ -466,7 +466,7 @@ export default function MapPage() {
         </div>
 
         {/* Legend (collapsible) — sits above the scale bar */}
-        <div className="absolute bottom-40 left-3 md:bottom-11 md:left-4">
+        <div className="absolute bottom-[calc(10rem+var(--safe-bottom))] left-3 md:bottom-[calc(2.75rem+var(--safe-bottom))] md:left-4">
           {legendOpen ? (
             <div className="glass w-[180px] rounded-xl px-3.5 py-2.5 text-[11.5px] animate-fade-up">
               <div className="mb-1 flex items-center justify-between gap-2">

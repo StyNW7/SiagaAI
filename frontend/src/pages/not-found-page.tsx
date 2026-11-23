@@ -9,7 +9,7 @@ import { t } from '@/lib/i18n';
 export default function NotFoundPage() {
   useDocumentTitle(t('Halaman tidak ditemukan', 'Page not found'));
   return (
-    <div className="relative grid min-h-dvh place-items-center overflow-hidden bg-canvas px-6 py-16 text-center">
+    <div className="relative grid min-h-safe-screen place-items-center overflow-hidden bg-canvas px-6 py-16 text-center">
       <NusantaraBackdrop />
       <IndonesiaSilhouette className="absolute inset-x-0 top-1/2 mx-auto w-[min(1100px,140%)] -translate-y-1/2 text-neutral-200/50" />
       <div className="relative flex flex-col items-center">

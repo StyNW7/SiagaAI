@@ -40,6 +40,9 @@ function App() {
         richColors
         closeButton
         theme={theme}
+        // Keep toasts below the status bar / notch in the installed PWA.
+        offset={{ top: 'calc(var(--safe-top) + 24px)' }}
+        mobileOffset={{ top: 'calc(var(--safe-top) + 12px)', left: '12px', right: '12px' }}
         toastOptions={{ style: { fontFamily: 'var(--font-sans)', borderRadius: 14 } }}
       />
     </>

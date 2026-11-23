@@ -69,7 +69,9 @@ export function AssistantLauncher({ hideTrigger = false }: { hideTrigger?: boole
           <button
             className={cn(
               'group fixed right-4 z-40 flex items-center gap-2.5 rounded-full border border-line bg-surface py-1.5 pl-1.5 text-[14px] font-semibold text-ink shadow-lift transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-ai/30 hover:shadow-float sm:right-6',
-              onMap ? 'bottom-40 pr-1.5 md:bottom-12' : 'bottom-20 pr-1.5 sm:pr-4 md:bottom-6',
+              onMap
+                ? 'bottom-[calc(10rem+var(--safe-bottom))] pr-1.5 md:bottom-[calc(3rem+var(--safe-bottom))]'
+                : 'bottom-[calc(5.5rem+var(--safe-bottom))] pr-1.5 sm:pr-4 md:bottom-[calc(1.5rem+var(--safe-bottom))]',
               tucked && 'pointer-events-none translate-y-6 scale-90 opacity-0',
             )}
             style={desktop && offsetRight ? { right: offsetRight + 24 } : undefined}
@@ -319,7 +321,7 @@ function AssistantPanel() {
         )}
       </div>
 
-      <form onSubmit={submit} className="safe-bottom border-t border-line bg-surface p-3">
+      <form onSubmit={submit} className="border-t border-line bg-surface p-3 pb-[calc(0.75rem+var(--safe-bottom))]">
         <div className="flex items-end gap-2 rounded-2xl border border-line bg-surface p-1.5 focus-within:border-ai/50 focus-within:ring-4 focus-within:ring-ai/10">
           <label htmlFor="assistant-input" className="sr-only">
             {t('Pertanyaan untuk SiagaAI', 'Question for SiagaAI')}

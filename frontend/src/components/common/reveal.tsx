@@ -64,7 +64,7 @@ export function BackToTop() {
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       aria-label={t('Kembali ke atas', 'Back to top')}
       className={cn(
-        'fixed bottom-6 right-6 z-40 grid size-11 place-items-center rounded-full border border-line bg-surface/90 text-ink shadow-lift backdrop-blur transition-all duration-300 hover:-translate-y-0.5',
+        'fixed bottom-[calc(1.5rem+var(--safe-bottom))] right-4 z-40 sm:right-6 grid size-11 place-items-center rounded-full border border-line bg-surface/90 text-ink shadow-lift backdrop-blur transition-all duration-300 hover:-translate-y-0.5',
         show ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0',
       )}
     >

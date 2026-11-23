@@ -19,7 +19,7 @@ const AuthPage = lazy(() => import('@/pages/auth-page'));
 const NotFoundPage = lazy(() => import('@/pages/not-found-page'));
 
 const Standalone = () => (
-  <Suspense fallback={<PageLoader className="min-h-dvh" />}>
+  <Suspense fallback={<PageLoader className="min-h-safe-screen" />}>
     <Outlet />
   </Suspense>
 );

@@ -9,7 +9,7 @@ export function RouteError() {
   const error = useRouteError();
   const chunk = error instanceof Error && /dynamically imported module|Failed to fetch/i.test(error.message);
   return (
-    <div className="relative grid min-h-dvh place-items-center overflow-hidden bg-canvas px-6 py-16 text-center">
+    <div className="relative grid min-h-safe-screen place-items-center overflow-hidden bg-canvas px-6 py-16 text-center">
       <NusantaraBackdrop />
       <div className="relative flex max-w-md flex-col items-center">
         <Ara pose={chunk ? 'run' : 'warning'} size={170} priority />

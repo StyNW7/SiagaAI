@@ -269,7 +269,7 @@ export function ScenarioBanner() {
   return (
     <div
       role="status"
-      className="sticky top-0 z-40 flex items-center gap-3 border-b border-ai/15 bg-[repeating-linear-gradient(135deg,#EEF0FF,#EEF0FF_12px,#E6E9FF_12px,#E6E9FF_24px)] px-4 dark:bg-[repeating-linear-gradient(135deg,#1b1c3a,#1b1c3a_12px,#222448_12px,#222448_24px)] py-2 text-[13px] text-ai-deep"
+      className="sticky top-[var(--safe-top)] z-40 flex items-center gap-3 border-b border-ai/15 bg-[repeating-linear-gradient(135deg,#EEF0FF,#EEF0FF_12px,#E6E9FF_12px,#E6E9FF_24px)] px-4 dark:bg-[repeating-linear-gradient(135deg,#1b1c3a,#1b1c3a_12px,#222448_12px,#222448_24px)] py-2 text-[13px] text-ai-deep"
     >
       <FlaskConical className="size-4 shrink-0 text-ai" aria-hidden />
       <p className="min-w-0 flex-1 truncate">

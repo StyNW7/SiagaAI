@@ -115,7 +115,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="relative grid min-h-dvh bg-canvas lg:grid-cols-[55fr_45fr]">
+    <div className="relative grid min-h-safe-screen bg-canvas lg:grid-cols-[55fr_45fr]">
       <StoryPanel />
 
       <div className="relative flex flex-col px-5 pb-10 pt-6 sm:px-10 lg:px-14 lg:py-10">
@@ -335,7 +335,7 @@ function StoryPanel() {
   const a = view.assessment;
   const lvl = a ? RISK_LEVELS[a.location.level] : null;
   return (
-    <div className="relative flex min-h-[32vh] flex-col overflow-hidden bg-[#741116] text-white lg:sticky dark:bg-[#2a0a0c] lg:top-0 lg:h-dvh">
+    <div className="relative flex min-h-[32vh] flex-col overflow-hidden bg-[#741116] text-white lg:sticky dark:bg-[#2a0a0c] lg:top-[var(--safe-top)] lg:h-safe-screen">
       <div
         className="absolute inset-0 bg-[radial-gradient(80%_60%_at_30%_20%,#A31319,transparent_70%)] dark:bg-[radial-gradient(80%_60%_at_30%_20%,#5c1015,transparent_70%)]"
         aria-hidden

@@ -733,7 +733,7 @@ function LandingNav() {
     return () => window.removeEventListener('scroll', on);
   }, []);
   return (
-    <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5 sm:pt-4">
+    <header className="fixed inset-x-0 top-[var(--safe-top)] z-50 px-3 pt-3 sm:px-5 sm:pt-4">
       <div
         className={cn(
           'mx-auto flex h-14 max-w-[1360px] items-center gap-3 rounded-full pl-4 pr-2 transition-all duration-300',

@@ -340,6 +340,49 @@ export const useAuthStore = create<AuthState>()(
   persist((set) => ({ user: null, setUser: (user) => set({ user }) }), { name: 'siaga.auth', storage }),
 );
 
+/* ── Alert read state ───────────────────────────────────────────────────── */
+
+const READ_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+interface AlertReadState {
+  /** Read key (see `alertReadKey`) → ISO time it was read. */
+  read: Record<string, string>;
+  markRead: (keys: string[]) => void;
+  markUnread: (key: string) => void;
+}
+
+/** Notification "read" receipts for the Alert Center (local only, pruned after 30 days). */
+export const useAlertReadStore = create<AlertReadState>()(
+  persist(
+    (set, get) => ({
+      read: {},
+      markRead: (keys) => {
+        const now = Date.now();
+        const next: Record<string, string> = {};
+        for (const [k, at] of Object.entries(get().read)) {
+          if (now - Date.parse(at) < READ_TTL_MS) next[k] = at;
+        }
+        const stamp = new Date(now).toISOString();
+        let changed = Object.keys(next).length !== Object.keys(get().read).length;
+        for (const k of keys) {
+          if (!next[k]) {
+            next[k] = stamp;
+            changed = true;
+          }
+        }
+        if (changed) set({ read: next });
+      },
+      markUnread: (key) => {
+        if (!get().read[key]) return;
+        const next = { ...get().read };
+        delete next[key];
+        set({ read: next });
+      },
+    }),
+    { name: 'siaga.alerts-read', storage },
+  ),
+);
+
 /* ── Assistant UI ───────────────────────────────────────────────────────── */
 
 export interface AssistantMessage {

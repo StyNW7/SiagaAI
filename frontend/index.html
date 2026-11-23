@@ -34,6 +34,44 @@
           }
         } catch (e) {}
       })();
+
+      // Installed-PWA safe areas. Some Android builds (forced edge-to-edge) draw the app under the
+      // status bar and the navigation bar while still reporting env(safe-area-inset-*) = 0, which
+      // cuts off the header and the bottom navigation. Detect that case and supply fallback insets.
+      (function () {
+        var r = document.documentElement;
+        function apply(reset) {
+          if (reset) {
+            r.style.removeProperty('--safe-top-fallback');
+            r.style.removeProperty('--safe-bottom-fallback');
+          }
+          var standalone =
+            window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+          if (!standalone || !/Android/i.test(navigator.userAgent)) return;
+          var probe = document.createElement('div');
+          probe.style.cssText =
+            'position:fixed;visibility:hidden;pointer-events:none;' +
+            'padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)';
+          r.appendChild(probe);
+          var cs = getComputedStyle(probe);
+          var reported = parseFloat(cs.paddingTop) || parseFloat(cs.paddingBottom);
+          r.removeChild(probe);
+          if (reported) return; // the browser reports real insets — trust them
+          // The page fills the whole physical screen, so the system bars are drawn on top of it.
+          if (screen.height - window.innerHeight < 20) {
+            r.style.setProperty('--safe-top-fallback', '32px');
+            r.style.setProperty('--safe-bottom-fallback', '48px');
+          }
+        }
+        try {
+          apply(false);
+          // Re-check once layout settles; never drop the fallback on a plain resize (keyboard open).
+          window.addEventListener('load', function () { apply(false); });
+          window.addEventListener('orientationchange', function () {
+            setTimeout(function () { apply(true); }, 300);
+          });
+        } catch (e) {}
+      })();
     </script>
   </head>
   <body>

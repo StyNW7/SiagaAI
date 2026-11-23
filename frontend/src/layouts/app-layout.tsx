@@ -154,13 +154,12 @@ function NavItem({
 }
 
 function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
-  const { counts } = useAlerts();
-  const urgent = counts.critical + counts.warning;
+  const { unreadUrgent: urgent } = useAlerts();
   const openAssistant = useAssistantStore((s) => s.setOpen);
   return (
     <aside
       className={cn(
-        'sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-line bg-sidebar transition-[width] duration-300 ease-out md:flex',
+        'sticky top-[var(--safe-top)] hidden h-safe-screen shrink-0 flex-col border-r border-line bg-sidebar transition-[width] duration-300 ease-out md:flex',
         collapsed ? 'w-[76px]' : 'w-[252px]',
       )}
       aria-label={t('Navigasi utama', 'Main navigation')}
@@ -255,12 +254,11 @@ function Topbar() {
   const scenario = useSettings((s) => s.scenario);
   const [picker, setPicker] = useState(false);
   const user = useAuthStore((s) => s.user);
-  const { counts } = useAlerts();
+  const { unreadUrgent: urgent } = useAlerts();
   const { pathname } = useLocation();
-  const urgent = counts.critical + counts.warning;
   const page = pageNames()[pathname.replace(/\/$/, '')] ?? 'SiagaAI';
   return (
-    <header className="sticky top-0 z-30 border-b border-line/80 bg-canvas/85 backdrop-blur-xl">
+    <header className="sticky top-[var(--safe-top)] z-30 border-b border-line/80 bg-canvas/85 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-3 px-4 sm:px-6 lg:px-10">
         <Link to="/" className="md:hidden" aria-label={t('SiagaAI beranda', 'SiagaAI home')}>
           <LogoMark className="size-8" />
@@ -309,8 +307,8 @@ function Topbar() {
           size="icon"
           className="relative rounded-full"
           aria-label={t(
-            `Pusat peringatan, ${urgent} peringatan penting`,
-            `Alert center, ${urgent} important alerts`,
+            `Pusat peringatan, ${urgent} peringatan penting belum dibaca`,
+            `Alert center, ${urgent} unread important alerts`,
           )}
         >
           <Link to="/app/alerts">
@@ -403,7 +401,7 @@ export function AppLayout({ children }: { children?: ReactNode }) {
   const isMap = pathname.startsWith('/app/map');
 
   return (
-    <div className="flex min-h-dvh bg-canvas">
+    <div className="flex min-h-safe-screen bg-canvas">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-lg focus:bg-inverse focus:px-3 focus:py-2 focus:text-on-inverse"
@@ -419,7 +417,9 @@ export function AppLayout({ children }: { children?: ReactNode }) {
           id="main"
           className={cn(
             'mx-auto w-full flex-1',
-            isMap ? 'max-w-none' : 'max-w-[1600px] px-4 pb-32 pt-6 sm:px-6 md:pb-24 lg:px-10 lg:pt-9',
+            isMap
+              ? 'max-w-none'
+              : 'max-w-[1600px] px-4 pb-[calc(8rem+var(--safe-bottom))] pt-6 sm:px-6 md:pb-[calc(6rem+var(--safe-bottom))] lg:px-10 lg:pt-9',
           )}
         >
           <Suspense fallback={<PageLoader label={t('Memuat halaman…', 'Loading page…')} />}>

@@ -6,6 +6,7 @@ import { haversineKm } from '@/lib/geo';
 import { HAZARDS, RISK_LEVELS } from '@/lib/risk-levels';
 import { formatDistance } from '@/lib/format';
 import { t } from '@/lib/i18n';
+import { useAlertReadStore } from '@/stores';
 import type { AlertLevel, Earthquake, SiagaAlert } from '@/types/domain';
 
 export const ALERT_LEVELS: Record<
@@ -82,6 +83,14 @@ export function quakeLevel(q: Earthquake): AlertLevel {
   if (q.magnitude >= 5) return 'advisory';
   return 'info';
 }
+
+/**
+ * Identity used for "read" receipts. The level is part of it, so an alert that escalates
+ * (e.g. advisory → warning) shows up as unread again.
+ */
+export const alertReadKey = (a: Pick<SiagaAlert, 'id' | 'level'>) => `${a.id}|${a.level}`;
+
+const emptyCounts = (): Record<AlertLevel, number> => ({ critical: 0, warning: 0, advisory: 0, info: 0 });
 
 /** Unified Alert Center feed: official (BMKG) + SiagaAI indicative advisories. */
 export function useAlerts() {
@@ -172,16 +181,20 @@ export function useAlerts() {
     );
   }, [warnings.data, earthquakes.data, assessment, location, dataMode]);
 
-  const counts = useMemo(
-    () =>
-      alerts.reduce((c, a) => ({ ...c, [a.level]: c[a.level] + 1 }), {
-        critical: 0,
-        warning: 0,
-        advisory: 0,
-        info: 0,
-      } as Record<AlertLevel, number>),
-    [alerts],
-  );
+  const read = useAlertReadStore((s) => s.read);
+  const { counts, unreadCounts } = useMemo(() => {
+    const counts = emptyCounts();
+    const unreadCounts = emptyCounts();
+    for (const a of alerts) {
+      counts[a.level] += 1;
+      if (!read[alertReadKey(a)]) unreadCounts[a.level] += 1;
+    }
+    return { counts, unreadCounts };
+  }, [alerts, read]);
+  const isRead = (a: SiagaAlert) => !!read[alertReadKey(a)];
+  const unreadTotal = Object.values(unreadCounts).reduce((n, c) => n + c, 0);
+  /** Count shown on the bell / sidebar badge: unread critical + warning alerts. */
+  const unreadUrgent = unreadCounts.critical + unreadCounts.warning;
 
-  return { alerts, counts, view };
+  return { alerts, counts, unreadCounts, unreadTotal, unreadUrgent, isRead, view };
 }

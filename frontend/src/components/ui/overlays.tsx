@@ -28,7 +28,7 @@ export function DialogContent({
       <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-[#141413]/35 dark:bg-black/65 backdrop-blur-[3px] data-[state=open]:animate-fade-in" />
       <DialogPrimitive.Content
         className={cn(
-          'fixed left-1/2 top-1/2 z-[61] max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 scrollbar-thin overflow-y-auto rounded-[18px] border border-line bg-surface p-6 shadow-float focus:outline-none data-[state=open]:animate-fade-up sm:p-7',
+          'fixed left-1/2 top-[calc(50%+(var(--safe-top)-var(--safe-bottom))/2)] z-[61] max-h-[calc(100dvh-var(--safe-top)-var(--safe-bottom)-2.5rem)] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 scrollbar-thin overflow-y-auto rounded-[18px] border border-line bg-surface p-6 shadow-float focus:outline-none data-[state=open]:animate-fade-up sm:p-7',
           className,
         )}
         {...p}
@@ -73,10 +73,10 @@ export function SheetContent({
 }) {
   const pos =
     side === 'right'
-      ? 'inset-y-0 right-0 h-full w-full sm:max-w-md border-l'
+      ? 'inset-y-0 right-0 h-full w-full pt-[var(--safe-top)] sm:max-w-md border-l'
       : side === 'left'
-        ? 'inset-y-0 left-0 h-full w-[85%] max-w-xs border-r'
-        : 'inset-x-0 bottom-0 max-h-[88dvh] rounded-t-[22px] border-t';
+        ? 'inset-y-0 left-0 h-full w-[85%] max-w-xs pt-[var(--safe-top)] border-r'
+        : 'inset-x-0 bottom-0 max-h-[calc(88dvh-var(--safe-top))] rounded-t-[22px] border-t';
   return (
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-[#141413]/30 dark:bg-black/60 backdrop-blur-[3px] data-[state=open]:animate-fade-in" />

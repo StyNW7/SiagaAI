@@ -271,7 +271,7 @@ export function ProvincePanel({
           </AiPanel>
         ) : null}
       </div>
-      <div className="safe-bottom grid gap-2 border-t border-line bg-raised px-6 py-4 sm:grid-cols-2">
+      <div className="grid gap-2 border-t border-line bg-raised px-6 pt-4 pb-[calc(1rem+var(--safe-bottom))] sm:grid-cols-2">
         <Button variant="ai" onClick={explain} disabled={!assessment || ai.isPending}>
           <Sparkles /> {t('Jelaskan dengan AI', 'Explain with AI')}
         </Button>

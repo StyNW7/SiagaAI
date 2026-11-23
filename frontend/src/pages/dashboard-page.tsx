@@ -54,7 +54,7 @@ const analyzed = new Set<string>(JSON.parse(sessionStorage.getItem('siaga.analyz
 
 export default function DashboardPage() {
   useDocumentTitle('Dashboard');
-  const { alerts, view } = useAlerts();
+  const { alerts, view, isRead } = useAlerts();
   const {
     location,
     assessment,
@@ -523,7 +523,22 @@ export default function DashboardPage() {
                             aria-hidden
                           />
                           <span className="min-w-0 flex-1">
-                            <span className="line-clamp-1 text-[14px] font-semibold text-ink">{a.title}</span>
+                            <span className="flex items-center gap-2">
+                              {!isRead(a) && (
+                                <span
+                                  className="size-2 shrink-0 rounded-full bg-brand"
+                                  title={t('Belum dibaca', 'Unread')}
+                                />
+                              )}
+                              <span
+                                className={cn(
+                                  'line-clamp-1 text-[14px] text-ink',
+                                  isRead(a) ? 'font-medium text-neutral-700' : 'font-semibold',
+                                )}
+                              >
+                                {a.title}
+                              </span>
+                            </span>
                             <span className="mt-0.5 flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.04em] text-subtle">
                               <span style={{ color: ALERT_LEVELS[a.level].text }} className="font-semibold">
                                 {ALERT_LEVELS[a.level].label}

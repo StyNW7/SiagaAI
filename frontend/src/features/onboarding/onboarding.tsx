@@ -109,7 +109,7 @@ export function Onboarding() {
     <DialogPrimitive.Root open={open} onOpenChange={(o) => (o ? setOpen(true) : close())}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-[#141413]/35 dark:bg-black/65 backdrop-blur-[3px] data-[state=open]:animate-fade-in" />
-        <DialogPrimitive.Content className="fixed inset-x-0 bottom-0 z-[61] max-h-[92dvh] overflow-y-auto rounded-t-[22px] border border-line bg-surface shadow-float focus:outline-none data-[state=open]:animate-sheet-up sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-[10vh] sm:w-[560px] sm:-translate-x-1/2 sm:rounded-[20px]">
+        <DialogPrimitive.Content className="fixed inset-x-0 bottom-0 z-[61] max-h-[calc(92dvh-var(--safe-top))] overflow-y-auto rounded-t-[22px] border border-line bg-surface shadow-float focus:outline-none data-[state=open]:animate-sheet-up sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-[10vh] sm:w-[560px] sm:-translate-x-1/2 sm:rounded-[20px]">
           {/* Stepper */}
           <div className="flex items-center gap-2 border-b border-line px-6 py-4">
             {STEPS.map((_, i) => (
@@ -233,7 +233,7 @@ export function Onboarding() {
             </div>
           </div>
 
-          <div className="safe-bottom flex items-center gap-2 border-t border-line bg-raised px-6 py-4">
+          <div className="flex items-center gap-2 border-t border-line bg-raised px-6 pt-4 pb-[calc(1rem+var(--safe-bottom))]">
             {step === 0 ? (
               <Button variant="ghost" onClick={close}>
                 {t('Lewati', 'Skip')}

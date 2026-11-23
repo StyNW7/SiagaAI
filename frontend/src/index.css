@@ -194,6 +194,14 @@
   --glass-border: rgb(255 255 255 / 0.65);
   --dot-color: rgb(23 23 23 / 0.09);
   color-scheme: light;
+
+  /* Safe areas (notch, status bar, home indicator, Android nav bar) for the installed PWA.
+     env() is what the browser reports; the *-fallback values are set by the boot script in
+     index.html only when a device draws the app under its system bars but reports 0 insets. */
+  --safe-top: max(env(safe-area-inset-top, 0px), var(--safe-top-fallback, 0px));
+  --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-bottom-fallback, 0px));
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -282,10 +290,14 @@ html.dark {
     text-rendering: optimizeLegibility;
     font-size: calc(100% * var(--text-scale, 1));
     scroll-behavior: smooth;
-    scroll-padding-top: 80px;
+    scroll-padding-top: calc(80px + var(--safe-top));
   }
   body {
     @apply bg-canvas font-sans text-ink antialiased;
+    /* Keep every page clear of the status bar / notch and the landscape cut-outs. */
+    padding-top: var(--safe-top);
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
     font-size: 15px;
     line-height: 1.6;
     font-weight: 450;
@@ -312,6 +324,16 @@ html.dark {
   }
   img {
     -webkit-user-drag: none;
+  }
+  /* Opaque strip behind the status bar so scrolled content never shows through (or under) it. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: var(--safe-top);
+    background: var(--color-canvas);
+    z-index: 55;
+    pointer-events: none;
   }
 }
 
@@ -412,9 +434,6 @@ html.dark {
   .text-pretty {
     text-wrap: pretty;
   }
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
   .tabular {
     font-variant-numeric: tabular-nums;
   }
@@ -424,6 +443,17 @@ html.dark {
   .snap-row > * {
     scroll-snap-align: start;
   }
+}
+
+/* Safe-area helpers — the viewport minus the system bars. */
+@utility safe-bottom {
+  padding-bottom: var(--safe-bottom);
+}
+@utility min-h-safe-screen {
+  min-height: calc(100dvh - var(--safe-top));
+}
+@utility h-safe-screen {
+  height: calc(100dvh - var(--safe-top));
 }
 
 /* Smooth theme switch (colour-only, no layout). Disabled during the very first paint. */

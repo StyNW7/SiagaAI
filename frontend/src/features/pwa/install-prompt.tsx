@@ -67,7 +67,7 @@ export function InstallPrompt() {
     <div
       role="dialog"
       aria-label={t('Instal SiagaAI', 'Install SiagaAI')}
-      className="glass fixed bottom-20 left-3 right-3 z-40 flex animate-sheet-up items-end gap-3 rounded-[18px] py-3 pl-2 pr-3 sm:left-auto sm:right-6 sm:w-[360px] md:bottom-24"
+      className="glass fixed bottom-[calc(5.5rem+var(--safe-bottom))] left-3 right-3 z-40 flex animate-sheet-up items-end gap-3 rounded-[18px] py-3 pl-2 pr-3 sm:left-auto sm:right-6 sm:w-[360px] md:bottom-[calc(6rem+var(--safe-bottom))]"
     >
       <Ara pose="run" size={72} className="-mb-1" />
       <div className="min-w-0 flex-1 pb-1">
