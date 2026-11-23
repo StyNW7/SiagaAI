@@ -131,7 +131,7 @@ const openAiCompatible =
           authorization: `Bearer ${env[keyVar]}`,
           ...(name === "OpenRouter"
             ? {
-                "http-referer": "https://siagaai.vercel.app",
+                "http-referer": "https://siaga-ai-rush.vercel.app",
                 "x-title": "SiagaAI",
               }
             : {}),

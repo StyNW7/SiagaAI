@@ -32,7 +32,7 @@ Skema ada di `supabase/migrations/` (`…_siagaai_schema.sql` + `…_auth_profil
 - **Akun demo**: `supabase/seed.sql` (idempoten) membuat `demo@siagaai.id` di Supabase Auth beserta data contoh.
 
 ```bash
-supabase link --project-ref <ref>
+supabase link --project-ref <PROJECT_REF>   # ID proyek dari dashboard Supabase
 supabase db push
 # akun demo: jalankan supabase/seed.sql di SQL Editor (lokal: supabase db reset)
 supabase functions deploy siaga-ai hotspots

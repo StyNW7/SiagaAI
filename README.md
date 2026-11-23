@@ -22,7 +22,7 @@ IT RUSH 2026 · Web Development · Subtema **Mitigasi Bencana dan Perubahan Ikli
 ![PWA](https://img.shields.io/badge/PWA-offline--ready-5A0FC8?logo=pwa&logoColor=white)
 ![Tests](https://img.shields.io/badge/tests-31_passing-2EA44F)
 
-**[🌐 Demo live](https://ISI-URL-VERCEL.vercel.app)** · **[🎬 Alur demo 60 detik](#-coba-dalam-60-detik)** · **[📐 Metodologi](docs/METHODOLOGY.md)** · **[🏗️ Arsitektur](docs/ARCHITECTURE.md)**
+**[🌐 Demo live](https://siaga-ai-rush.vercel.app)** · **[🎬 Panduan demo](#-panduan-demo)** · **[📐 Metodologi](docs/METHODOLOGY.md)** · **[🏗️ Arsitektur](docs/ARCHITECTURE.md)**
 
 </div>
 
@@ -34,11 +34,13 @@ IT RUSH 2026 · Web Development · Subtema **Mitigasi Bencana dan Perubahan Ikli
 
 > Sistem informasi biasa menjawab *"Apa yang terjadi?"*. SiagaAI menjawab sampai *"Apa artinya bagi saya?"* dan *"Apa yang harus saya lakukan sekarang?"*.
 
+**Coba langsung:** [siaga-ai-rush.vercel.app](https://siaga-ai-rush.vercel.app) (tanpa login, bisa diinstal sebagai aplikasi)
+
 Prinsip inti: **Algorithm calculates. AI communicates.** Skor risiko dihitung oleh algoritma deterministik yang transparan dan teruji; AI hanya menjelaskan dan menyusun rencana aksi, **tidak pernah mengarang angka**.
 
 ## Daftar isi
 
-1. [Masalah](#-masalah) · 2. [Solusi](#-solusi) · 3. [Keunggulan](#-keunggulan) · 4. [Fitur](#-fitur) · 5. [Tampilan](#-tampilan) · 6. [Coba dalam 60 detik](#-coba-dalam-60-detik)
+1. [Masalah](#-masalah) · 2. [Solusi](#-solusi) · 3. [Keunggulan](#-keunggulan) · 4. [Fitur](#-fitur) · 5. [Tampilan](#-tampilan) · 6. [Panduan demo](#-panduan-demo)
 7. [Arsitektur](#-arsitektur) · 8. [Siaga Risk Engine](#-siaga-risk-engine) · 9. [Integrasi AI](#-integrasi-ai) · 10. [Teknologi](#-teknologi) · 11. [Sumber data](#-sumber-data)
 12. [Menjalankan lokal](#-menjalankan-lokal) · 13. [Deployment](#-deployment) · 14. [Struktur repository](#-struktur-repository) · 15. [Kualitas & pengujian](#-kualitas--pengujian)
 16. [Privasi & keamanan](#-privasi--keamanan) · 17. [Keterbatasan](#-keterbatasan) · 18. [Dampak & SDGs](#-dampak--sdgs) · 19. [Atribusi](#-atribusi--pengungkapan-ai) · 20. [Tim](#-tim)
@@ -109,10 +111,10 @@ Maskot **Ara**, relawan siaga, memandu pengguna di setiap halaman dan menjadi pe
 
 <img src="images/readme/09-ui-mobile.webp" alt="Tampilan mobile SiagaAI" width="100%" />
 
-## ⏱️ Coba dalam 60 detik
+## 🎬 Panduan demo
 
-> **Live:** `https://ISI-URL-VERCEL.vercel.app` · **Login tidak wajib**; semua fitur inti berjalan dalam mode tamu.
-> Akun demo (opsional): `demo@siagaai.id` / `SiagaAI2026!`
+> **Live:** [siaga-ai-rush.vercel.app](https://siaga-ai-rush.vercel.app) · **Login tidak wajib**; semua fitur inti berjalan dalam mode tamu.
+> Akun demo (opsional, untuk mencoba sinkronisasi & Laporan Warga): `demo@siagaai.id` / `SiagaAI2026!`
 
 <img src="images/readme/07-user-flow.webp" alt="User flow SiagaAI" width="100%" />
 
@@ -230,6 +232,8 @@ npm run dev        # http://localhost:5173 (frontend + /api lewat bridge Vite)
 
 ## 🚀 Deployment
 
+Versi produksi berjalan di **Vercel**: [siaga-ai-rush.vercel.app](https://siaga-ai-rush.vercel.app) · status integrasi: [`/api/health`](https://siaga-ai-rush.vercel.app/api/health).
+
 **Vercel** (gratis, direkomendasikan):
 
 1. Import repository dengan **Root Directory = root repo**. `vercel.json` sudah mengatur install, build, output, rewrite SPA, header keamanan, dan Edge Functions di `api/`.
@@ -240,7 +244,7 @@ npm run dev        # http://localhost:5173 (frontend + /api lewat bridge Vite)
 
 ```bash
 cd backend
-supabase link --project-ref <ref>
+supabase link --project-ref <PROJECT_REF>   # ID proyek dari dashboard Supabase
 supabase db push                              # schema + RLS + storage + realtime
 supabase functions deploy siaga-ai hotspots   # gateway alternatif (opsional)
 ```

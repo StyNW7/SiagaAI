@@ -22,7 +22,7 @@ IT RUSH 2026 · Web Development · Sub-theme **Disaster Mitigation and Climate C
 ![PWA](https://img.shields.io/badge/PWA-offline--ready-5A0FC8?logo=pwa&logoColor=white)
 ![Tests](https://img.shields.io/badge/tests-31_passing-2EA44F)
 
-**[🌐 Live demo](https://ISI-URL-VERCEL.vercel.app)** · **[🎬 60-second tour](#-try-it-in-60-seconds)** · **[📐 Methodology](docs/METHODOLOGY.md)** · **[🏗️ Architecture](docs/ARCHITECTURE.md)**
+**[🌐 Live demo](https://siaga-ai-rush.vercel.app)** · **[🎬 Demo walkthrough](#-demo-walkthrough)** · **[📐 Methodology](docs/METHODOLOGY.md)** · **[🏗️ Architecture](docs/ARCHITECTURE.md)**
 
 </div>
 
@@ -36,11 +36,13 @@ IT RUSH 2026 · Web Development · Sub-theme **Disaster Mitigation and Climate C
 
 > Typical information systems answer *"What is happening?"*. SiagaAI goes on to answer *"What does it mean for me?"* and *"What should I do now?"*.
 
+**Try it live:** [siaga-ai-rush.vercel.app](https://siaga-ai-rush.vercel.app) (no login, installable as an app)
+
 Core principle: **Algorithm calculates. AI communicates.** Risk scores come from a transparent, deterministic, unit-tested algorithm; AI only explains them and drafts action plans, and **never makes up numbers**.
 
 ## Table of contents
 
-1. [Problem](#-problem) · 2. [Solution](#-solution) · 3. [What sets it apart](#-what-sets-it-apart) · 4. [Features](#-features) · 5. [Screens](#-screens) · 6. [Try it in 60 seconds](#-try-it-in-60-seconds)
+1. [Problem](#-problem) · 2. [Solution](#-solution) · 3. [What sets it apart](#-what-sets-it-apart) · 4. [Features](#-features) · 5. [Screens](#-screens) · 6. [Demo walkthrough](#-demo-walkthrough)
 7. [Architecture](#-architecture) · 8. [Siaga Risk Engine](#-siaga-risk-engine) · 9. [AI integration](#-ai-integration) · 10. [Tech stack](#-tech-stack) · 11. [Data sources](#-data-sources)
 12. [Run locally](#-run-locally) · 13. [Deployment](#-deployment) · 14. [Repository layout](#-repository-layout) · 15. [Quality & testing](#-quality--testing)
 16. [Privacy & security](#-privacy--security) · 17. [Limitations](#-limitations) · 18. [Impact & SDGs](#-impact--sdgs) · 19. [Credits](#-credits--ai-disclosure) · 20. [Team](#-team)
@@ -111,10 +113,10 @@ The mascot **Ara**, a preparedness volunteer, guides users on every page and is 
 
 <img src="images/readme/09-ui-mobile.webp" alt="SiagaAI mobile screens" width="100%" />
 
-## ⏱️ Try it in 60 seconds
+## 🎬 Demo walkthrough
 
-> **Live:** `https://ISI-URL-VERCEL.vercel.app` · **No login needed**; every core feature works as a guest.
-> Demo account (optional): `demo@siagaai.id` / `SiagaAI2026!`. Switch the language to **EN** in the top bar.
+> **Live:** [siaga-ai-rush.vercel.app](https://siaga-ai-rush.vercel.app) · **No login needed**; every core feature works as a guest.
+> Demo account (optional, to try sync & Community Reports): `demo@siagaai.id` / `SiagaAI2026!`. Switch the language to **EN** in the top bar.
 
 <img src="images/readme/07-user-flow.webp" alt="SiagaAI user flow" width="100%" />
 
@@ -122,7 +124,7 @@ The mascot **Ara**, a preparedness volunteer, guides users on every page and is 
 2. On the **Dashboard**, review the Siaga Score, hazard cards, nearby map, and **SiagaAI Brief**.
 3. In the *Explore* card, pick another high-risk region such as **Palangka Raya** or **Pekanbaru**.
 4. Open **My Risk** → **Analyse personal impact**. Switch transport to *Car* and watch the score change.
-5. Open **Action Plan** → create your plan, then tick a few steps.
+5. Open **Action Plan** → **Create My Action Plan**, then tick a few steps.
 6. Open **Siaga Map**, click a province, then **Explain with AI**.
 7. Click **Ask Ara** and try *"I'm riding a motorcycle to campus at 8 tomorrow. How does it look?"*.
 
@@ -232,6 +234,8 @@ npm run dev        # http://localhost:5173 (frontend + /api through the Vite bri
 
 ## 🚀 Deployment
 
+Production runs on **Vercel**: [siaga-ai-rush.vercel.app](https://siaga-ai-rush.vercel.app) · integration status: [`/api/health`](https://siaga-ai-rush.vercel.app/api/health).
+
 **Vercel** (free, recommended):
 
 1. Import the repository with **Root Directory = repo root**. `vercel.json` already sets install, build, output, SPA rewrites, security headers, and the Edge Functions in `api/`.
@@ -242,7 +246,7 @@ npm run dev        # http://localhost:5173 (frontend + /api through the Vite bri
 
 ```bash
 cd backend
-supabase link --project-ref <ref>
+supabase link --project-ref <PROJECT_REF>   # project ID from the Supabase dashboard
 supabase db push                              # schema + RLS + storage + realtime
 supabase functions deploy siaga-ai hotspots   # alternative gateway (optional)
 ```
