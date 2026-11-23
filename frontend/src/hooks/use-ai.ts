@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import type { AiContext, AiTask } from '@ai/contracts';
 import { SCENARIOS } from '@/data/scenarios';
 import { assessFamily } from '@/features/risk/engine/family';
@@ -57,7 +57,9 @@ export function useAiContext(view?: RiskView, extra?: Partial<AiContext>): AiCon
 
 /** Auto-generated AI content (e.g. the daily brief). */
 export function useAiQuery<T extends AiTask>(task: T, context: AiContext | null, enabled = true) {
-  return useQuery<AiResult<T>>({
+  // Set by `refresh()` so a user-requested regeneration bypasses the response cache.
+  const bypassCache = useRef(false);
+  const query = useQuery<AiResult<T>>({
     queryKey: [
       'ai',
       task,
@@ -68,11 +70,20 @@ export function useAiQuery<T extends AiTask>(task: T, context: AiContext | null,
       context?.dataMode,
       context?.profile,
     ],
-    queryFn: ({ signal }) => requestAi(task, context!, { signal }),
+    queryFn: ({ signal }) => {
+      const skipCache = bypassCache.current;
+      bypassCache.current = false;
+      return requestAi(task, context!, { signal, skipCache });
+    },
     enabled: enabled && !!context,
     staleTime: 30 * 60_000,
     retry: 0,
   });
+  const refresh = useCallback(() => {
+    bypassCache.current = true;
+    return query.refetch();
+  }, [query]);
+  return { query, refresh };
 }
 
 /** User-triggered AI generation (action plan, impact forecast, family plan…). */

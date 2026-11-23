@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Flame, Minus, Sparkles, TrendingDown, TrendingUp, X } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { FreshnessBadge } from '@/components/common/data-state';
 import { AiPanel, AiThinking, RichText, WeatherIcon } from '@/components/common/layout-bits';
@@ -11,7 +11,7 @@ import { PROVINCE_CAPITAL } from '@/data/cities';
 import { DailyCountChart } from '@/features/charts/charts';
 import { assessRisk, buildSignals } from '@/features/risk/engine';
 import { useAiContext, useAiMutation } from '@/hooks/use-ai';
-import { compass } from '@/lib/format';
+import { buildAiContext } from '@/services/ai/context';
 import { HAZARD_ORDER, HAZARDS } from '@/lib/risk-levels';
 import type { ProvinceHotspotStats } from '@/services/hazards/hotspots';
 import { getAirQuality, getWeatherBundle } from '@/services/weather';
@@ -97,37 +97,36 @@ export function ProvincePanel({
   );
   const baseContext = useAiContext(undefined, regionCtx);
   const ai = useAiMutation('region');
+  // The explanation renders below the stats; bring it into view once requested.
+  const aiRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (ai.isPending || ai.data) aiRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [ai.isPending, ai.data]);
 
   const explain = () => {
-    if (!baseContext || !assessment) return;
-    const w = wx.data?.current;
-    ai.mutate({
-      context: {
-        ...baseContext,
-        location: {
-          name: t(`${capital?.name ?? name} (ibu kota ${name})`, `${capital?.name ?? name} (capital of ${name})`),
-          region: name,
-          lat: capital?.lat ?? 0,
-          lon: capital?.lon ?? 0,
-        },
-        weather: w
-          ? {
-              description: describeWeather(w),
-              temperature: w.temperature,
-              humidity: w.humidity,
-              windSpeed: w.windSpeed,
-              windFrom: w.windDirection != null ? compass(w.windDirection) : null,
-              rain24hMm: wx.data!.next24h.precipitationSum,
-              rainPeakMmPerHour: wx.data!.next24h.precipitationMaxHourly,
-              rainProbabilityMax: wx.data!.next24h.precipitationProbabilityMax,
-              thunderstormHours: wx.data!.next24h.thunderstormHours,
-              source: wx.data!.provenance.source,
-            }
-          : null,
-        airQuality: aq.data ? { pm25: aq.data.pm25, usAqi: aq.data.usAqi } : null,
-        officialWarnings: warnings.map((x) => x.title),
+    if (!baseContext || !assessment || !capital) return;
+    // Every number must describe the province (its capital), never the user's own
+    // location: hazards, hotspots, weather and warnings all come from `assessment`.
+    const context = buildAiContext({
+      location: {
+        id: `province-${code}`,
+        name: t(`${capital.name} (ibu kota ${name})`, `${capital.name} (capital of ${name})`),
+        region: name,
+        provinceCode: code,
+        lat: capital.lat,
+        lon: capital.lon,
+        source: 'preset',
       },
+      assessment,
+      profile,
+      weather: wx.data ?? null,
+      dataMode: baseContext.dataMode,
+      warningTitles: warnings.map((x) => x.title),
+      windows: [],
+      hotspotSource: baseContext.hotspots?.source,
+      region: regionCtx.region,
     });
+    ai.mutate({ context });
   };
 
   return (
@@ -142,7 +141,12 @@ export function ProvincePanel({
             </p>
           )}
         </div>
-        <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label={t('Tutup ringkasan', 'Close summary')}>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={onClose}
+          aria-label={t('Tutup ringkasan', 'Close summary')}
+        >
           <X />
         </Button>
       </div>
@@ -167,7 +171,10 @@ export function ProvincePanel({
             </p>
             <DailyCountChart daily={stats.daily} />
             <p className="telemetry mt-1.5 normal-case tracking-normal">
-              {t('Deteksi termal satelit VIIRS — bukan konfirmasi kebakaran', 'VIIRS satellite thermal detections — not confirmed fires')}
+              {t(
+                'Deteksi termal satelit VIIRS — bukan konfirmasi kebakaran',
+                'VIIRS satellite thermal detections — not confirmed fires',
+              )}
             </p>
           </div>
         ) : (
@@ -192,15 +199,17 @@ export function ProvincePanel({
                 </p>
                 <p className="text-muted">
                   RH {Math.round(wx.data.current.humidity ?? 0)}% · {t('angin', 'wind')}{' '}
-                  {Math.round(wx.data.current.windSpeed ?? 0)} {t('km/j', 'km/h')} · {t('hujan 24j', '24h rain')}{' '}
-                  {wx.data.next24h.precipitationSum.toFixed(1)} mm
+                  {Math.round(wx.data.current.windSpeed ?? 0)} {t('km/j', 'km/h')} ·{' '}
+                  {t('hujan 24j', '24h rain')} {wx.data.next24h.precipitationSum.toFixed(1)} mm
                   {aq.data?.pm25 != null && ` · PM2.5 ${Math.round(aq.data.pm25)}`}
                 </p>
               </div>
               <FreshnessBadge provenance={wx.data.provenance} />
             </div>
           ) : wx.isError ? (
-            <p className="text-[13px] text-muted">{t('Cuaca sementara tidak tersedia.', 'Weather is temporarily unavailable.')}</p>
+            <p className="text-[13px] text-muted">
+              {t('Cuaca sementara tidak tersedia.', 'Weather is temporarily unavailable.')}
+            </p>
           ) : (
             <Skeleton className="h-16" />
           )}
@@ -252,24 +261,26 @@ export function ProvincePanel({
           )}
         </div>
 
-        {ai.data ? (
-          <AiPanel
-            title={t('Penjelasan regional', 'Regional explanation')}
-            provider={ai.data.provider}
-            fallbackReason={ai.data.fallback ? ai.data.fallbackReason : undefined}
-            compact
-          >
-            <p className="font-semibold text-ink">{ai.data.output.headline}</p>
-            <RichText text={ai.data.output.summary} className="mt-1 text-[13px]" />
-            <p className="mt-2 text-[13px] text-neutral-700">
-              <b>{t('Pantau:', 'Watch:')}</b> {ai.data.output.outlook}
-            </p>
-          </AiPanel>
-        ) : ai.isPending ? (
-          <AiPanel title={t('Penjelasan regional', 'Regional explanation')} compact>
-            <AiThinking />
-          </AiPanel>
-        ) : null}
+        <div ref={aiRef} className="scroll-mb-4 empty:hidden">
+          {ai.data ? (
+            <AiPanel
+              title={t('Penjelasan regional', 'Regional explanation')}
+              provider={ai.data.provider}
+              fallbackReason={ai.data.fallback ? ai.data.fallbackReason : undefined}
+              compact
+            >
+              <p className="font-semibold text-ink">{ai.data.output.headline}</p>
+              <RichText text={ai.data.output.summary} className="mt-1 text-[13px]" />
+              <p className="mt-2 text-[13px] text-neutral-700">
+                <b>{t('Pantau:', 'Watch:')}</b> {ai.data.output.outlook}
+              </p>
+            </AiPanel>
+          ) : ai.isPending ? (
+            <AiPanel title={t('Penjelasan regional', 'Regional explanation')} compact>
+              <AiThinking />
+            </AiPanel>
+          ) : null}
+        </div>
       </div>
       <div className="grid gap-2 border-t border-line bg-raised px-6 pt-4 pb-[calc(1rem+var(--safe-bottom))] sm:grid-cols-2">
         <Button variant="ai" onClick={explain} disabled={!assessment || ai.isPending}>

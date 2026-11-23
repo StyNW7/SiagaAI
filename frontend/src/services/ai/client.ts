@@ -1,7 +1,8 @@
 /**
  * AI client: secure gateway first (`/api/ai` or VITE_AI_ENDPOINT, e.g. a
  * Supabase Edge Function), then the deterministic local reasoner.
- * Responses are cached per (task, context fingerprint) for 30 minutes.
+ * Responses are cached per (task, context fingerprint) for 30 minutes; local
+ * fallbacks only for 2 minutes, so the LLM is retried as soon as it recovers.
  */
 import {
   validateOutput,
@@ -17,6 +18,7 @@ import { t } from '@/lib/i18n';
 const ENDPOINT = (import.meta.env.VITE_AI_ENDPOINT as string | undefined) || '/api/ai';
 const ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 const TTL = 30 * 60_000;
+const FALLBACK_TTL = 2 * 60_000;
 
 export interface AiResult<T extends AiTask> {
   output: AiOutputMap[T];
@@ -27,7 +29,13 @@ export interface AiResult<T extends AiTask> {
   fallbackReason?: string;
 }
 
-const memory = new Map<string, { at: number; value: AiResult<AiTask> }>();
+interface CacheEntry {
+  at: number;
+  ttl?: number;
+  value: AiResult<AiTask>;
+}
+const memory = new Map<string, CacheEntry>();
+const fresh = (e: CacheEntry) => Date.now() - e.at < (e.ttl ?? TTL);
 
 function fingerprint(task: AiTask, context: AiContext, messages?: ChatMessage[]) {
   const { generatedAt: _g, ...stable } = context;
@@ -36,12 +44,12 @@ function fingerprint(task: AiTask, context: AiContext, messages?: ChatMessage[])
 
 function readCache<T extends AiTask>(key: string): AiResult<T> | null {
   const m = memory.get(key);
-  if (m && Date.now() - m.at < TTL) return m.value as AiResult<T>;
+  if (m && fresh(m)) return m.value as AiResult<T>;
   try {
     const raw = sessionStorage.getItem(`siaga.ai.${key}`);
     if (raw) {
-      const parsed = JSON.parse(raw) as { at: number; value: AiResult<T> };
-      if (Date.now() - parsed.at < TTL) return parsed.value;
+      const parsed = JSON.parse(raw) as CacheEntry;
+      if (fresh(parsed)) return parsed.value as AiResult<T>;
     }
   } catch {
     /* ignore */
@@ -50,7 +58,7 @@ function readCache<T extends AiTask>(key: string): AiResult<T> | null {
 }
 
 function writeCache(key: string, value: AiResult<AiTask>) {
-  const entry = { at: Date.now(), value };
+  const entry: CacheEntry = { at: Date.now(), ttl: value.fallback ? FALLBACK_TTL : TTL, value };
   memory.set(key, entry);
   try {
     sessionStorage.setItem(`siaga.ai.${key}`, JSON.stringify(entry));

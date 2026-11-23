@@ -7,7 +7,8 @@ import { HAZARDS, RISK_LEVELS } from '@/lib/risk-levels';
 import { formatDistance } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { useAlertReadStore } from '@/stores';
-import type { AlertLevel, Earthquake, SiagaAlert } from '@/types/domain';
+import type { AlertLevel, SiagaAlert } from '@/types/domain';
+import { quakeLevel } from './quake-level';
 
 export const ALERT_LEVELS: Record<
   AlertLevel,
@@ -58,30 +59,28 @@ export function localizeQuakeText(s: string): string {
     s
       .replace(/tidak berpotensi tsunami/gi, 'No tsunami potential')
       .replace(/berpotensi tsunami/gi, 'Potential tsunami')
-      .replace(/Gempa ini dirasakan untuk diteruskan pada masyarakat/gi, 'This earthquake was felt; information relayed to the public')
+      .replace(
+        /Gempa ini dirasakan untuk diteruskan pada masyarakat/gi,
+        'This earthquake was felt; information relayed to the public',
+      )
       .replace(/Gempa ini dirasakan/gi, 'This earthquake was felt')
-      .replace(/(\d+)\s*km\s+(BaratLaut|TimurLaut|BaratDaya|Tenggara|Barat|Timur|Utara|Selatan)/g, (_, km: string, dir: string) => {
-        const D: Record<string, string> = {
-          BaratLaut: 'NW',
-          TimurLaut: 'NE',
-          BaratDaya: 'SW',
-          Tenggara: 'SE',
-          Barat: 'W',
-          Timur: 'E',
-          Utara: 'N',
-          Selatan: 'S',
-        };
-        return `${km} km ${D[dir] ?? dir}`;
-      }),
+      .replace(
+        /(\d+)\s*km\s+(BaratLaut|TimurLaut|BaratDaya|Tenggara|Barat|Timur|Utara|Selatan)/g,
+        (_, km: string, dir: string) => {
+          const D: Record<string, string> = {
+            BaratLaut: 'NW',
+            TimurLaut: 'NE',
+            BaratDaya: 'SW',
+            Tenggara: 'SE',
+            Barat: 'W',
+            Timur: 'E',
+            Utara: 'N',
+            Selatan: 'S',
+          };
+          return `${km} km ${D[dir] ?? dir}`;
+        },
+      ),
   );
-}
-
-export function quakeLevel(q: Earthquake): AlertLevel {
-  const tsunami = /berpotensi tsunami/i.test(q.potential) && !/tidak berpotensi/i.test(q.potential);
-  if (tsunami || q.magnitude >= 7) return 'critical';
-  if (q.magnitude >= 6) return 'warning';
-  if (q.magnitude >= 5) return 'advisory';
-  return 'info';
 }
 
 /**
@@ -132,7 +131,7 @@ export function useAlerts() {
       const d = haversineKm(location, q);
       out.push({
         id: `eq-${q.id}`,
-        level: d > 600 && quakeLevel(q) !== 'critical' ? 'info' : quakeLevel(q),
+        level: quakeLevel(q, d),
         category: t('Gempabumi', 'Earthquake'),
         title: t(
           `Gempa M${q.magnitude.toFixed(1)} — ${q.region}`,
@@ -170,7 +169,10 @@ export function useAlerts() {
           ),
           location: location.name,
           time: assessment.computedAt,
-          source: dataMode === 'scenario' ? t('SiagaAI · Simulasi', 'SiagaAI · Simulation') : t('SiagaAI · Indikatif', 'SiagaAI · Indicative'),
+          source:
+            dataMode === 'scenario'
+              ? t('SiagaAI · Simulasi', 'SiagaAI · Simulation')
+              : t('SiagaAI · Indikatif', 'SiagaAI · Indicative'),
           updatedAt: assessment.computedAt,
           origin: 'siaga',
         });

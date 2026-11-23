@@ -72,7 +72,9 @@ export default function AuthPage() {
       if (u.email === DEMO_ACCOUNT.email) seedDemoWorkspace();
       done(u.name);
     } catch (e) {
-      login.setError('root', { message: e instanceof AuthError ? e.message : t('Gagal masuk.', 'Sign-in failed.') });
+      login.setError('root', {
+        message: e instanceof AuthError ? e.message : t('Gagal masuk.', 'Sign-in failed.'),
+      });
     }
   });
 
@@ -104,7 +106,11 @@ export default function AuthPage() {
         description: t('Periksa kotak masuk Anda.', 'Check your inbox.'),
       });
     } catch (e) {
-      toast.error(e instanceof AuthError ? e.message : t('Gagal mengirim email reset.', 'Failed to send the reset email.'));
+      toast.error(
+        e instanceof AuthError
+          ? e.message
+          : t('Gagal mengirim email reset.', 'Failed to send the reset email.'),
+      );
     }
   };
 
@@ -115,7 +121,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="relative grid min-h-safe-screen bg-canvas lg:grid-cols-[55fr_45fr]">
+    <div className="relative grid min-h-safe-screen grid-cols-1 bg-canvas lg:grid-cols-[55fr_45fr]">
       <StoryPanel />
 
       <div className="relative flex flex-col px-5 pb-10 pt-6 sm:px-10 lg:px-14 lg:py-10">
@@ -137,12 +143,20 @@ export default function AuthPage() {
         <div className="mx-auto flex w-full max-w-[400px] flex-1 flex-col justify-center py-6">
           <LogoMark className="mb-6 hidden size-10 lg:block" />
           <h1 className="text-[30px] font-bold leading-tight tracking-[-0.03em]">
-            {tab === 'login' ? t('Selamat datang kembali.', 'Welcome back.') : t('Buat akun SiagaAI.', 'Create a SiagaAI account.')}
+            {tab === 'login'
+              ? t('Selamat datang kembali.', 'Welcome back.')
+              : t('Buat akun SiagaAI.', 'Create a SiagaAI account.')}
           </h1>
           <p className="mt-2 text-[14px] text-muted">
             {tab === 'login'
-              ? t('Simpan profil, keluarga & lokasi pentingmu.', 'Save your profile, family & important locations.')
-              : t('Gratis. Sinkronkan rencana & lokasi di semua perangkat.', 'Free. Sync plans & locations across all your devices.')}
+              ? t(
+                  'Simpan profil, keluarga & lokasi pentingmu.',
+                  'Save your profile, family & important locations.',
+                )
+              : t(
+                  'Gratis. Sinkronkan rencana & lokasi di semua perangkat.',
+                  'Free. Sync plans & locations across all your devices.',
+                )}
           </p>
 
           <button
@@ -227,7 +241,8 @@ export default function AuthPage() {
                   </p>
                 )}
                 <Button type="submit" className="w-full" size="lg" disabled={login.formState.isSubmitting}>
-                  {login.formState.isSubmitting ? <Loader2 className="animate-spin" /> : <LogIn />} {t('Masuk', 'Sign in')}
+                  {login.formState.isSubmitting ? <Loader2 className="animate-spin" /> : <LogIn />}{' '}
+                  {t('Masuk', 'Sign in')}
                 </Button>
               </form>
             </TabsContent>
@@ -319,7 +334,9 @@ const PasswordInput = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInput
         type="button"
         onClick={() => setShow((v) => !v)}
         className="absolute right-1.5 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-lg text-subtle transition-colors hover:bg-neutral-100 hover:text-ink"
-        aria-label={show ? t('Sembunyikan kata sandi', 'Hide password') : t('Tampilkan kata sandi', 'Show password')}
+        aria-label={
+          show ? t('Sembunyikan kata sandi', 'Hide password') : t('Tampilkan kata sandi', 'Show password')
+        }
       >
         {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
       </button>
@@ -344,7 +361,11 @@ function StoryPanel() {
       <IndonesiaSilhouette className="absolute -right-24 bottom-24 w-[120%] max-w-none text-white/[0.06]" />
 
       <div className="relative flex items-center justify-between gap-2 p-4 sm:p-8 lg:p-12">
-        <Link to="/" aria-label={t('SiagaAI beranda', 'SiagaAI home')} className="shrink-0 rounded-full bg-surface py-1.5 pl-1.5 pr-1.5 min-[400px]:pr-4">
+        <Link
+          to="/"
+          aria-label={t('SiagaAI beranda', 'SiagaAI home')}
+          className="shrink-0 rounded-full bg-surface py-1.5 pl-1.5 pr-1.5 min-[400px]:pr-4"
+        >
           <Logo className="[&>span:last-child]:max-[399px]:hidden" />
         </Link>
         <div className="flex items-center gap-2 sm:gap-3 lg:hidden">

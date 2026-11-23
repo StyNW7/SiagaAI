@@ -42,7 +42,15 @@ import { AnalysisSequence, HazardRow, SourcesPanel } from '@/features/risk/compo
 import { describeWindow } from '@/features/risk/engine/timing';
 import { useAiContext, useAiQuery } from '@/hooks/use-ai';
 import { useCountUp, useDocumentTitle } from '@/hooks/use-misc';
-import { compass, formatDistance, formatLongDate, formatTime, timeAgo } from '@/lib/format';
+import {
+  compass,
+  formatDate,
+  formatHour,
+  formatDistance,
+  formatLongDate,
+  formatTime,
+  timeAgo,
+} from '@/lib/format';
 import { HAZARD_ORDER, HAZARDS, RISK_LEVELS } from '@/lib/risk-levels';
 import { cn } from '@/lib/utils';
 import { describeWeather } from '@/lib/weather-codes';
@@ -76,7 +84,7 @@ export default function DashboardPage() {
   const navigate = useNavigate();
 
   const context = useAiContext(view);
-  const brief = useAiQuery('brief', context);
+  const { query: brief, refresh: refreshBrief } = useAiQuery('brief', context);
 
   const finishSequence = useCallback(() => {
     analyzed.add(location.id);
@@ -202,7 +210,7 @@ export default function DashboardPage() {
                         {trend && trend.delta !== 0 ? (
                           <p
                             className={cn(
-                              'mt-2 flex items-center gap-1 font-mono text-[11px] font-medium uppercase tracking-[0.04em]',
+                              'mt-2 flex items-center gap-1 whitespace-nowrap font-mono text-[11px] font-medium uppercase tracking-[0.04em]',
                               trend.delta > 0 ? 'text-risk-high' : 'text-risk-safe',
                             )}
                           >
@@ -212,7 +220,10 @@ export default function DashboardPage() {
                               <TrendingDown className="size-3.5" />
                             )}
                             {trend.delta > 0 ? '+' : ''}
-                            {trend.delta} {t('sejak', 'since')} {formatTime(trend.since)}
+                            {trend.delta} {t('sejak', 'since')}{' '}
+                            {formatDate(trend.since) === formatDate(Date.now())
+                              ? formatTime(trend.since)
+                              : `${formatDate(trend.since)} ${formatHour(trend.since)}`}
                           </p>
                         ) : (
                           <p className="telemetry mt-2">
@@ -294,7 +305,7 @@ export default function DashboardPage() {
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    onClick={() => brief.refetch()}
+                    onClick={() => refreshBrief()}
                     aria-label={t('Perbarui brief', 'Refresh brief')}
                   >
                     <RefreshCw className={brief.isFetching ? 'animate-spin' : ''} />
@@ -328,7 +339,7 @@ export default function DashboardPage() {
               ) : brief.isError ? (
                 <ErrorState
                   title={t('SiagaAI tidak dapat menyusun brief', 'SiagaAI could not compose the brief')}
-                  onRetry={() => brief.refetch()}
+                  onRetry={() => refreshBrief()}
                 />
               ) : (
                 <AiThinking />

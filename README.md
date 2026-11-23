@@ -1,353 +1,331 @@
 <div align="center">
 
-<img src="images/SiagaAI-Logo.png" alt="SiagaAI" width="120" />
+<img src="images/SiagaAI-Logo.png" alt="Logo SiagaAI" width="112" />
 
 # SiagaAI
 
-### AI-Powered Personal Disaster Intelligence untuk Indonesia
+### Kecerdasan Kebencanaan Personal Berbasis AI untuk Indonesia
 
 **Kenali Risiko. Pahami Dampaknya. Ambil Tindakan.**
-*Know the Risk. Understand the Impact. Take Action.*
 
-IT RUSH 2026 · Web Development · Sub tema **Mitigasi Bencana dan Perubahan Iklim**
+**🇮🇩 Bahasa Indonesia** · [🇬🇧 English](README.en.md)
 
-`React 19` · `TypeScript` · `Vite` · `Tailwind CSS v4` · `MapLibre GL` · `TanStack Query` · `Supabase` · `Gemini / Groq` · `PWA`
+IT RUSH 2026 · Web Development · Subtema **Mitigasi Bencana dan Perubahan Iklim**
+
+![React 19](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+![MapLibre](https://img.shields.io/badge/MapLibre_GL-5-396CB2?logo=maplibre&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Postgres_+_RLS-3FCF8E?logo=supabase&logoColor=white)
+![Gemini](https://img.shields.io/badge/AI-Gemini_·_Groq-8E75B2?logo=googlegemini&logoColor=white)
+![PWA](https://img.shields.io/badge/PWA-offline--ready-5A0FC8?logo=pwa&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-31_passing-2EA44F)
+
+**[🌐 Demo live](https://ISI-URL-VERCEL.vercel.app)** · **[🎬 Alur demo 60 detik](#-coba-dalam-60-detik)** · **[📐 Metodologi](docs/METHODOLOGY.md)** · **[🏗️ Arsitektur](docs/ARCHITECTURE.md)**
 
 </div>
 
 ---
 
+## Ringkasan
+
+**SiagaAI** adalah *Progressive Web App* yang mengubah data kebencanaan resmi Indonesia (BMKG, NASA FIRMS, Copernicus CAMS & GloFAS) menjadi **risiko personal yang mudah dipahami dan langkah nyata yang bisa langsung dilakukan**, sesuai lokasi, pekerjaan, transportasi, dan keluarga setiap pengguna.
+
+> Sistem informasi biasa menjawab *"Apa yang terjadi?"*. SiagaAI menjawab sampai *"Apa artinya bagi saya?"* dan *"Apa yang harus saya lakukan sekarang?"*.
+
+Prinsip inti: **Algorithm calculates. AI communicates.** Skor risiko dihitung oleh algoritma deterministik yang transparan dan teruji; AI hanya menjelaskan dan menyusun rencana aksi, **tidak pernah mengarang angka**.
+
 ## Daftar isi
 
-1. [Ringkasan](#ringkasan)
-2. [Masalah](#masalah)
-3. [Solusi: Detect, Understand, Personalize, Act](#solusi-detect-understand-personalize-act)
-4. [Fitur](#fitur)
-5. [Panduan cepat untuk juri](#panduan-cepat-untuk-juri)
-6. [Arsitektur](#arsitektur)
-7. [Teknologi](#teknologi)
-8. [Struktur repository](#struktur-repository)
-9. [Instalasi & menjalankan lokal](#instalasi--menjalankan-lokal)
-10. [Variabel lingkungan](#variabel-lingkungan)
-11. [Deployment](#deployment)
-12. [Sumber data](#sumber-data)
-13. [Metodologi Siaga Score](#metodologi-siaga-score)
-14. [Integrasi AI & pengungkapan AI](#integrasi-ai--pengungkapan-ai)
-15. [Privasi & keamanan](#privasi--keamanan)
-16. [Pengujian & kualitas kode](#pengujian--kualitas-kode)
-17. [Keterbatasan](#keterbatasan)
-18. [Dampak & SDGs](#dampak--sdgs)
-19. [Open source & atribusi](#open-source--atribusi)
-20. [Tim](#tim)
+1. [Masalah](#-masalah) · 2. [Solusi](#-solusi) · 3. [Keunggulan](#-keunggulan) · 4. [Fitur](#-fitur) · 5. [Tampilan](#-tampilan) · 6. [Coba dalam 60 detik](#-coba-dalam-60-detik)
+7. [Arsitektur](#-arsitektur) · 8. [Siaga Risk Engine](#-siaga-risk-engine) · 9. [Integrasi AI](#-integrasi-ai) · 10. [Teknologi](#-teknologi) · 11. [Sumber data](#-sumber-data)
+12. [Menjalankan lokal](#-menjalankan-lokal) · 13. [Deployment](#-deployment) · 14. [Struktur repository](#-struktur-repository) · 15. [Kualitas & pengujian](#-kualitas--pengujian)
+16. [Privasi & keamanan](#-privasi--keamanan) · 17. [Keterbatasan](#-keterbatasan) · 18. [Dampak & SDGs](#-dampak--sdgs) · 19. [Atribusi](#-atribusi--pengungkapan-ai) · 20. [Tim](#-tim)
 
 ---
 
-## Ringkasan
+## 🚨 Masalah
 
-**SiagaAI** adalah *Progressive Web App* berbasis AI. Aplikasi ini mengubah data kebencanaan dan lingkungan Indonesia menjadi **informasi risiko yang personal, mudah dipahami, dan dapat langsung ditindaklanjuti**, berdasarkan lokasi dan konteks setiap pengguna.
+Sepanjang 2025, Indonesia mencatat **3.233 kejadian bencana**, rata-rata hampir **9 per hari**, dan **99%** di antaranya bencana hidrometeorologi (banjir, cuaca ekstrem, karhutla) yang sebenarnya **bisa diprakirakan lebih awal**.
 
-Sumber datanya meliputi titik panas satelit NASA FIRMS, prakiraan dan peringatan dini BMKG, kualitas udara CAMS, serta debit sungai GloFAS.
+<img src="images/readme/01-fakta-bencana.webp" alt="Fakta bencana Indonesia 2025" width="100%" />
 
-> **SiagaAI menjembatani peringatan dini dan tindakan dini.** Sistem informasi biasa hanya menjawab *"Apa yang terjadi?"*. SiagaAI menjawab hingga *"Apa artinya bagi saya?"* dan *"Apa yang harus saya lakukan?"*.
+Masalahnya **bukan kekurangan data**, melainkan data yang tidak "bicara" pada warga. Informasi bencana:
 
-## Masalah
+- **terpencar** di banyak portal dan format berbeda;
+- **teknis**: angka mentah seperti *"PM2.5 182 µg/m³"* atau *"24 titik panas"* tanpa makna;
+- **generik**: satu peringatan untuk satu provinsi, sama untuk semua orang.
 
-Indonesia tidak kekurangan informasi kebencanaan. Masalahnya ada pada celah **Informasi → Pemahaman → Tindakan**.
+Akibatnya, **peringatan dini ada, tetapi tindakan dini tidak terjadi**.
 
-Peringatan seperti *"Terdapat 24 titik panas"* atau *"Potensi hujan lebat"*:
+<img src="images/readme/02-masalah.webp" alt="Celah antara informasi, pemahaman, dan tindakan" width="100%" />
 
-- **teknis**: sulit dipahami masyarakat awam;
-- **terfragmentasi**: tersebar di BMKG, BNPB, satelit, dan portal daerah;
-- **generik**: tidak mempertimbangkan aktivitas individu, misalnya mahasiswa bermotor, pekerja luar ruang, atau keluarga dengan lansia;
-- **tidak actionable**: tidak langsung menjawab apa yang harus dilakukan sekarang.
+## 💡 Solusi
 
-## Solusi: Detect, Understand, Personalize, Act
+SiagaAI adalah **penerjemah risiko pribadi**. Empat tahap menjawab satu per satu hambatan dari informasi menuju tindakan.
+
+<img src="images/readme/03-solusi.webp" alt="Solusi SiagaAI: Detect, Understand, Personalize, Act" width="100%" />
 
 | Tahap | Pertanyaan | Implementasi |
 |---|---|---|
-| **01 Detect** | Apa yang sedang terjadi? | Agregasi data live NASA FIRMS, BMKG (prakiraan, nowcast, gempa), CAMS, GloFAS |
-| **02 Understand** | Apa arti data ini? | **Siaga Risk Engine** deterministik: skor 0–100 per bahaya, transparan & teruji |
-| **03 Personalize** | Apa artinya bagi saya? | Pengubah paparan dari pekerjaan, transportasi, aktivitas & kelompok usia keluarga |
-| **04 Act** | Apa yang harus saya lakukan? | AI menyusun brief, dampak personal, rencana aksi & menjawab pertanyaan kontekstual |
+| **01 Detect** | Apa yang sedang terjadi? | Agregasi data live BMKG (prakiraan, peringatan dini, gempa), NASA FIRMS, CAMS, GloFAS |
+| **02 Understand** | Apa arti data ini? | **Siaga Risk Engine**: skor 0–100 per bahaya, deterministik dan teruji |
+| **03 Personalize** | Apa artinya bagi saya? | Pengubah paparan dari pekerjaan, transportasi, aktivitas, dan kelompok usia keluarga |
+| **04 Act** | Apa yang harus saya lakukan? | AI menyusun brief, dampak personal, rencana aksi tiga fase, rencana keluarga, dan menjawab pertanyaan |
 
-Prinsip inti: **Algorithm calculates. AI communicates.** LLM tidak pernah menentukan skor risiko.
+## 🏆 Keunggulan
 
-## Fitur
+<img src="images/readme/04-posisi-usp.webp" alt="Posisi SiagaAI dibanding layanan yang ada" width="100%" />
+
+1. **Risiko personal**: skor berubah sesuai pekerjaan, transportasi, dan anggota keluarga.
+2. **Banyak bahaya, satu skor**: karhutla, asap, banjir, dan cuaca ekstrem dinilai sekaligus.
+3. **Langsung ada langkahnya**: rencana aksi *Sekarang / Beberapa jam ke depan / Jika memburuk* yang bisa dicentang.
+4. **AI yang jujur**: algoritma menghitung, AI menjelaskan, dan sumber setiap angka selalu ditampilkan.
+5. **Mudah diakses**: tanpa login, bisa diinstal (PWA), tetap berguna saat offline, dua bahasa (ID/EN), mode gelap/terang.
+
+## ✨ Fitur
 
 | Fitur | Keterangan |
 |---|---|
-| 🏠 **Siaga Dashboard** | Menjawab dalam 5 detik "Seberapa aman lokasi Anda hari ini?". Berisi Siaga Score (personal/lokasi), 4 kartu bahaya, peta lokal, SiagaAI Brief, grafik cuaca 24 jam, PM2.5, peringatan resmi, dan panel kesegaran data |
-| 📍 **Smart Location** | GPS (hanya setelah izin, tidak disimpan), pencarian kota/kabupaten, lokasi tersimpan, dan preset "Jelajahi wilayah" |
-| 🗺️ **Siaga Map** | MapLibre WebGL dengan 8 lapisan: titik panas (cluster), heatmap, choropleth provinsi, peringatan BMKG, cuaca kota, PM2.5, gempa, laporan komunitas. Mendukung *fly-to* Indonesia → Provinsi → Kota → GPS |
-| 🧭 **Ringkasan regional** | Klik provinsi untuk melihat titik panas 24 jam / 7 hari, tren, grafik harian, cuaca ibu kota, skor risiko, peringatan BMKG, dan penjelasan AI |
-| ✨ **Personal Impact Forecast** | "Apa artinya bagi saya?": dampak berbeda per profil, rincian faktor & bobot, indeks jam aman beraktivitas, dan perbandingan 4 persona |
-| 📋 **AI Action Plan** | Rencana *Sekarang / Beberapa jam ke depan / Jika memburuk* yang bisa dicentang, dibagikan, dicetak, tersimpan, dan tersedia offline |
-| 🎒 **Tas Siaga & nomor darurat** | Checklist Tas Siaga Bencana dan nomor 112/117/113/115/119/110/123 yang bisa langsung ditelepon |
-| 👨‍👩‍👧 **Family Siaga** | Ikhtisar risiko per anggota keluarga (balita, anak, lansia, paparan tinggi), status prioritas, dan rencana aksi keluarga |
-| 💬 **Asisten SiagaAI** | Tombol mengambang dengan chat kontekstual yang memahami lokasi, skor, cuaca, dan profil, dilengkapi pertanyaan saran dan *follow-up* |
-| 📣 **Community Signal** | Laporan warga (jenis kejadian, foto terkompresi tanpa EXIF, GPS, deskripsi). Selalu berlabel **"Belum terverifikasi"**, realtime dengan Supabase |
-| 🔔 **Alert Center** | Peringatan dini BMKG, gempa BMKG, dan sinyal indikatif SiagaAI dalam 4 level (Kritis/Peringatan/Waspada/Informasi). Warna selalu disertai ikon dan teks |
-| 🧪 **Mode skenario** | Simulasi puncak karhutla (Palangka Raya) dan hujan ekstrem (Jakarta) agar juri bisa menguji kondisi berisiko tinggi kapan saja. Selalu ditandai banner simulasi |
-| 📶 **PWA offline-first** | Bisa diinstal, app shell & basemap di-cache, data lama selalu berlabel, dan notifikasi lokal untuk peringatan penting |
-| 📚 **Data & Metodologi** | Sumber, bobot (dirender langsung dari kode engine), peran AI, privasi, batasan, dan SDGs |
+| 🏠 **Siaga Dashboard** | Menjawab *"Seberapa aman lokasi Anda hari ini?"* dalam 5 detik: Siaga Score personal/lokasi + tren, 4 kartu bahaya, peta sekitar, **SiagaAI Brief**, grafik cuaca 24 jam, jam aman beraktivitas, PM2.5, peringatan resmi, dan panel kesegaran data |
+| 📍 **Lokasi cerdas** | GPS (hanya dengan izin, tidak disimpan), pencarian kota/kabupaten, lokasi tersimpan, dan pintasan wilayah rawan |
+| 🗺️ **Siaga Map** | Peta WebGL dengan 8 lapisan: kluster titik panas, heatmap, aktivitas per provinsi, peringatan BMKG, cuaca kota, PM2.5, gempa, laporan warga |
+| 🧭 **Ringkasan regional** | Klik provinsi: titik panas 24 jam/7 hari, tren, grafik harian, cuaca ibu kota, skor risiko, peringatan BMKG, dan **Jelaskan dengan AI** |
+| ✨ **Risiko Saya** | *"Apa artinya bagi saya?"*: ubah profil dan lihat skor berubah, rincian kontribusi setiap indikator, indeks jam aman, perbandingan 4 persona, dan analisis dampak personal AI |
+| 🔔 **Pusat Peringatan** | Peringatan dini BMKG, gempa BMKG, dan sinyal indikatif SiagaAI dalam 4 level. Level gempa disesuaikan dengan **jarak dan usia kejadian** dari lokasi pengguna |
+| 📋 **Rencana Aksi AI** | Rencana tiga fase yang bisa dicentang, dibagikan, dicetak, tersimpan, dan tersedia offline, plus **Tas Siaga Bencana** dan nomor darurat (112, 117, 113, 115, 119, 110, 123) yang bisa langsung ditelepon |
+| 👨‍👩‍👧 **Keluarga Siaga** | Risiko per anggota keluarga (balita, anak, lansia, paparan tinggi), status prioritas, dan rencana aksi keluarga |
+| 💬 **Tanya Ara** | Asisten AI kontekstual (paham lokasi, skor, cuaca, profil) dengan pertanyaan saran dan *follow-up* |
+| 📣 **Laporan Warga** | Laporan kejadian dengan foto terkompresi tanpa EXIF dan GPS opsional, **selalu berlabel "Belum terverifikasi"**, realtime lewat Supabase |
+| 📚 **Data & Metodologi** | Sumber data, bobot (dirender langsung dari kode engine), peran AI, privasi, dan batasan |
+| 📶 **PWA offline-first** | Bisa diinstal, app shell & basemap di-cache, data lama selalu berlabel, notifikasi lokal untuk peringatan penting |
 
-## Panduan cepat untuk juri
+Maskot **Ara**, relawan siaga, memandu pengguna di setiap halaman dan menjadi persona utama: mahasiswi bermotor di Palangka Raya yang tinggal bersama nenek dan adiknya.
 
-> **Live:** `https://<isi-url-vercel-anda>.vercel.app` · **Akun demo:** `demo@siagaai.id` / `SiagaAI2026!`
-> (Login **tidak wajib**. Semua fitur inti berjalan dalam mode tamu.)
+## 📱 Tampilan
 
-Perjalanan 60 detik yang direkomendasikan:
+<img src="images/readme/08-ui-desktop.webp" alt="Tampilan desktop SiagaAI" width="100%" />
 
-1. Buka beranda, lalu klik **Cek Lokasi Saya** (atau **Jelajahi Siaga Map**).
-2. Di Dashboard, lihat Siaga Score, kartu bahaya, peta sekitar, dan **SiagaAI Brief**.
-3. Klik **Ubah lokasi**, lalu pilih wilayah di *Jelajahi wilayah* atau **Skenario: Puncak Karhutla**.
-4. Buka **Risiko Saya** dan klik **Apa artinya bagi saya?**. Ganti transportasi menjadi *Mobil* dan lihat skornya berubah.
-5. Buka **Rencana Aksi** dan klik **Buat Rencana Aksi Saya**.
-6. Buka **Siaga Map**, lalu klik provinsi dan pilih **Jelaskan dengan AI**.
-7. Klik **Tanya SiagaAI** dan coba *"Saya naik motor ke kampus jam 8 besok. Bagaimana?"*.
+<img src="images/readme/09-ui-mobile.webp" alt="Tampilan mobile SiagaAI" width="100%" />
 
-## Arsitektur
+## ⏱️ Coba dalam 60 detik
 
-```text
-                         ┌────────────────────────────┐
-                         │      SiagaAI React PWA      │
-                         │ Router · TanStack Query ·   │
-                         │ Zustand · MapLibre · Charts │
-                         └──────────────┬─────────────┘
-         CORS-enabled langsung          │            Serverless (Vercel Edge / Supabase Edge)
-  ┌──────────────────────────────┐      │      ┌───────────────────────────────────────────┐
-  │ BMKG prakiraan & gempa        │◄─────┼─────►│ /api/hotspots  → NASA FIRMS (CSV → JSON)  │
-  │ Open-Meteo / CAMS / GloFAS    │      │      │ /api/alerts    → BMKG Nowcast (RSS → JSON)│
-  │ Nominatim / Open-Meteo Geo    │      │      │ /api/ai        → Gemini │ Groq │ OpenRouter│
-  └──────────────────────────────┘      │      └───────────────────────────────────────────┘
-                                        ▼
-                      ┌──────────────────────────────────┐
-                      │ Normalisasi sinyal (signals.ts)  │
-                      │ Siaga Risk Engine (hazards.ts)   │  ← deterministik, unit-tested
-                      │ Pengubah paparan (exposure.ts)   │
-                      └──────────────┬───────────────────┘
-                                     │ konteks JSON terstruktur (privasi-minimal)
-                                     ▼
-                 ┌─────────────────────────────────────────────┐
-                 │ AI Gateway → LLM → validasi skema JSON        │
-                 │ fallback: SiagaAI Local Reasoner (offline)    │
-                 └──────────────┬──────────────────────────────┘
-                                ▼
-         Brief · Dampak personal · Rencana aksi · Rencana keluarga · Q&A
-                                │
-                   Supabase (opsional): Auth · Postgres + RLS · Storage · Realtime
-```
+> **Live:** `https://ISI-URL-VERCEL.vercel.app` · **Login tidak wajib**; semua fitur inti berjalan dalam mode tamu.
+> Akun demo (opsional): `demo@siagaai.id` / `SiagaAI2026!`
 
-Penjelasan lengkap ada di [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+<img src="images/readme/07-user-flow.webp" alt="User flow SiagaAI" width="100%" />
 
-## Teknologi
+1. Di beranda, klik **Cek Lokasi Saya** (atau **Jelajahi Siaga Map**).
+2. Di **Dashboard**, lihat Siaga Score, kartu bahaya, peta sekitar, dan **SiagaAI Brief**.
+3. Pada kartu *Eksplorasi*, pilih wilayah rawan lain, misalnya **Palangka Raya** atau **Pekanbaru**.
+4. Buka **Risiko Saya** → **Analisis dampak personal**. Ganti transportasi menjadi *Mobil* dan lihat skornya berubah.
+5. Buka **Rencana Aksi** → **Buat Rencana Aksi Saya**, lalu centang beberapa langkah.
+6. Buka **Siaga Map**, klik provinsi, lalu **Jelaskan dengan AI**.
+7. Klik **Tanya Ara** dan coba *"Saya naik motor ke kampus jam 8 besok. Bagaimana?"*.
+
+Label kecil di bawah setiap jawaban AI menunjukkan penyedianya (**Google Gemini**, **Groq**, atau *Local Reasoner* saat offline).
+
+## 🏗️ Arsitektur
+
+<img src="images/readme/06-arsitektur.webp" alt="Arsitektur sistem SiagaAI" width="100%" />
+
+- **Frontend (React PWA)** mengambil data publik yang mendukung CORS langsung dari sumbernya, lalu menghitung risiko **di perangkat pengguna**.
+- **Serverless API (Vercel Edge)** menangani sumber yang tidak mendukung CORS dan semua rahasia. Logikanya ditulis sekali di `backend/core/` dan dijalankan di Vercel Edge, Supabase Edge (Deno), maupun dev server Vite.
+- **Supabase (opsional)** untuk akun, sinkronisasi antarperangkat, foto laporan, dan realtime. Tanpa Supabase, data tersimpan aman di perangkat.
+
+| Endpoint | Fungsi |
+|---|---|
+| `POST /api/ai` | Gateway LLM: validasi, rate limit, prompt terstruktur, rantai penyedia & model cadangan, validasi skema JSON |
+| `GET /api/hotspots?range=7d\|24h` | Proxy NASA FIRMS (CSV → JSON ringkas, deduplikasi, cache CDN 30 menit) |
+| `GET /api/alerts` | Proxy BMKG Nowcast (RSS → JSON, cache 10 menit) |
+| `GET /api/health` | Status integrasi (tanpa membuka rahasia) |
+
+**Ketahanan (graceful degradation):** setiap sumber punya cadangan. BMKG gagal → Open-Meteo; FIRMS gagal → snapshot berlabel; LLM gagal → *Local Reasoner*; offline → data cache berlabel. Detail ada di [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
+## 📐 Siaga Risk Engine
+
+Kode: [`frontend/src/features/risk/engine/`](frontend/src/features/risk/engine) · Rincian lengkap: [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md)
+
+1. **Skor per bahaya (0–100)** = Σ (indikator ternormalisasi × bobot):
+
+   | Bahaya | Indikator (bobot) |
+   |---|---|
+   | 🔥 Karhutla | Kedekatan & kepadatan titik panas 30% · Kebaruan 20% · Kekeringan 15% · Angin 15% · PM2.5 20% |
+   | 💨 Asap | PM2.5 50% · Titik panas searah angin 30% · Jarak pandang 20% |
+   | 🌊 Banjir | Hujan 24 jam 35% · Intensitas puncak 25% · Anomali debit GloFAS 20% · Peringatan BMKG 20% |
+   | ⛈️ Cuaca ekstrem | Badai petir 35% · Hembusan angin 25% · Peluang hujan 20% · Panas 20% |
+
+2. **Data tidak tersedia ≠ nol.** Bobotnya dialihkan proporsional dan tingkat keyakinan diturunkan; bila cakupan < 40%, bahaya tidak dinilai.
+3. **Skor lokasi** = 85% bahaya dominan + 15% bahaya kedua.
+4. **Skor personal** = skor bahaya × pengubah paparan (dibatasi **0,8–1,3**), dihitung per bahaya.
+5. **Kategori**: 0–20 Aman · 21–40 Rendah · 41–60 Sedang · 61–80 Tinggi · 81–100 Kritis, selalu ditampilkan sebagai **warna + ikon + teks**.
+6. Ditampilkan sebagai **Indicative Siaga Score**: alat bantu keputusan, **bukan peringatan resmi**.
+
+## 🤖 Integrasi AI
+
+Desain lengkap ada di [`ai/README.md`](ai/README.md).
+
+- **Tugas**: SiagaAI Brief, dampak personal, rencana aksi, rencana keluarga, penjelasan regional, dan asisten Tanya Ara.
+- **Alur aman**: PWA → `/api/ai` → LLM. Kunci API hanya ada di server.
+- **Rantai penyedia**: **Google Gemini** (utama) → **Groq** → OpenRouter → **Local Reasoner** (deterministik, berjalan di browser & offline). Setiap penyedia punya beberapa kandidat model, sehingga model yang dipensiunkan atau sedang penuh otomatis dilewati. Semua percobaan berbagi tenggat 22 detik dengan jatah waktu khusus untuk penyedia cadangan.
+- **Guardrails**: validasi request, batas payload 32 KB, rate limit per IP, output JSON yang divalidasi skema, sanitasi output, dan *system prompt* yang melarang mengarang angka atau menyebut titik panas sebagai "kebakaran".
+- **Konteks minimal-privasi**: hanya data terstruktur yang dikirim; koordinat dibulatkan ±1 km, tanpa nama, email, atau data medis.
+- **Grounding**: rekomendasi berlandaskan pustaka aksi kesiapsiagaan yang mengacu pada panduan BNPB, BMKG, dan Kemenkes.
+
+## 🧰 Teknologi
+
+<img src="images/readme/05-metode-teknologi.webp" alt="Metode pengembangan dan teknologi SiagaAI" width="100%" />
 
 | Layer | Teknologi |
 |---|---|
-| Frontend | React 19, Vite 7, TypeScript 5.9 (strict) |
-| Styling & UI | Tailwind CSS v4, komponen pola **shadcn/ui** di atas **Radix UI**, Lucide icons, Inter Variable |
-| Peta | **MapLibre GL JS** (WebGL), basemap OpenFreeMap / CARTO Positron |
-| Grafik | Recharts |
-| State | TanStack Query (server state & caching), Zustand (client state, persist) |
-| Form & validasi | React Hook Form + Zod |
-| Backend | Serverless Edge Functions (Vercel `/api`, alternatif **Supabase Edge Functions**) |
-| Database & Auth | **Supabase**: PostgreSQL + Row Level Security, Auth, Storage, Realtime |
-| AI | Google **Gemini** (utama), **Groq** / **OpenRouter** (cadangan), Local Reasoner (offline) |
+| Frontend | React 19, Vite 7, TypeScript 5.9 (strict), React Router 7 |
+| UI | Tailwind CSS v4, pola komponen shadcn/ui di atas Radix UI, Lucide, Plus Jakarta Sans & IBM Plex Mono |
+| Peta & grafik | MapLibre GL JS (WebGL), Recharts |
+| State & form | TanStack Query (cache, retry, offline), Zustand (persist), React Hook Form + Zod |
+| Backend | Vercel Edge Functions (alternatif: Supabase Edge Functions) |
+| Database & Auth | Supabase: PostgreSQL + Row Level Security, Auth, Storage, Realtime |
+| AI | Google Gemini, Groq, OpenRouter, SiagaAI Local Reasoner |
 | PWA | vite-plugin-pwa (Workbox) |
 | Kualitas | ESLint (typescript-eslint), Prettier, Vitest |
 
-## Struktur repository
+## 🛰️ Sumber data
 
-```text
-.
-├── frontend/                 # React PWA
-│   ├── public/               # brand/, icons/, data/ (batas provinsi, snapshot FIRMS)
-│   ├── scripts/              # generate-icons.mjs (aset brand dari images/)
-│   └── src/
-│       ├── app/              # router, error boundary
-│       ├── components/       # ui/ (shadcn-style), common/ (brand, risk, data-state…)
-│       ├── features/         # risk/engine (Siaga Risk Engine + tests), map, ai, alerts,
-│       │                     # community, location, profile, charts, auth
-│       ├── hooks/            # use-siaga-data, use-ai, use-geolocation, …
-│       ├── layouts/          # app-layout (sidebar, bottom nav, topbar)
-│       ├── pages/            # landing, dashboard, map, risk, action plan, family, …
-│       ├── services/         # weather (BMKG, Open-Meteo), hazards (FIRMS, BMKG),
-│       │                     # geo, ai (client, context, local reasoner), supabase
-│       ├── stores/           # Zustand stores
-│       ├── data/             # kota, skenario, pustaka kesiapsiagaan, siluet Nusantara
-│       └── types/            # tipe domain
-├── backend/
-│   ├── core/                 # handler runtime-agnostic: ai-gateway, hotspots, alerts (+ tests)
-│   └── supabase/             # migrations (schema + RLS), Edge Functions, config
-├── ai/                       # kontrak AI (skema, validator) & pustaka prompt + README desain AI
-├── api/                      # Vercel Edge Functions (wrapper tipis ke backend/core)
-├── docs/                     # guidebook, template proposal, METHODOLOGY, ARCHITECTURE,
-│                             # PROPOSAL-CONTENT, DEMO-SCRIPT
-├── images/                   # logo resmi SiagaAI
-└── vercel.json
-```
+| Sumber | Data | Akses |
+|---|---|---|
+| **BMKG** Prakiraan Cuaca (adm4) | Suhu, kelembapan, angin, kondisi per 3 jam | Langsung |
+| **BMKG** Peringatan Dini Cuaca (Nowcast) | Peringatan per provinsi + masa berlaku | `/api/alerts` |
+| **BMKG** Informasi Gempabumi (TEWS) | Gempa terbaru & M5+ | Langsung |
+| **NASA FIRMS** VIIRS NRT (NOAA-20/21, S-NPP) | Titik panas 7 hari, keyakinan, FRP | `/api/hotspots` (+ snapshot berlabel) |
+| **Open-Meteo** Forecast | Hujan & peluang per jam, hembusan, jarak pandang | Langsung |
+| **Copernicus CAMS** via Open-Meteo | PM2.5, PM10, US AQI (model) | Langsung |
+| **Copernicus GloFAS** via Open-Meteo | Debit sungai 30 hari + prakiraan 7 hari | Langsung |
+| Batas provinsi (ans-4175, MIT) | 34 provinsi, disederhanakan | Statis |
 
-## Instalasi & menjalankan lokal
+Atribusi **"Sumber: BMKG"** ditampilkan di aplikasi sesuai ketentuan BMKG.
+
+## 💻 Menjalankan lokal
 
 Prasyarat: **Node.js ≥ 20**.
 
 ```bash
-cd frontend
+git clone https://github.com/StyNW7/SiagaAI.git
+cd SiagaAI/frontend
 npm install
-npm run dev          # http://localhost:5173 (frontend + /api serverless lewat bridge Vite)
+npm run dev        # http://localhost:5173 (frontend + /api lewat bridge Vite)
 ```
 
-Perintah lain:
-
-```bash
-npm run build        # typecheck + build produksi (dist/)
-npm run preview      # pratinjau build
-npm run test         # Vitest: risk engine + backend parsers + AI guards
-npm run lint         # ESLint
-node scripts/generate-icons.mjs   # regenerasi logo, favicon, ikon PWA & OG image
-```
-
-Tanpa kunci API apa pun, aplikasi **tetap berfungsi penuh**:
-- AI memakai Local Reasoner;
-- titik panas memakai feed publik FIRMS (atau snapshot berlabel);
-- akun memakai mode perangkat.
-
-## Variabel lingkungan
-
-Salin `.env.example` menjadi `.env` di root repository. **Jangan pernah commit `.env`** (sudah diabaikan lewat `.gitignore`).
+**Tanpa kunci API apa pun, aplikasi tetap berfungsi penuh**: AI memakai Local Reasoner, titik panas memakai feed publik FIRMS, dan akun memakai mode perangkat. Untuk mengaktifkan LLM, salin `.env.example` menjadi `.env` di **root repository**:
 
 | Variabel | Lokasi | Keterangan |
 |---|---|---|
 | `GEMINI_API_KEY`, `GEMINI_MODEL` | Server | LLM utama. Kunci gratis: [Google AI Studio](https://aistudio.google.com/apikey) |
-| `GROQ_API_KEY`, `GROQ_MODEL` | Server | Cadangan. Kunci gratis: [console.groq.com](https://console.groq.com/keys) |
-| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` | Server | Cadangan kedua (model `:free`) |
-| `FIRMS_MAP_KEY` | Server | Opsional: NASA FIRMS Area API |
+| `GROQ_API_KEY`, `GROQ_MODEL` | Server | Cadangan cepat. Kunci gratis: [console.groq.com](https://console.groq.com/keys) |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` | Server | Cadangan kedua (opsional) |
+| `FIRMS_MAP_KEY` | Server | Opsional: NASA FIRMS Area API (tanpa ini memakai feed publik) |
 | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | Client | Opsional: Auth, sinkronisasi, realtime (anon key memang publik, dilindungi RLS) |
 | `VITE_AI_ENDPOINT` | Client | Opsional: arahkan AI ke Supabase Edge Function |
 
-## Deployment
+`*_MODEL` boleh dikosongkan; gateway sudah punya daftar model default dan cadangan. **Jangan pernah commit `.env`.**
 
-**Vercel** (direkomendasikan, gratis):
+## 🚀 Deployment
 
-1. Import repository ke Vercel dengan **Root Directory = root repo**. `vercel.json` sudah mengatur install/build/output dan Edge Functions di `api/`.
-2. Tambahkan variabel lingkungan di *Project Settings → Environment Variables* (minimal `GEMINI_API_KEY` agar AI memakai LLM).
-3. Deploy, lalu buka `/api/health` untuk memastikan integrasi aktif.
+**Vercel** (gratis, direkomendasikan):
+
+1. Import repository dengan **Root Directory = root repo**. `vercel.json` sudah mengatur install, build, output, rewrite SPA, header keamanan, dan Edge Functions di `api/`.
+2. Isi variabel lingkungan di *Settings → Environment Variables* (minimal `GEMINI_API_KEY` dan `GROQ_API_KEY`), lalu **Redeploy**.
+3. Buka `/api/health` dan pastikan `"ai"` berisi penyedia yang aktif.
 
 **Supabase** (opsional):
 
 ```bash
 cd backend
 supabase link --project-ref <ref>
-supabase db push                                   # schema + RLS + storage + realtime
-supabase functions deploy siaga-ai hotspots       # gateway alternatif
-supabase secrets set GEMINI_API_KEY=...
+supabase db push                              # schema + RLS + storage + realtime
+supabase functions deploy siaga-ai hotspots   # gateway alternatif (opsional)
 ```
 
-Setelah itu isi `VITE_SUPABASE_URL` & `VITE_SUPABASE_ANON_KEY` di Vercel, lalu jalankan `backend/supabase/seed.sql` sekali di *SQL Editor* Supabase. Seed ini membuat akun demo `demo@siagaai.id` / `SiagaAI2026!` beserta profil (Palangka Raya, mahasiswa, motor), 3 anggota keluarga, dan lokasi tersimpan. Di lokal, `supabase db reset` menjalankannya otomatis.
+Jalankan `backend/supabase/seed.sql` sekali di SQL Editor untuk membuat akun demo, lalu isi `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` di Vercel.
 
-Akun demo tetap bisa masuk walaupun belum dibuat di Supabase. Dalam kondisi itu, aplikasi otomatis memakai sesi perangkat.
+## 🗂️ Struktur repository
 
-## Sumber data
+```text
+.
+├── frontend/              # React PWA
+│   ├── public/            # brand, ikon PWA, maskot Ara, batas provinsi, snapshot FIRMS
+│   └── src/
+│       ├── app/           # router, error boundary
+│       ├── components/    # ui/ (pola shadcn), common/ (brand, risk, data-state, Ara)
+│       ├── features/      # risk/engine (+ tes), map, ai, alerts, community, story, pwa, …
+│       ├── pages/         # landing, dashboard, map, risk, alerts, action plan, family, …
+│       ├── services/      # weather, hazards, geo, ai (client, context, local reasoner), supabase
+│       ├── hooks/ stores/ data/ lib/ types/
+├── api/                   # Vercel Edge Functions (pembungkus tipis backend/core)
+├── backend/
+│   ├── core/              # handler runtime-agnostic: ai-gateway, hotspots, alerts (+ tes)
+│   └── supabase/          # migrations (schema + RLS), Edge Functions, seed
+├── ai/                    # kontrak AI (skema, validator), pustaka prompt, desain AI
+├── docs/                  # ARCHITECTURE.md, METHODOLOGY.md
+├── images/                # logo & gambar README
+└── vercel.json
+```
 
-| Sumber | Data | Akses |
-|---|---|---|
-| **BMKG** Prakiraan Cuaca (adm4) | Suhu, RH, angin, kondisi, per 3 jam | Langsung (CORS) |
-| **BMKG** Peringatan Dini Cuaca (Nowcast/CAP) | Peringatan per provinsi + masa berlaku | `/api/alerts` |
-| **BMKG** TEWS | Gempa terbaru & M5+ terkini | Langsung |
-| **NASA FIRMS** VIIRS NRT (NOAA-20/21, S-NPP) | Titik panas 7 hari, keyakinan, FRP | `/api/hotspots` + snapshot berlabel |
-| **Open-Meteo** Forecast | Hujan & peluang per jam, hembusan, jarak pandang | Langsung |
-| **CAMS** via Open-Meteo | PM2.5, PM10, US AQI (model) | Langsung |
-| **GloFAS** via Open-Meteo | Debit sungai 30 hari + prakiraan 7 hari | Langsung |
-| Batas provinsi (ans-4175, MIT) | 34 provinsi, disederhanakan (Douglas–Peucker) | Statis |
-
-Data BMKG mewajibkan atribusi **"Sumber: BMKG"**, dan atribusi ini ditampilkan di aplikasi. Kode `adm4` BMKG untuk 42 kota telah diverifikasi langsung ke API BMKG.
-
-## Metodologi Siaga Score
-
-Skor dihitung dalam enam langkah:
-
-1. **Skor per bahaya (0–100)**: Σ (indikator ternormalisasi × bobot).
-   - **Karhutla**: kedekatan & kepadatan titik panas 30%, kebaruan 20%, kekeringan 15%, angin 15%, PM2.5 20%.
-   - **Asap**: PM2.5 50%, titik panas searah angin 30%, jarak pandang 20%.
-   - **Banjir**: hujan 24 jam 35% (kelas BMKG), intensitas puncak 25%, anomali debit GloFAS 20%, peringatan BMKG 20%.
-   - **Cuaca ekstrem**: petir 35%, hembusan 25%, peluang hujan 20%, panas 20%.
-2. **Data tidak tersedia ≠ nol.** Bobotnya dialihkan secara proporsional dan tingkat keyakinan diturunkan. Bila cakupan data < 40%, bahaya tidak dinilai.
-3. **Skor lokasi** = 85% bahaya dominan + 15% bahaya kedua.
-4. **Skor personal** = skor bahaya × pengubah paparan (dibatasi **0,8–1,3**), dihitung spesifik per bahaya.
-5. **Kategori**: 0–20 Aman · 21–40 Rendah · 41–60 Sedang · 61–80 Tinggi · 81–100 Kritis.
-6. Ditampilkan sebagai **Indicative Siaga Score**: alat bantu keputusan, **bukan peringatan resmi**.
-
-Detail lengkap ada di [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md) dan di halaman *Data & Metodologi* (yang dirender langsung dari konstanta engine).
-
-## Integrasi AI & pengungkapan AI
-
-**AI di dalam produk** (lihat [`ai/README.md`](ai/README.md)):
-
-- **Tugas AI**: SiagaAI Brief, Personal Impact Forecast, AI Action Plan, Family Action Plan, penjelasan regional, dan asisten kontekstual.
-- **Alur keamanan**: PWA → gateway serverless → LLM. Kunci API hanya tersimpan di server.
-- **Pengaman**: validasi request, batas ukuran payload, rate limit per IP, prompt terstruktur, output JSON yang divalidasi skema, sanitasi output, dan fallback antar-penyedia.
-- **Konteks minimal**: hanya konteks terstruktur yang dikirim, dengan koordinat dibulatkan sekitar 1 km dan tanpa identitas pengguna.
-- **Grounding**: rekomendasi berlandaskan pustaka aksi kesiapsiagaan yang mengacu panduan BNPB/BMKG.
-- **Local Reasoner**: generator bahasa deterministik sebagai cadangan, supaya fitur AI tetap berfungsi tanpa kunci atau saat offline. Penyedia selalu ditampilkan pada setiap respons.
-
-**AI coding assistant**: sesuai ketentuan IT RUSH 2026, pengembangan repository ini dibantu **Claude Code (Anthropic)** untuk penulisan kode, dokumentasi, dan pengujian. Seluruh keputusan produk, review, dan pengujian menjadi tanggung jawab tim.
-
-## Privasi & keamanan
-
-- GPS hanya diakses setelah izin dan **tidak disimpan** kecuali pengguna memilih *Simpan lokasi*.
-- Riwayat dan laporan menyimpan koordinat yang dibulatkan.
-- Tidak ada data medis yang diminta. Profil keluarga hanya berisi kelompok usia dan paparan.
-- Foto laporan dikompres dan metadata EXIF/GPS-nya dihapus di perangkat. Teks laporan disanitasi.
-- Supabase memakai **Row Level Security** di semua tabel milik pengguna. Unggahan dibatasi ke folder milik pengguna, dan konfirmasi laporan dilakukan lewat fungsi `SECURITY DEFINER`.
-- Header keamanan (`X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options`) diatur di `vercel.json`.
-
-## Pengujian & kualitas kode
+## ✅ Kualitas & pengujian
 
 ```bash
 cd frontend
-npm run test     # 23 tes: kurva & kategori, redistribusi bobot, skenario karhutla/banjir,
-                 # batas pengubah, kedekatan & arah angin titik panas, pencocokan provinsi,
-                 # parser RSS BMKG & CSV FIRMS, validasi request/skema AI, rate limit
-npm run lint && npm run typecheck
+npm run test        # 31 tes Vitest
+npm run lint        # ESLint
+npm run typecheck   # TypeScript strict
+npm run build       # typecheck + build produksi + service worker
 ```
 
-Pengujian manual yang sudah dilakukan:
-- seluruh halaman pada lebar 285–1440 px, tanpa overflow horizontal;
-- semua state data (loading, sukses, error, snapshot, offline, simulasi);
-- aksesibilitas: *skip link*, fokus terlihat, ARIA, dan risiko selalu ditampilkan dengan warna + ikon + teks.
+Cakupan tes otomatis: kurva & kategori skor, redistribusi bobot, skenario karhutla/banjir, batas pengubah paparan, kedekatan & arah angin titik panas, pencocokan provinsi, jendela waktu aman, parser RSS BMKG & CSV FIRMS, jendela Area API FIRMS, level gempa berbasis jarak, validasi request/skema AI, ekstraksi JSON, dan rate limit.
 
-## Keterbatasan
+Pengujian manual: semua halaman pada lebar 360–1440 px tanpa *overflow* horizontal, mode gelap/terang, ID/EN, semua state data (loading, sukses, error, snapshot, offline), dan aksesibilitas (*skip link*, fokus terlihat, ARIA, risiko = warna + ikon + teks). Keempat Edge Function diverifikasi lewat builder `@vercel/node`.
 
-- Titik panas adalah **deteksi termal**, bukan kebakaran terkonfirmasi. Sumbernya bisa juga *flare* industri atau pembakaran terkendali.
-- PM2.5 berasal dari **model** CAMS (resolusi sekitar 40 km), bukan sensor lokal.
-- GloFAS beresolusi sekitar 5 km. Model banjir tidak mencakup drainase kota maupun rob.
-- Peta memakai 34 batas provinsi (pra-pemekaran Papua 2022). Provinsi baru dipetakan ke provinsi induknya.
-- Bobot dan ambang skor adalah **heuristik produk terdokumentasi** yang belum dikalibrasi dengan data kejadian historis.
-- Rate limiting gateway bersifat per-instance. Untuk produksi skala besar perlu *store* bersama.
+## 🔒 Privasi & keamanan
 
-## Dampak & SDGs
+- GPS hanya diakses setelah izin dan **tidak disimpan** kecuali pengguna memilih *Simpan lokasi*.
+- Riwayat skor dan laporan menyimpan koordinat yang dibulatkan (±1 km). Tidak ada data medis; profil keluarga hanya berisi kelompok usia dan paparan.
+- Foto laporan dikompres dan metadata EXIF/GPS dihapus di perangkat; teks laporan disanitasi.
+- Supabase memakai **Row Level Security** di semua tabel milik pengguna, unggahan dibatasi ke folder pemilik, konfirmasi laporan lewat fungsi `SECURITY DEFINER`.
+- Kunci API hanya di server; header keamanan (`X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options`) diatur di `vercel.json`.
+
+## ⚠️ Keterbatasan
+
+- Titik panas adalah **deteksi termal satelit**, bukan kebakaran terkonfirmasi.
+- PM2.5 berasal dari **model** CAMS (resolusi ±40 km), bukan sensor lokal; GloFAS beresolusi ±5 km dan tidak mencakup drainase kota maupun rob.
+- Peta memakai 34 batas provinsi (pra-pemekaran Papua 2022); provinsi baru dipetakan ke provinsi induknya.
+- Bobot dan ambang skor adalah **heuristik terdokumentasi** yang belum dikalibrasi dengan data kejadian historis.
+- Rate limit gateway bersifat per-instance; skala produksi memerlukan *store* bersama.
+
+## 🌏 Dampak & SDGs
 
 | SDG | Kontribusi |
 |---|---|
 | **13.1** Penanganan Perubahan Iklim | Ketahanan & kapasitas adaptasi terhadap karhutla, banjir, dan cuaca ekstrem |
-| **11.5** Kota Berkelanjutan | Mengurangi dampak bencana melalui tindakan dini yang personal |
-| **3.9 & 3.d** Kesehatan | Mengurangi paparan asap/polusi dan memperkuat peringatan dini risiko kesehatan |
+| **11.5** Kota Berkelanjutan | Mengurangi dampak bencana lewat tindakan dini yang personal |
+| **3.9 & 3.d** Kehidupan Sehat | Mengurangi paparan asap/polusi dan memperkuat peringatan dini risiko kesehatan |
 | **15** Ekosistem Daratan | Pemantauan titik panas & pelaporan dini karhutla |
 
-Juga selaras dengan **Kerangka Sendai** (Prioritas 1 & 4) dan inisiatif PBB **Early Warnings for All**.
+Selaras dengan **Kerangka Sendai** (Prioritas 1 & 4) dan inisiatif PBB **Early Warnings for All**.
 
-## Open source & atribusi
+## 📜 Atribusi & pengungkapan AI
 
-React, React Router, Vite, TypeScript, Tailwind CSS, Radix UI, shadcn/ui (pola komponen), Lucide, MapLibre GL JS, Recharts, TanStack Query, Zustand, React Hook Form, Zod, Sonner, vite-plugin-pwa/Workbox, Supabase JS, @fontsource Inter, class-variance-authority, clsx, tailwind-merge, sharp, Vitest, ESLint, Prettier.
+**Open source:** React, React Router, Vite, TypeScript, Tailwind CSS, Radix UI, shadcn/ui (pola komponen), Lucide, MapLibre GL JS, Recharts, TanStack Query, Zustand, React Hook Form, Zod, Sonner, vite-plugin-pwa/Workbox, Supabase JS, Fontsource, class-variance-authority, clsx, tailwind-merge, sharp, Vitest, ESLint, Prettier.
 
-Data: **BMKG**, **NASA FIRMS**, **Open-Meteo** (CC BY 4.0) dengan **Copernicus CAMS & GloFAS**, **© OpenStreetMap contributors**, OpenFreeMap/CARTO, ans-4175/peta-indonesia-geojson (MIT), Nominatim, BigDataCloud.
+**Data:** BMKG, NASA FIRMS, Open-Meteo (CC BY 4.0) dengan Copernicus CAMS & GloFAS, © OpenStreetMap contributors, OpenFreeMap/CARTO, ans-4175/peta-indonesia-geojson (MIT), Nominatim, BigDataCloud. Statistik bencana 2025: BNPB.
 
-## Tim
+**Pengungkapan AI:** sesuai ketentuan IT RUSH 2026, pengembangan repository ini dibantu AI coding assistant **Claude Code (Anthropic)** untuk penulisan kode, dokumentasi, dan pengujian. Seluruh keputusan produk, review, dan pengujian menjadi tanggung jawab tim. Di dalam produk, AI (Gemini/Groq) hanya menjelaskan hasil algoritma.
 
-| Peran | Nama | Universitas |
+## 👤 Tim
+
+**Mapres SUNIB vs Everyone**
+
+| Peran | Nama | Institusi |
 |---|---|---|
-| Ketua | _isi nama_ | _isi kampus_ |
-| Anggota | _isi nama_ | _isi kampus_ |
+| Ketua (tim individu) | Stanley Nathanael Wijaya | BINUS University |
 
 ---
 

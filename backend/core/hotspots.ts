@@ -71,6 +71,26 @@ export function parseFirmsCsv(csv: string): CompactRow[] {
   return rows;
 }
 
+/** FIRMS Area API URLs; DAY_RANGE is capped at 5 by the API. */
+export function areaUrls(
+  key: string,
+  range: "24h" | "7d",
+  now = new Date(),
+): string[] {
+  const area = `${BBOX.minLon},${BBOX.minLat},${BBOX.maxLon},${BBOX.maxLat}`;
+  const isoDay = (daysAgo: number) =>
+    new Date(now.getTime() - daysAgo * 86_400_000).toISOString().slice(0, 10);
+  // [dayRange, startDate?] — without a date the window ends today (UTC).
+  const windows: [number, string?][] =
+    range === "24h" ? [[1]] : [[5], [2, isoDay(6)]];
+  return AREA_SOURCES.flatMap((s) =>
+    windows.map(
+      ([days, date]) =>
+        `${BASE}/api/area/csv/${key}/${s}/${area}/${days}${date ? `/${date}` : ""}`,
+    ),
+  );
+}
+
 export async function handleHotspots(
   req: Request,
   env: Env,
@@ -80,23 +100,31 @@ export async function handleHotspots(
     new URL(req.url).searchParams.get("range") === "24h" ? "24h" : "7d";
   const key = env.FIRMS_MAP_KEY;
 
-  const urls = key
-    ? AREA_SOURCES.map(
-        (s) =>
-          `${BASE}/api/area/csv/${key}/${s}/${BBOX.minLon},${BBOX.minLat},${BBOX.maxLon},${BBOX.maxLat}/${range === "24h" ? 1 : 7}`,
-      )
-    : PUBLIC_FEEDS.map((f) => `${BASE}/data/active_fire/${f}_${range}.csv`);
-
-  const results = await Promise.allSettled(
-    urls.map((u) =>
-      fetchWithTimeout(u, {}, 25_000).then((r) =>
-        r.ok ? r.text() : Promise.reject(r.status),
+  const publicUrls = PUBLIC_FEEDS.map(
+    (f) => `${BASE}/data/active_fire/${f}_${range}.csv`,
+  );
+  const fetchAll = async (urls: string[]) => {
+    const results = await Promise.allSettled(
+      urls.map((u) =>
+        fetchWithTimeout(u, {}, 25_000).then((r) =>
+          r.ok ? r.text() : Promise.reject(r.status),
+        ),
       ),
-    ),
-  );
-  const ok = results.filter(
-    (r): r is PromiseFulfilledResult<string> => r.status === "fulfilled",
-  );
+    );
+    return results.filter(
+      (r): r is PromiseFulfilledResult<string> => r.status === "fulfilled",
+    );
+  };
+
+  // The Area API only accepts a DAY_RANGE of 1..5, so a 7-day window is
+  // fetched as the latest 5 days plus the 2 days before them. If every Area
+  // API call fails (bad key, quota), fall back to the public NRT feeds.
+  let usedAreaApi = Boolean(key);
+  let ok = key ? await fetchAll(areaUrls(key, range)) : [];
+  if (ok.length === 0) {
+    usedAreaApi = false;
+    ok = await fetchAll(publicUrls);
+  }
   if (ok.length === 0) return json({ error: "firms_unavailable" }, 502);
 
   const seen = new Set<string>();
@@ -112,7 +140,7 @@ export async function handleHotspots(
 
   return json(
     {
-      source: `NASA FIRMS VIIRS NRT (NOAA-20, NOAA-21, S-NPP)${key ? " — Area API" : ""}, ${range}`,
+      source: `NASA FIRMS VIIRS NRT (NOAA-20, NOAA-21, S-NPP)${usedAreaApi ? " — Area API" : ""}, ${range}`,
       fetchedAt: new Date().toISOString(),
       feeds: ok.length,
       fields: [

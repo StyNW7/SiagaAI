@@ -3,7 +3,7 @@ import { validateOutput, validateRequest } from "../../ai/contracts.ts";
 import { buildPrompt, SYSTEM_PROMPT } from "../../ai/prompts.ts";
 import { extractJson } from "./ai-gateway.ts";
 import { parseIndoDate, parseNowcastRss } from "./alerts.ts";
-import { parseFirmsCsv } from "./hotspots.ts";
+import { areaUrls, parseFirmsCsv } from "./hotspots.ts";
 import { rateLimit } from "./http.ts";
 
 describe("BMKG nowcast parser", () => {
@@ -56,6 +56,19 @@ describe("NASA FIRMS CSV parser", () => {
       "D",
       null,
     ]);
+  });
+
+  it("splits 7 days into Area API windows of at most 5 days", () => {
+    const now = new Date("2026-11-23T10:00:00Z");
+    const urls = areaUrls("KEY", "7d", now);
+    expect(urls).toHaveLength(6); // 3 satellites x 2 windows
+    for (const u of urls) {
+      const days = Number(u.split("/").at(u.endsWith("-17") ? -2 : -1));
+      expect(days).toBeGreaterThanOrEqual(1);
+      expect(days).toBeLessThanOrEqual(5);
+    }
+    expect(urls.filter((u) => u.endsWith("/2/2026-11-17"))).toHaveLength(3);
+    expect(areaUrls("KEY", "24h", now).every((u) => u.endsWith("/1"))).toBe(true);
   });
 });
 

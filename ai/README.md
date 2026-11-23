@@ -46,12 +46,14 @@ Data (BMKG, FIRMS, CAMS, GloFAS) → Siaga Risk Engine → AiContext (JSON)
 
 ## Penyedia (gratis)
 
-| Penyedia         | Variabel             | Model default                                      |
-| ---------------- | -------------------- | -------------------------------------------------- |
-| Google Gemini    | `GEMINI_API_KEY`     | `gemini-2.5-flash` (JSON mode, thinking dimatikan) |
-| Groq             | `GROQ_API_KEY`       | `llama-3.3-70b-versatile` (JSON mode)              |
-| OpenRouter       | `OPENROUTER_API_KEY` | `meta-llama/llama-3.3-70b-instruct:free`           |
-| _Local Reasoner_ | —                    | `rules-v1`, berjalan di browser dan offline        |
+| Penyedia         | Variabel             | Model default (lalu kandidat cadangan)                                  |
+| ---------------- | -------------------- | ----------------------------------------------------------------------- |
+| Google Gemini    | `GEMINI_API_KEY`     | `gemini-3.5-flash` → `gemini-flash-latest` → `gemini-3.5-flash-lite`     |
+| Groq             | `GROQ_API_KEY`       | `openai/gpt-oss-120b` → `qwen/qwen3.8-27b` → `openai/gpt-oss-20b`        |
+| OpenRouter       | `OPENROUTER_API_KEY` | `meta-llama/llama-3.3-70b-instruct:free` → `openrouter/free`             |
+| _Local Reasoner_ | —                    | `rules-v1`, berjalan di browser dan offline                             |
+
+Variabel `*_MODEL` (opsional) selalu dicoba lebih dulu. Model yang dipensiunkan penyedia (HTTP 404) atau sedang penuh (429/503) otomatis dilewati ke kandidat berikutnya. Semua percobaan berbagi satu tenggat 22 detik (batas Vercel Edge 25 detik), dan setiap penyedia cadangan selalu mendapat jatah waktu minimal 7 detik, sehingga Gemini yang lambat tidak menghabiskan waktu Groq.
 
 Setiap respons menampilkan nama penyedianya. Bila memakai mode cadangan, alasannya ikut ditampilkan, misalnya "Kunci LLM belum dikonfigurasi".
 

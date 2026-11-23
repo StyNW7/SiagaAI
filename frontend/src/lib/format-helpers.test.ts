@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { prettifyBmkgRegion } from '@/lib/bmkg-region';
 import { findOutdoorWindows } from '@/features/risk/engine/timing';
 import type { HourlyOutdoorPoint } from '@/features/risk/engine/types';
+import { quakeLevel } from '@/features/alerts/quake-level';
+import type { Earthquake } from '@/types/domain';
 
 describe('prettifyBmkgRegion', () => {
   it('splits compressed BMKG region names and compass words', () => {
@@ -50,5 +52,32 @@ describe('findOutdoorWindows', () => {
     const w = findOutdoorWindows(points);
     for (let i = 1; i < w.length; i++)
       expect(Date.parse(w[i].start)).toBeGreaterThan(Date.parse(w[i - 1].end));
+  });
+});
+
+describe('earthquake alert level', () => {
+  const now = Date.parse('2026-11-23T10:00:00Z');
+  const quake = (magnitude: number, potential = 'Tidak berpotensi tsunami', hoursAgo = 2) =>
+    ({
+      id: 'q',
+      magnitude,
+      potential,
+      time: new Date(now - hoursAgo * 3_600_000).toISOString(),
+      lat: 0,
+      lon: 0,
+      depthKm: 10,
+      region: 'Test',
+    }) as unknown as Earthquake;
+
+  it('keeps nearby strong quakes critical and demotes distant ones', () => {
+    expect(quakeLevel(quake(7.2), 120, now)).toBe('critical');
+    expect(quakeLevel(quake(7.2), 700, now)).toBe('warning');
+    expect(quakeLevel(quake(7.2), 2294, now)).toBe('info');
+    expect(quakeLevel(quake(5.4), 150, now)).toBe('advisory');
+  });
+
+  it('treats tsunami potential as critical and old quakes as information', () => {
+    expect(quakeLevel(quake(6.1, 'Berpotensi tsunami'), 2000, now)).toBe('critical');
+    expect(quakeLevel(quake(7.1, 'Tidak berpotensi tsunami', 24 * 7), 50, now)).toBe('info');
   });
 });
