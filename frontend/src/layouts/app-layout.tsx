@@ -36,6 +36,7 @@ import { formatTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { t } from '@/lib/i18n';
 import { PreferenceToggles } from '@/features/preferences/toggles';
+import { ReturnToStory } from '@/features/story/return-to-story';
 import { useAssistantStore, useAuthStore, useSettings } from '@/stores';
 
 const navGroups = () => [
@@ -436,6 +437,7 @@ export function AppLayout({ children }: { children?: ReactNode }) {
       <SyncManager />
       <Onboarding />
       <InstallPrompt />
+      <ReturnToStory />
     </div>
   );
 }

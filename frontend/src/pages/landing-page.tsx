@@ -702,6 +702,7 @@ export default function LandingPage() {
           <FooterCol
             title={t('Lainnya', 'More')}
             links={[
+              ['/about', t('Tentang SiagaAI', 'About SiagaAI')],
               ['/app/family', t('Keluarga', 'Family')],
               ['/app/community', t('Laporan Warga', 'Community Reports')],
               ['/app/about', t('Data & Metodologi', 'Data & Methodology')],
@@ -747,6 +748,13 @@ function LandingNav() {
           className="mx-auto hidden items-center gap-1 rounded-full border border-line bg-surface/70 p-1 backdrop-blur md:flex"
           aria-label={t('Navigasi landing', 'Landing navigation')}
         >
+          <Link
+            to="/about"
+            className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[13.5px] font-semibold text-ink transition-colors hover:bg-neutral-100"
+          >
+            <span className="size-1.5 rounded-full bg-brand" aria-hidden />
+            {t('Tentang', 'About')}
+          </Link>
           {nav().map(([href, label]) => (
             <a
               key={href}
@@ -782,6 +790,14 @@ function LandingNav() {
       </div>
       {open && (
         <nav className="glass mx-auto mt-2 flex max-w-[1360px] animate-fade-up flex-col rounded-[20px] p-2 md:hidden">
+          <Link
+            to="/about"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 rounded-xl px-4 py-3 text-[15px] font-semibold text-ink hover:bg-surface"
+          >
+            <span className="size-1.5 rounded-full bg-brand" aria-hidden />
+            {t('Tentang SiagaAI', 'About SiagaAI')}
+          </Link>
           {nav().map(([href, label]) => (
             <a
               key={href}

@@ -16,6 +16,7 @@ const ProfilePage = lazy(() => import('@/pages/profile-page'));
 const SettingsPage = lazy(() => import('@/pages/settings-page'));
 const AboutPage = lazy(() => import('@/pages/about-page'));
 const AuthPage = lazy(() => import('@/pages/auth-page'));
+const StoryPage = lazy(() => import('@/pages/story-page'));
 const NotFoundPage = lazy(() => import('@/pages/not-found-page'));
 
 const Standalone = () => (
@@ -33,6 +34,8 @@ export const router = createBrowserRouter([
         children: [
           { path: '/', element: <LandingPage /> },
           { path: '/auth', element: <AuthPage /> },
+          { path: '/about', element: <StoryPage /> },
+          { path: '/tentang', element: <StoryPage /> },
         ],
       },
       {

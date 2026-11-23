@@ -55,3 +55,37 @@ export function seedDemoWorkspace() {
     loc.setCurrent({ ...point, id: saved.id, source: 'saved' });
   }
 }
+
+/**
+ * "Open as Ara" — used by the About page's live feature buttons.
+ * Ara is the story persona: a student in Palangka Raya who rides a motorbike to campus
+ * and lives with her grandmother and little brother. Like `seedDemoWorkspace`, it never
+ * overwrites a profile or family the user already set up on this device.
+ */
+export function loadAraPersona() {
+  const profile = useProfileStore.getState();
+  if (!profile.customized) {
+    profile.update({
+      displayName: 'Ara',
+      occupation: 'student',
+      transport: 'motorcycle',
+      exposure: 'moderate',
+      activity: 'mixed',
+    });
+  }
+
+  const family = useFamilyStore.getState();
+  if (family.members.length === 0) {
+    family.add({ name: 'Nenek Sri', relation: 'Nenek', ageGroup: 'elderly', activity: 'indoor', exposure: 'low' });
+    family.add({ name: 'Adik Rafa', relation: 'Saudara', ageGroup: 'child', activity: 'mixed', exposure: 'moderate' });
+  }
+
+  // The persona is already "onboarded" — don't interrupt the demo with the setup dialog
+  // (same keys as markOnboarded() in features/onboarding, without pulling that module in).
+  try {
+    localStorage.setItem('siaga.onboarded', '1');
+    localStorage.removeItem('siaga.onboarding.request');
+  } catch {
+    // storage unavailable — onboarding may show, which is harmless
+  }
+}
